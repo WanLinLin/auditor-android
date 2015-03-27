@@ -7,6 +7,6 @@
 * NSYSU graduation project.
 * version 0.0
 
-### Who do I talk to? ###
+### Who should I do? ###
 
 * Clone this project to your pc first!
