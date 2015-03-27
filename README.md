@@ -5,7 +5,7 @@
 ### What is this repository for? ###
 
 * NSYSU graduation project.
-* version 0.o
+* version 0.0
 
 ### Who do I talk to? ###
 
