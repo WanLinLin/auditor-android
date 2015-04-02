@@ -5,6 +5,7 @@ package com.example.project.gp;
  */
 public class testing
 {
+    static final String Celine = "Who Elvis loves. <3";
     /**
      * this is a test of git
      */
