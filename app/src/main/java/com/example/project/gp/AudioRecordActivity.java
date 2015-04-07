@@ -2,7 +2,6 @@ package com.example.project.gp;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -23,7 +22,7 @@ public class AudioRecordActivity extends ActionBarActivity {
     private static String mFileName = null;
 
     private RecordButton mRecordButton = null;
-    private MediaRecorder mRecorder = null;
+    private ExtAudioRecorder extAudioRecorder = null;
 
     private PlayButton mPlayButton = null;
     private MediaPlayer mPlayer = null;
@@ -59,27 +58,25 @@ public class AudioRecordActivity extends ActionBarActivity {
         mPlayer = null;
     }
 
+    //not using mediaRecorder but ExAudioRecorder
     private void startRecording(){
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        extAudioRecorder = ExtAudioRecorder.getInstanse(true);
+        extAudioRecorder.setOutputFile(mFileName);
 
         try{
-            mRecorder.prepare();
+            extAudioRecorder.prepare();
         }
         catch (IOException e){
             Log.e(LOG_TAG, "prepare() failed");
         }
 
-        mRecorder.start();
+        extAudioRecorder.start();
     }
 
     private void stopRecording(){
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
+        extAudioRecorder.stop();
+        extAudioRecorder.release();
+        extAudioRecorder = null;
     }
 
     class RecordButton extends Button {
