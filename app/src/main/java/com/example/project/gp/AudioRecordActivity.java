@@ -21,10 +21,7 @@ public class AudioRecordActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
     private static String mFileName = null;
 
-    private RecordButton mRecordButton = null;
     private ExtAudioRecorder extAudioRecorder = null;
-
-    private PlayButton mPlayButton = null;
     private MediaPlayer mPlayer = null;
 
     private void onRecord(boolean start){
@@ -136,14 +133,17 @@ public class AudioRecordActivity extends ActionBarActivity {
         setContentView(R.layout.activity_audio_record);
 
         LinearLayout ll = new LinearLayout(this);
-        mRecordButton = new RecordButton(this);
+
+        // Create RecordButton
+        RecordButton mRecordButton = new RecordButton(this);
         ll.addView(mRecordButton,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         0));
-        mPlayButton = new PlayButton(this);
 
+        // Create PlayButton
+        PlayButton mPlayButton = new PlayButton(this);
         ll.addView(mPlayButton,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
