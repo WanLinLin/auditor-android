@@ -1,18 +1,23 @@
 package com.example.project.gp;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 
+import java.io.File;
 import java.io.IOException;
 
 
@@ -20,6 +25,8 @@ public class AudioRecordActivity extends ActionBarActivity {
 
     private static final String LOG_TAG = "AudioRecordActivity";
     private static String mFileName = null;
+
+    final Context context = this;
 
     private ExtAudioRecorder extAudioRecorder = null;
     private MediaPlayer mPlayer = null;
@@ -66,7 +73,6 @@ public class AudioRecordActivity extends ActionBarActivity {
         catch (IOException e){
             Log.e(LOG_TAG, "prepare() failed");
         }
-
         extAudioRecorder.start();
     }
 
@@ -74,6 +80,44 @@ public class AudioRecordActivity extends ActionBarActivity {
         extAudioRecorder.stop();
         extAudioRecorder.release();
         extAudioRecorder = null;
+
+        // get audio_record_popup_window.xml view
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.audio_record_popup_window, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+
+        // set audio_record_popup_window.xml to alert dialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText userInput = (EditText) promptsView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+
+                                File from = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmp.3gp");
+                                File to = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + userInput.getText() + ".3gp");
+                                from.renameTo(to);
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     class RecordButton extends Button {
@@ -124,7 +168,7 @@ public class AudioRecordActivity extends ActionBarActivity {
 
     public AudioRecordActivity(){
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/AudioRecord.3gp";
+        mFileName += "/tmp.3gp";
     }
 
     public void goToAudioFile(View view){
