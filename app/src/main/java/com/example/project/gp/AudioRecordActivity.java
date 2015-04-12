@@ -1,6 +1,7 @@
 package com.example.project.gp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,9 +10,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 
@@ -127,29 +127,44 @@ public class AudioRecordActivity extends ActionBarActivity {
         mFileName += "/AudioRecord.3gp";
     }
 
+    public void goToAudioFile(View view){
+        // Do something in response to button
+        Intent intent = new Intent(this, AudioFileActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_record);
 
-        LinearLayout ll = new LinearLayout(this);
+        RelativeLayout rl = (RelativeLayout)findViewById(R.id.audioRecordRL);
+        RecordButton recordButton = new RecordButton(this);
 
-        // Create RecordButton
-        RecordButton mRecordButton = new RecordButton(this);
-        ll.addView(mRecordButton,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
+        RelativeLayout.LayoutParams btLayoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
 
-        // Create PlayButton
-        PlayButton mPlayButton = new PlayButton(this);
-        ll.addView(mPlayButton,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
-        setContentView(ll);
+        btLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+        btLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+
+        rl.addView(recordButton, btLayoutParams);
+
+
+
+//        LinearLayout.LayoutParams llParams = new LinearLayout.LayoutParams(
+//                LinearLayout.LayoutParams.WRAP_CONTENT,
+//                LinearLayout.LayoutParams.WRAP_CONTENT);
+//
+//        ll.addView(mRecordButton,
+//                new LinearLayout.LayoutParams(
+//                        ViewGroup.LayoutParams.WRAP_CONTENT,
+//                        ViewGroup.LayoutParams.WRAP_CONTENT,
+//                        0));
+
+//        setContentView(ll, llParams);
     }
 
 

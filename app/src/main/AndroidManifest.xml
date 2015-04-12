@@ -10,7 +10,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -20,13 +19,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".AudioRecordActivity"
             android:label="@string/title_activity_audio_record"
             android:parentActivityName=".MainActivity" >
         </activity>
-
+        <activity
+            android:name=".AudioFileActivity"
+            android:label="@string/title_activity_audio_file"
+            android:parentActivityName=".AudioRecordActivity">
+        </activity>
     </application>
 
 </manifest>
