@@ -24,6 +24,7 @@ import java.io.IOException;
 public class AudioRecordActivity extends ActionBarActivity {
 
     private static final String LOG_TAG = "AudioRecordActivity";
+
     private static String mFileName = null;
 
     final Context context = this;
@@ -100,9 +101,8 @@ public class AudioRecordActivity extends ActionBarActivity {
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,int id) {
-
-                                File from = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmp.3gp");
-                                File to = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + userInput.getText() + ".3gp");
+                                File from = new File(mFileName);
+                                File to = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/" + userInput.getText() + ".3gp");
                                 from.renameTo(to);
                             }
                         })
@@ -167,8 +167,10 @@ public class AudioRecordActivity extends ActionBarActivity {
     }
 
     public AudioRecordActivity(){
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/tmp.3gp";
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+        dir.mkdirs();
+
+        mFileName = dir.getAbsolutePath() + "tmp.3gp";
     }
 
     public void goToAudioFile(View view){
