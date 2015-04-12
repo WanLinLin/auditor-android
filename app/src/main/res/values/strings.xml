@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Auditor</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_audio_record">AudioRecordActivity</string>
     <string name="record">Record</string>
     <string name="title_activity_audio_file">AudioFileActivity</string>
+    <string name="audio_file_button">Audio File</string>
+    <string name="sheet_music_button">Sheet Music</string>
 </resources>

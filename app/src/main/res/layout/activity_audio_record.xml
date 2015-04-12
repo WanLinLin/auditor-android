@@ -17,7 +17,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Audio File"
+            android:text="@string/audio_file_button"
             android:id="@+id/button"
             android:onClick="goToAudioFile"
             android:layout_weight="1" />
@@ -25,7 +25,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sheet Music"
+            android:text="@string/sheet_music_button"
             android:id="@+id/button2"
             android:layout_gravity="bottom"
             android:layout_weight="1" />
