@@ -1,17 +1,43 @@
 package com.example.project.gp;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class AudioFileActivity extends ActionBarActivity {
+    private static final String LOG_TAG = "AudioFileActivity";
+    private File AuditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+
+    private List<String> FileNamelist = Arrays.asList(AuditorDir.list(
+            new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".3gp");
+                }
+            }
+    ));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_file);
+
+        ListView list = (ListView) findViewById(R.id.listView);
+
+        list.setAdapter(new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_2, FileNamelist));
+
+        list.setTextFilterEnabled(true);
     }
 
 
@@ -37,3 +63,10 @@ public class AudioFileActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 }
+
+
+/*
+    Now can get each file name, file array length.
+
+    TODO: List all the files of the directory by adapter.
+ */
