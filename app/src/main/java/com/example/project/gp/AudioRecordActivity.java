@@ -16,9 +16,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.pitch.PitchDetectionHandler;
+import be.tarsos.dsp.pitch.PitchDetectionResult;
+import be.tarsos.dsp.pitch.PitchProcessor;
 
 
 public class AudioRecordActivity extends ActionBarActivity {
@@ -179,6 +188,12 @@ public class AudioRecordActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
+    public void goSheetMusic(View view){
+        // Do something in response to button
+        Intent intent = new Intent(this, ShowSheetMusic.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,18 +202,39 @@ public class AudioRecordActivity extends ActionBarActivity {
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.audioRecordRL);
         RecordButton recordButton = new RecordButton(this);
 
+        // setting basic recordButton parameters
         RelativeLayout.LayoutParams btLayoutParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
 
+        // set recordButton to be the center of the screen
         btLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
         btLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 
-
+        // add recordButton into the audioRecordRL
         rl.addView(recordButton, btLayoutParams);
 
+        // Start detect pitch
+        AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0);
 
+        PitchDetectionHandler pdh = new PitchDetectionHandler() {
+            @Override
+            public void handlePitch(PitchDetectionResult result, AudioEvent e) {
+                final float pitchInHz = result.getPitch();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView text = (TextView) findViewById(R.id.textView);
+                        text.setText("pitch: " + pitchInHz);
+                    }
+                });
+            }
+        };
+
+        AudioProcessor pp = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, pdh);
+        dispatcher.addAudioProcessor(pp);
+        new Thread(dispatcher,"Audio Dispatcher").start();
 
 //        LinearLayout.LayoutParams llParams = new LinearLayout.LayoutParams(
 //                LinearLayout.LayoutParams.WRAP_CONTENT,

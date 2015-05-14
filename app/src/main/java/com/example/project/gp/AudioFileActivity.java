@@ -34,8 +34,8 @@ public class AudioFileActivity extends ActionBarActivity {
 
         ListView list = (ListView) findViewById(R.id.listView);
 
-        list.setAdapter(new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_2, FileNamelist));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_2,android.R.id.text1, FileNamelist);
+        list.setAdapter(adapter);
 
         list.setTextFilterEnabled(true);
     }
@@ -63,10 +63,3 @@ public class AudioFileActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 }
-
-
-/*
-    Now can get each file name, file array length.
-
-    TODO: List all the files of the directory by adapter.
- */
