@@ -18,6 +18,7 @@ public class ExtAudioRecorder {
 
         if(recordingCompressed)
         {
+            Log.e("ExAudioRecorder", "Recording compressed!");
             result = new ExtAudioRecorder(	false,
                     MediaRecorder.AudioSource.MIC,
                     sampleRates[3],
@@ -26,6 +27,7 @@ public class ExtAudioRecorder {
         }
         else
         {
+            Log.e("ExAudioRecorder", "Recording uncompressed!");
             int i=0;
             do
             {
@@ -49,8 +51,8 @@ public class ExtAudioRecorder {
      */
     public enum State {INITIALIZING, READY, RECORDING, ERROR, STOPPED};
 
-    public static final boolean RECORDING_UNCOMPRESSED = true;
-    public static final boolean RECORDING_COMPRESSED = false;
+    public static final boolean RECORDING_UNCOMPRESSED = false;
+    public static final boolean RECORDING_COMPRESSED = true;
 
     // The interval in which the recorded samples are output to the file
     // Used only in uncompressed mode
@@ -123,6 +125,7 @@ public class ExtAudioRecorder {
                 payloadSize += buffer.length;
                 if (bSamples == 16)
                 {
+                    Log.e(ExtAudioRecorder.class.getName(), "bSamples: " + bSamples);
                     for (int i=0; i<buffer.length/2; i++)
                     { // 16bit sample size
                         short curSample = getShort(buffer[i*2], buffer[i*2+1]);
@@ -134,6 +137,7 @@ public class ExtAudioRecorder {
                 }
                 else
                 { // 8bit sample size
+                    Log.e(ExtAudioRecorder.class.getName(), "bSamples: " + bSamples);
                     for (int i=0; i<buffer.length; i++)
                     {
                         if (buffer[i] > cAmplitude)
@@ -180,7 +184,7 @@ public class ExtAudioRecorder {
                     bSamples = 8;
                 }
 
-                if (channelConfig == AudioFormat.CHANNEL_CONFIGURATION_MONO)
+                if (channelConfig == AudioFormat.CHANNEL_IN_MONO)
                 {
                     nChannels = 1;
                 }
@@ -193,15 +197,18 @@ public class ExtAudioRecorder {
                 sRate   = sampleRate;
                 aFormat = audioFormat;
 
-                framePeriod = sampleRate * TIMER_INTERVAL / 1000;
-                bufferSize = framePeriod * 2 * bSamples * nChannels / 8;
-                if (bufferSize < AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat))
-                { // Check to make sure buffer size is not smaller than the smallest allowed one
-                    bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
-                    // Set frame period and timer interval accordingly
-                    framePeriod = bufferSize / ( 2 * bSamples * nChannels / 8 );
-                    Log.w(ExtAudioRecorder.class.getName(), "Increasing buffer size to " + Integer.toString(bufferSize));
-                }
+//                framePeriod = sampleRate * TIMER_INTERVAL / 1000;
+//                bufferSize = framePeriod * 2 * bSamples * nChannels / 8;
+//                if (bufferSize < AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat))
+//                { // Check to make sure buffer size is not smaller than the smallest allowed one
+//                    bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+//                    // Set frame period and timer interval accordingly
+//                    framePeriod = bufferSize / ( 2 * bSamples * nChannels / 8 );
+//                    Log.w(ExtAudioRecorder.class.getName(), "Increasing buffer size to " + Integer.toString(bufferSize));
+//                }
+
+                bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+                framePeriod = bufferSize / ( 2 * bSamples * nChannels / 8 );
 
                 audioRecorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSize);
 
@@ -531,6 +538,11 @@ public class ExtAudioRecorder {
             state = State.ERROR;
         }
     }
+
+    public int getSampleRate(){ return sRate; }
+    public int getBitSamples(){ return bSamples; }
+    public int getChannels(){ return nChannels; }
+    public int getFramePeriod() { return framePeriod; }
 
     /*
      *
