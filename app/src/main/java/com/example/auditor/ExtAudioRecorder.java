@@ -125,7 +125,6 @@ public class ExtAudioRecorder {
                 payloadSize += buffer.length;
                 if (bSamples == 16)
                 {
-                    Log.e(ExtAudioRecorder.class.getName(), "bSamples: " + bSamples);
                     for (int i=0; i<buffer.length/2; i++)
                     { // 16bit sample size
                         short curSample = getShort(buffer[i*2], buffer[i*2+1]);
@@ -137,7 +136,6 @@ public class ExtAudioRecorder {
                 }
                 else
                 { // 8bit sample size
-                    Log.e(ExtAudioRecorder.class.getName(), "bSamples: " + bSamples);
                     for (int i=0; i<buffer.length; i++)
                     {
                         if (buffer[i] > cAmplitude)

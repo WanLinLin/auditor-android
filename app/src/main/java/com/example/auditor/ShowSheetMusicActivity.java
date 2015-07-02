@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.auditor.R;
-
 import org.jfugue.Pattern;
 import org.jfugue.Player;
 
@@ -15,7 +13,7 @@ import jp.kshoji.javax.sound.midi.MetaEventListener;
 import jp.kshoji.javax.sound.midi.MetaMessage;
 import jp.kshoji.javax.sound.midi.UsbMidiSystem;
 
-public class ShowSheetMusic extends ActionBarActivity {
+public class ShowSheetMusicActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
     UsbMidiSystem usbMidiSystem;
 

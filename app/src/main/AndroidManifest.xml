@@ -34,7 +34,7 @@
             android:parentActivityName=".AudioRecordActivity" >
         </activity>
         <activity
-            android:name=".ShowSheetMusic"
+            android:name=".ShowSheetMusicActivity"
             android:label="@string/title_activity_show_sheet_music"
             android:parentActivityName=".AudioRecordActivity" >
         </activity>

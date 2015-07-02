@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -35,11 +34,9 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 
 public class AudioRecordActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
-    private File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/niceshot.3gp");
     private InputStream inputStream;
     private static String mFileName = null;
     private ExtAudioRecorder extAudioRecorder = null;
-    private MediaPlayer mPlayer = null;
     private final Context context = this;
     private static final int bufferSize = 1024;
 
@@ -66,149 +63,37 @@ public class AudioRecordActivity extends ActionBarActivity {
         }
     }
 
-    class PlayButton extends Button {
-        boolean mStartPlaying = true;
-
-        OnClickListener clicker = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onPlay(mStartPlaying);
-                if (mStartPlaying)
-                    setText("Stop playing");
-                else
-                    setText("Start playing");
-
-                mStartPlaying = !mStartPlaying;
-            }
-        };
-
-        public PlayButton(Context ctx) {
-            super(ctx);
-            setText("Start playing");
-            setOnClickListener(clicker);
-        }
-    }
-
-    private void onRecord(boolean start) {
-        if (start)
-            startRecording();
-        else
-            stopRecording();
-    }
-
-    private void onPlay(boolean start) {
-        if (start)
-            startPlaying();
-        else
-            stopPlaying();
-    }
-
-    private void startPlaying() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        }
-    }
-
-    private void stopPlaying() {
-        mPlayer.release();
-        mPlayer = null;
-    }
-
-    private void startRecording() {
-        // false means not compressed
-        extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        extAudioRecorder.setOutputFile(mFileName);
-
-        try {
-            extAudioRecorder.prepare();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        }
-        extAudioRecorder.start();
-    }
-
-    private void stopRecording() {
-        extAudioRecorder.stop();
-        extAudioRecorder.release();
-        extAudioRecorder = null;
-
-        // get audio_record_popup_window.xml view
-        LayoutInflater li = LayoutInflater.from(context);
-        View promptsView = li.inflate(R.layout.audio_record_popup_window, null);
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                context);
-
-        // set audio_record_popup_window.xml to alert dialog builder
-        alertDialogBuilder.setView(promptsView);
-
-        final EditText userInput = (EditText) promptsView
-                .findViewById(R.id.editTextDialogUserInput);
-
-        // set dialog message
-        alertDialogBuilder
-                .setCancelable(false)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(mFileName);
-                                File to = new File(
-                                        Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/" + userInput.getText() + ".3gp");
-                                from.renameTo(to);
-                            }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-    }
-
-    public AudioRecordActivity() {
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
-        dir.mkdirs();
-
-        mFileName = dir.getAbsolutePath() + "tmp.3gp";
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/niceshot.3gp");
+        boolean mkdirResult;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_record);
+
+        mkdirResult = dir.mkdirs();
+        if (mkdirResult)
+            Log.e(LOG_TAG, "\"Auditor\" directory create successfully!");
+        else
+            Log.e(LOG_TAG, "Failed to create \"Auditor\" directory!");
+        mFileName = dir.getAbsolutePath() + "tmp.3gp";
 
         /* ----LAYOUT SETTING---- */
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.audioRecordRL);
         RecordButton recordButton = new RecordButton(this);
-
         // setting basic recordButton parameters
         RelativeLayout.LayoutParams btLayoutParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
-
         // set recordButton to be the center of the screen
         btLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
         btLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-
         // add recordButton into the audioRecordRL
         rl.addView(recordButton, btLayoutParams);
         /* ----LAYOUT SETTING---- */
 
-
         extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-
         // use exAudioRecorder to set TarsosDSP Audio format
         TarsosDSPAudioFormat tarsosDSPAudioFormat =
                 new TarsosDSPAudioFormat(
@@ -218,23 +103,22 @@ public class AudioRecordActivity extends ActionBarActivity {
                         false,  // indicates whether the data is signed or unsigned
                         false); // indicates whether the data for a single sample
 
-
         // open a file
         try {
             inputStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "failed to open a file");
+            Log.e(LOG_TAG, "Failed to open a file!");
         }
 
         // set audio stream
         UniversalAudioInputStream universalAudioInputStream =
                 new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
 
+        // set pitch detect things
         AudioDispatcher dispatcher = new AudioDispatcher(
                 universalAudioInputStream,
                 bufferSize,
                 bufferSize / 2);
-
         PitchDetectionHandler pdh = new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult result, AudioEvent e) {
@@ -243,22 +127,19 @@ public class AudioRecordActivity extends ActionBarActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-//                        TextView text = (TextView) findViewById(R.id.textView);
-//                        text.setText("pitch: " + pitchInHz);
                         Log.e(LOG_TAG, "pitch: " + pitchInHz);
                     }
                 });
             }
         };
-
         AudioProcessor pp = new PitchProcessor(
                 PitchProcessor.PitchEstimationAlgorithm.FFT_YIN,
                 extAudioRecorder.getSampleRate(),
                 bufferSize, pdh);
         dispatcher.addAudioProcessor(pp);
-        new Thread(dispatcher,"Audio Dispatcher").start();
 
-        // TODO now can read file and detect the file pitch
+        // TODO This thread is going to get a specific file pitch, so don't run this line unless you have the file.
+//        new Thread(dispatcher,"Audio Dispatcher").start();
     }
 
     @Override
@@ -290,20 +171,74 @@ public class AudioRecordActivity extends ActionBarActivity {
         Intent intent = new Intent(this, AudioFileActivity.class);
         startActivity(intent);
     }
-
     public void goSheetMusic(View view) {
         // Do something in response to button
-        Intent intent = new Intent(this, ShowSheetMusic.class);
+        Intent intent = new Intent(this, ShowSheetMusicActivity.class);
         startActivity(intent);
     }
 
-    // TODO complete the PitchToNotes class
-    class PitchToNotes{
-        float pitch;
+    // record
+    private void onRecord(boolean start) {
+        if (start)
+            startRecording();
+        else
+            stopRecording();
+    }
+    private void startRecording() {
+        // false means not compressed
+        extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
+        extAudioRecorder.setOutputFile(mFileName);
 
-        PitchToNotes(final float pitch){
-
+        try {
+            extAudioRecorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
         }
+        extAudioRecorder.start();
+    }
+    private void stopRecording() {
+        extAudioRecorder.stop();
+        extAudioRecorder.release();
+        extAudioRecorder = null;
+
+        // get audio_record_popup_window.xml view
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.audio_record_popup_window, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        // set audio_record_popup_window.xml to alert dialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText userInput = (EditText) promptsView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                File from = new File(mFileName);
+                                File to = new File(
+                                        Environment.getExternalStorageDirectory()
+                                                .getAbsolutePath() + "/Auditor/" +
+                                                userInput.getText() + ".3gp");
+                                from.renameTo(to);
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 }
 
