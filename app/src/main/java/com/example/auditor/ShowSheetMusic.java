@@ -6,7 +6,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.project.gp.R;
+import com.example.auditor.R;
 
 import org.jfugue.Pattern;
 import org.jfugue.Player;

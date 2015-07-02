@@ -17,10 +17,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
-import com.example.project.gp.ExtAudioRecorder;
-import com.example.project.gp.R;
-import com.example.project.gp.ShowSheetMusic;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

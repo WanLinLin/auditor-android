@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.example.project.gp.R;
+import com.example.auditor.R;
 
 import java.io.File;
 import java.io.FilenameFilter;
