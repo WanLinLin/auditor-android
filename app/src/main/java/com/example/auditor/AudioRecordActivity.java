@@ -76,7 +76,7 @@ public class AudioRecordActivity extends ActionBarActivity {
             Log.e(LOG_TAG, "\"Auditor\" directory create successfully!");
         else
             Log.e(LOG_TAG, "Failed to create \"Auditor\" directory!");
-        mFileName = dir.getAbsolutePath() + "tmp.3gp";
+        mFileName = dir.getAbsolutePath() + "tmp.wav";
 
         /* ----LAYOUT SETTING---- */
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.audioRecordRL);
@@ -223,13 +223,14 @@ public class AudioRecordActivity extends ActionBarActivity {
                                 File to = new File(
                                         Environment.getExternalStorageDirectory()
                                                 .getAbsolutePath() + "/Auditor/" +
-                                                userInput.getText() + ".3gp");
+                                                userInput.getText() + ".wav");
                                 from.renameTo(to);
                             }
                         })
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+
                                 dialog.cancel();
                             }
                         });

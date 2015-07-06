@@ -10,4 +10,6 @@
     <string name="title_activity_show_sheet_music">ShowSheetMusicActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="end">End</string>
 </resources>

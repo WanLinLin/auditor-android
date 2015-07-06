@@ -8,6 +8,8 @@
 
     <!-- Using USB MIDI -->
     <uses-feature android:name="android.hardware.usb.host" />
+    <!-- Use this permission to let music playback continue when the user's device becomes idle. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -31,8 +33,11 @@
         <activity
             android:name=".AudioFileActivity"
             android:label="@string/title_activity_audio_file"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:parentActivityName=".AudioRecordActivity" >
         </activity>
+        <service android:name=".MusicService" />
         <activity
             android:name=".ShowSheetMusicActivity"
             android:label="@string/title_activity_show_sheet_music"
