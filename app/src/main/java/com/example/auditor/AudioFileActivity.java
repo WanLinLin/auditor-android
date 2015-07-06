@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
 
@@ -29,6 +30,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     private MusicController controller;
     private ArrayList<Song> songList = new ArrayList<>();
     private MusicService musicService;
+    private ListView songView;
     private Intent playIntent;
     private boolean musicBound = false;
     private boolean paused = false;
@@ -39,8 +41,6 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_file);
-
-        ListView songView;
 
         onPrepareReceiver = new BroadcastReceiver() {
             @Override
@@ -59,6 +59,20 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         songView.setAdapter(songAdt);
         songView.setTextFilterEnabled(true);
         setController();
+
+        songView.setOnScrollListener(
+                new AbsListView.OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(AbsListView view, int scrollState) {
+                        // do nothing
+                    }
+
+                    @Override
+                    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                        controller.hide();
+                    }
+                }
+        );
     }
 
     //connect to the service
