@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     android:onClick="songPicked"
     android:orientation="vertical"
-    android:padding="15dp" >
+    android:padding="15dp"
+    android:id="@+id/song_list_view_item" >
 
     <TextView
         android:id="@+id/song_title"

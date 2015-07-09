@@ -22,7 +22,8 @@ import java.util.Random;
  */
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener {
+        MediaPlayer.OnCompletionListener
+{
     private static final String LOG_TAG = "MusicService";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     private MediaPlayer player;
@@ -33,6 +34,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private static final int NOTIFY_ID = 1;
     private boolean shuffle = false;
     private Random rand;
+    private Intent notification;
 
     public class MusicBinder extends Binder {
         MusicService getService() {
@@ -42,7 +44,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void onCreate(){
         super.onCreate();
+        Log.e(LOG_TAG, "onCreate");
 
+        notification = new Intent();
         songPosition = 0;
         player = new MediaPlayer();
         rand = new Random();
@@ -73,6 +77,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public boolean onUnbind(Intent intent){
         player.stop();
         player.release();
+
+        notification.setAction("MEDIA_PLAYER_UNBIND");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+
         return false;
     }
 
@@ -96,25 +104,36 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 .setContentText(songTitle);
         Notification not = builder.getNotification();
 
-        Intent onPreparedIntent = new Intent("MEDIA_PLAYER_PREPARED");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(onPreparedIntent);
+        notification.setAction("MEDIA_PLAYER_PREPARED");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
 
         startForeground(NOTIFY_ID, not);
     }
 
     @Override
     public void onDestroy() {
+        notification.setAction("MEDIA_PLAYER_DESTROY");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+
+        Log.e(LOG_TAG, "Music service on destroy!");
+
         stopForeground(true);
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
+        notification.setAction("MEDIA_PLAYER_ERROR");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+
         mp.reset();
         return false;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        notification.setAction("MEDIA_PLAYER_COMPLETION");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+
         if(player.getCurrentPosition() > 0){
             mp.reset();
             playNext();
@@ -123,11 +142,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void playSong(){
         player.reset();
-
         Song playSong = songs.get(songPosition);
-        songTitle = playSong.getTitle();
 
-        long currSong = playSong.getID();
+        songTitle = playSong.getTitle();
 
         //set uri
         String songPath = auditorDir + "/" + playSong.getTitle();
@@ -140,7 +157,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         player.prepareAsync();
-        Log.e(LOG_TAG, "id: " + currSong + ", song: " + songTitle);
     }
 
     public void setSong(int songIndex){
@@ -156,10 +172,23 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public boolean isPlaying(){
-        return player.isPlaying();
+        boolean isPlaying = false;
+
+        try {
+            isPlaying = player.isPlaying();
+        }
+        catch (IllegalStateException e) {
+            player = null;
+            player = new MediaPlayer();
+        }
+
+        return isPlaying;
     }
 
     public void pausePlayer(){
+        notification.setAction("MEDIA_PLAYER_PAUSE");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+
         player.pause();
     }
 
@@ -171,7 +200,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         player.start();
     }
 
-    public void setShuffle(){
+    public void setShuffle() {
         if(shuffle) shuffle = false;
         else shuffle = true;
     }
@@ -201,5 +230,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public boolean isShuffle(){
         return shuffle;
+    }
+
+    public void destroyPlayer() {
+        player.stop();
+        player.release();
     }
 }
