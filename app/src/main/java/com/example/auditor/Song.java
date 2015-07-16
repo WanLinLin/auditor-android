@@ -6,12 +6,15 @@ package com.example.auditor;
 public class Song {
     private long id;
     private String title;
+    private String lastModDate;
 
-    public Song(long songID, String songTitle) {
+    public Song(long songID, String songTitle, String songModDate) {
         id = songID;
         title = songTitle;
+        lastModDate = songModDate;
     }
 
-    public long getID(){return id;}
-    public String getTitle(){return title;}
+    public long getID() {return id;}
+    public String getTitle() {return title;}
+    public String getLastModDate() {return lastModDate;}
 }

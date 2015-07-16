@@ -1,8 +1,10 @@
 package com.example.auditor;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -12,16 +14,28 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
+import be.tarsos.dsp.io.UniversalAudioInputStream;
 
 
 public class AudioFileActivity extends ActionBarActivity implements MediaPlayerControl{
@@ -31,12 +45,15 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     private ArrayList<Song> songList = new ArrayList<>();
     private MusicService musicService;
     private ListView songView;
+    private SongAdapter songAdt;
     private Intent playIntent;
     private boolean musicBound = false;
     private boolean paused = false;
     private boolean playbackPaused = false;
     private BroadcastReceiver notificationReceiver;
     private ServiceConnection musicConnection;
+    private final Context context = this;
+    private int preLast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +103,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         // prepare the song list
         getSongList();
         songView = (ListView) findViewById(R.id.song_list);
-        SongAdapter songAdt = new SongAdapter(this, songList);
+        songAdt = new SongAdapter(this, songList, AudioFileActivity.this);
         songView.setAdapter(songAdt);
         songView.setTextFilterEnabled(true);
 
@@ -99,6 +116,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                    // do nothing
                     controller.hide();
                 }
             }
@@ -150,6 +168,8 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     @Override
     protected void onDestroy() {
 //        Log.e(LOG_TAG, "onDestroy");
+        if (controller.isShowing())
+            controller.hide();
         stopService(playIntent);
         unbindService(musicConnection);
         controller = null;
@@ -285,9 +305,13 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         File[] files = auditorDir.listFiles();
 
         for (int i = 0; i < files.length; i++) {
+            DateFormat sdf = DateFormat.getDateTimeInstance();
+
             File file = files[i];
+            Date lastModDate = new Date(file.lastModified());
+            String lmd = sdf.format(lastModDate);
             String songTitle = file.getName();
-            Song song = new Song(i, songTitle);
+            Song song = new Song(i, songTitle, lmd);
             songList.add(song);
         }
     }
@@ -301,7 +325,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         }
     }
 
-    private void playNext(){
+    private void playNext() {
         musicService.playNext();
         if(playbackPaused){
             playbackPaused = false;
@@ -315,18 +339,126 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         }
     }
 
-//    get childAt of ListView
-//    public View getViewByPosition(int pos, ListView listView) {
-//        final int firstListItemPosition = listView.getFirstVisiblePosition();
-//        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
-//
-//        if (pos < firstListItemPosition || pos > lastListItemPosition ) {
-//            return listView.getAdapter().getView(pos, null, listView);
-//        } else {
-//            final int childIndex = pos - firstListItemPosition;
-//            return listView.getChildAt(childIndex);
-//        }
-//    }
+    public boolean convertSong(final Song song) {
+        File file = new File(auditorDir + "/" + song.getTitle());
+        InputStream inputStream;
+
+        // open a file
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "Failed to open a file!");
+            return false;
+        }
+
+        ExtAudioRecorder extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
+        // use exAudioRecorder to set TarsosDSP Audio format
+        TarsosDSPAudioFormat tarsosDSPAudioFormat =
+                new TarsosDSPAudioFormat(
+                        extAudioRecorder.getSampleRate(),
+                        extAudioRecorder.getBitSamples(),
+                        extAudioRecorder.getChannels(),
+                        false,  // indicates whether the data is signed or unsigned
+                        false); // indicates whether the data for a single sample
+
+        // set audio stream
+        UniversalAudioInputStream universalAudioInputStream =
+                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
+        SongConverter songConverter = new SongConverter(universalAudioInputStream);
+
+        return songConverter.convert();
+    }
+
+    public void renameSong(final Song song) {
+        // get audio_record_popup_rename.xml view
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.audio_record_popup_rename, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+        alertDialogBuilder.setView(promptsView);
+        final EditText userInput = (EditText) promptsView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                File from = new File(auditorDir + "/" + song.getTitle());
+                                File to = new File(
+                                        auditorDir + "/" + userInput.getText() + ".wav");
+                                from.renameTo(to);
+
+                                // update song list view and reset songList of musicService
+                                songList.clear();
+                                getSongList();
+                                musicService.setList(songList);
+                                songAdt.notifyDataSetChanged();
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public void deleteSong(final Song song) {
+        // get audio_record_popup_delete.xml view
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.audio_file_popup_delete, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        // set audio_record_popup_delete.xml to alert dialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final TextView dialogTitle = (TextView) promptsView
+                .findViewById(R.id.popupWindowTitle);
+        dialogTitle.setText(dialogTitle.getText() + song.getTitle() + "?");
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                File fileToDelete = new File(auditorDir + "/" + song.getTitle());
+                                if (fileToDelete.delete())
+                                    Toast.makeText(
+                                            AudioFileActivity.this,
+                                            "Delete successfully!",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                else
+                                    Toast.makeText(
+                                            AudioFileActivity.this,
+                                            "Delete failed!",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                // update song list view and reset songList of musicService
+                                songList.clear();
+                                getSongList();
+                                musicService.setList(songList);
+                                songAdt.notifyDataSetChanged();
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
 }
 
 // TODO list view 小箭頭點開要有 轉檔 命名 刪除

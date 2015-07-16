@@ -62,6 +62,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
+        player.setVolume(1, 1);
     }
 
     public void setList(ArrayList<Song> theSongs){
@@ -230,10 +231,5 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public boolean isShuffle(){
         return shuffle;
-    }
-
-    public void destroyPlayer() {
-        player.stop();
-        player.release();
     }
 }

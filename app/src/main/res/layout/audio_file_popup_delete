@@ -10,15 +10,8 @@
         android:id="@+id/popupWindowTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="File Name: " />
-
-    <EditText
-        android:id="@+id/editTextDialogUserInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <requestFocus />
-
-    </EditText>
+        android:textSize="18sp"
+        android:textColor="#555555"
+        android:text="Delete " />
 
 </LinearLayout>

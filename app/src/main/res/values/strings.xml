@@ -12,4 +12,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="shuffle">Shuffle</string>
     <string name="end">End</string>
+    <string name="convert">Convert</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
 </resources>

@@ -1,17 +1,42 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:onClick="songPicked"
-    android:orientation="vertical"
-    android:padding="15dp"
+    android:padding="10dp"
     android:id="@+id/song_list_view_item" >
 
-    <TextView
-        android:id="@+id/song_title"
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#000000"
-        android:textSize="20sp" />
+        android:layout_height="fill_parent"
+        android:paddingRight="25dp"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true" >
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/song_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:gravity="start"
+            android:layout_marginBottom="5dp"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/song_mod_date"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#555555"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/collapse"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/collapse"
+        />
+</RelativeLayout>

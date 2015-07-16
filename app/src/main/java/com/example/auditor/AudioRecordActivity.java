@@ -17,28 +17,19 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
 import be.tarsos.dsp.io.TarsosDSPAudioFormat;
-import be.tarsos.dsp.io.UniversalAudioInputStream;
-import be.tarsos.dsp.pitch.PitchDetectionHandler;
-import be.tarsos.dsp.pitch.PitchDetectionResult;
-import be.tarsos.dsp.pitch.PitchProcessor;
 
 
 public class AudioRecordActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
-    private InputStream inputStream;
     private static String mFileName = null;
     private ExtAudioRecorder extAudioRecorder = null;
     private final Context context = this;
-    private static final int bufferSize = 1024;
+    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+    public static final int bufferSize = 1024;
+    public static TarsosDSPAudioFormat tarsosDSPAudioFormat;
 
     class RecordButton extends Button {
         boolean mStartRecording = true;
@@ -65,18 +56,14 @@ public class AudioRecordActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/niceshot.3gp");
-        boolean mkdirResult;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_record);
 
-        mkdirResult = dir.mkdirs();
-        if (mkdirResult)
+        if (auditorDir.mkdirs())
             Log.e(LOG_TAG, "\"Auditor\" directory create successfully!");
         else
             Log.e(LOG_TAG, "Failed to create \"Auditor\" directory!");
-        mFileName = dir.getAbsolutePath() + "tmp.wav";
+        mFileName = auditorDir.getAbsolutePath() + "/tmp.wav";
 
         /* ----LAYOUT SETTING---- */
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.audioRecordRL);
@@ -93,50 +80,50 @@ public class AudioRecordActivity extends ActionBarActivity {
         rl.addView(recordButton, btLayoutParams);
         /* ----LAYOUT SETTING---- */
 
-        extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        // use exAudioRecorder to set TarsosDSP Audio format
-        TarsosDSPAudioFormat tarsosDSPAudioFormat =
-                new TarsosDSPAudioFormat(
-                        extAudioRecorder.getSampleRate(),
-                        extAudioRecorder.getBitSamples(),
-                        extAudioRecorder.getChannels(),
-                        false,  // indicates whether the data is signed or unsigned
-                        false); // indicates whether the data for a single sample
-
-        // open a file
-        try {
-            inputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "Failed to open a file!");
-        }
-
-        // set audio stream
-        UniversalAudioInputStream universalAudioInputStream =
-                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
-
-        // set pitch detect things
-        AudioDispatcher dispatcher = new AudioDispatcher(
-                universalAudioInputStream,
-                bufferSize,
-                bufferSize / 2);
-        PitchDetectionHandler pdh = new PitchDetectionHandler() {
-            @Override
-            public void handlePitch(PitchDetectionResult result, AudioEvent e) {
-                final float pitchInHz = result.getPitch();
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e(LOG_TAG, "pitch: " + pitchInHz);
-                    }
-                });
-            }
-        };
-        AudioProcessor pp = new PitchProcessor(
-                PitchProcessor.PitchEstimationAlgorithm.FFT_YIN,
-                extAudioRecorder.getSampleRate(),
-                bufferSize, pdh);
-        dispatcher.addAudioProcessor(pp);
+//        extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
+//        // use exAudioRecorder to set TarsosDSP Audio format
+//        tarsosDSPAudioFormat =
+//                new TarsosDSPAudioFormat(
+//                        extAudioRecorder.getSampleRate(),
+//                        extAudioRecorder.getBitSamples(),
+//                        extAudioRecorder.getChannels(),
+//                        false,  // indicates whether the data is signed or unsigned
+//                        false); // indicates whether the data for a single sample
+//
+//        // open a file
+//        try {
+//            inputStream = new FileInputStream(file);
+//        } catch (FileNotFoundException e) {
+//            Log.e(LOG_TAG, "Failed to open a file!");
+//        }
+//
+//        // set audio stream
+//        UniversalAudioInputStream universalAudioInputStream =
+//                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
+//
+//        // set pitch detect things
+//        AudioDispatcher dispatcher = new AudioDispatcher(
+//                universalAudioInputStream,
+//                bufferSize,
+//                bufferSize / 2);
+//        PitchDetectionHandler pdh = new PitchDetectionHandler() {
+//            @Override
+//            public void handlePitch(PitchDetectionResult result, AudioEvent e) {
+//                final float pitchInHz = result.getPitch();
+//
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Log.e(LOG_TAG, "pitch: " + pitchInHz);
+//                    }
+//                });
+//            }
+//        };
+//        AudioProcessor pp = new PitchProcessor(
+//                PitchProcessor.PitchEstimationAlgorithm.FFT_YIN,
+//                extAudioRecorder.getSampleRate(),
+//                bufferSize, pdh);
+//        dispatcher.addAudioProcessor(pp);
 
         // TODO This thread is going to get a specific file pitch, so don't run this line unless you have the file.
 //        new Thread(dispatcher,"Audio Dispatcher").start();
@@ -164,8 +151,7 @@ public class AudioRecordActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    // change activity
+    /* change activity */
     public void goToAudioFile(View view) {
         // Do something in response to button
         Intent intent = new Intent(this, AudioFileActivity.class);
@@ -177,7 +163,7 @@ public class AudioRecordActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
-    // record
+    /* record */
     private void onRecord(boolean start) {
         if (start)
             startRecording();
@@ -192,7 +178,7 @@ public class AudioRecordActivity extends ActionBarActivity {
         try {
             extAudioRecorder.prepare();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+            Log.e(LOG_TAG, ".prepare() failed");
         }
         extAudioRecorder.start();
     }
@@ -201,9 +187,12 @@ public class AudioRecordActivity extends ActionBarActivity {
         extAudioRecorder.release();
         extAudioRecorder = null;
 
+        setFileName();
+    }
+    private void setFileName(){
         // get audio_record_popup_window.xml view
         LayoutInflater li = LayoutInflater.from(context);
-        View promptsView = li.inflate(R.layout.audio_record_popup_window, null);
+        View promptsView = li.inflate(R.layout.audio_record_popup_rename, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -220,17 +209,17 @@ public class AudioRecordActivity extends ActionBarActivity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 File from = new File(mFileName);
-                                File to = new File(
-                                        Environment.getExternalStorageDirectory()
-                                                .getAbsolutePath() + "/Auditor/" +
+                                File to = new File(auditorDir.getAbsolutePath() + "/" +
                                                 userInput.getText() + ".wav");
-                                from.renameTo(to);
+                                if(from.renameTo(to))
+                                    Log.e(LOG_TAG, "Set name successfully!");
+                                else
+                                    Log.e(LOG_TAG, "Set name failed!");
                             }
                         })
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-
                                 dialog.cancel();
                             }
                         });
