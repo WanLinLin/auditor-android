@@ -59,10 +59,7 @@ public class AudioRecordActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_record);
 
-        if (auditorDir.mkdirs())
-            Log.e(LOG_TAG, "\"Auditor\" directory create successfully!");
-        else
-            Log.e(LOG_TAG, "Failed to create \"Auditor\" directory!");
+        auditorDir.mkdirs();
         mFileName = auditorDir.getAbsolutePath() + "/tmp.wav";
 
         /* ----LAYOUT SETTING---- */

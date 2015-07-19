@@ -18,12 +18,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Created by wanlin on 15/7/2.
+ * Created by Wan Lin on 15/7/2.
  */
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener
-{
+        MediaPlayer.OnCompletionListener {
     private static final String LOG_TAG = "MusicService";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     private MediaPlayer player;
@@ -44,9 +43,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void onCreate(){
         super.onCreate();
-        Log.e(LOG_TAG, "onCreate");
 
-        notification = new Intent();
+        notification = new Intent("Player");
         songPosition = 0;
         player = new MediaPlayer();
         rand = new Random();
@@ -56,8 +54,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void initMusicPlayer(){
         //set player properties
-        player.setWakeMode(getApplicationContext(),
-                PowerManager.PARTIAL_WAKE_LOCK);
+        player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -76,11 +73,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public boolean onUnbind(Intent intent){
-        player.stop();
-        player.release();
-
-        notification.setAction("MEDIA_PLAYER_UNBIND");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+        if (player.isPlaying()) {
+            player.stop();
+            player.release();
+        }
 
         return false;
     }
@@ -88,7 +84,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onPrepared(MediaPlayer mp) {
         //start playback
-        player.start();
+        mp.start();
 
         Intent notIntent = new Intent(this, AudioFileActivity.class);
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -105,7 +101,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 .setContentText(songTitle);
         Notification not = builder.getNotification();
 
-        notification.setAction("MEDIA_PLAYER_PREPARED");
+        // send notification to AudioFileActivity
+        notification.putExtra("action", "prepared");
         LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
 
         startForeground(NOTIFY_ID, not);
@@ -113,31 +110,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onDestroy() {
-        notification.setAction("MEDIA_PLAYER_DESTROY");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
         Log.e(LOG_TAG, "Music service on destroy!");
+        player = null;
 
         stopForeground(true);
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        notification.setAction("MEDIA_PLAYER_ERROR");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
         mp.reset();
         return false;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        notification.setAction("MEDIA_PLAYER_COMPLETION");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
         if(player.getCurrentPosition() > 0){
             mp.reset();
-            playNext();
         }
     }
 
@@ -187,9 +175,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void pausePlayer(){
-        notification.setAction("MEDIA_PLAYER_PAUSE");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
         player.pause();
     }
 

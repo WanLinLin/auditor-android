@@ -42,71 +42,62 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     private static final String LOG_TAG = "AudioFileActivity";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     private MediaController controller;
-    private ArrayList<Song> songList = new ArrayList<>();
     private MusicService musicService;
-    private ListView songView;
+    private ArrayList<Song> songList = new ArrayList<>();
     private SongAdapter songAdt;
     private Intent playIntent;
+    private ServiceConnection musicConnection;
+    private BroadcastReceiver notificationReceiver;
     private boolean musicBound = false;
     private boolean paused = false;
     private boolean playbackPaused = false;
-    private BroadcastReceiver notificationReceiver;
-    private ServiceConnection musicConnection;
     private final Context context = this;
-    private int preLast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_file);
-//        Log.e(LOG_TAG, "onCreate");
 
         musicConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                Log.e(LOG_TAG, "onServiceConnected");
-                MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-                //get service
-                musicService = binder.getService();
-                //pass list
-                musicService.setList(songList);
-                musicBound = true;
-            }
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+                    musicService = binder.getService();
+                    musicService.setList(songList);
+                    musicBound = true;
+                }
 
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.e(LOG_TAG, "onServiceDisconnected");
-                musicBound = false;
-            }
-        };
-        setController();
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    musicBound = false;
+                }
+            };
 
+        // set notification receiver to handle message from music service
         notificationReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent i) {
-            // When music player has been prepared, show controller
-            Log.e(LOG_TAG, "onReceive: " + i.getAction());
-                switch (i.getAction()) {
-                    case "MEDIA_PLAYER_PREPARED":
-                        try {
-                            controller.show(0);
-                        }
-                        catch (Exception e) {
-                            controller = null;
-                            setController();
-                        }
+                // When music player has been prepared, show controller
+                Log.e(LOG_TAG, "onReceive: " + i.getStringExtra("action"));
+                switch (i.getStringExtra("action")) {
+                    case "prepared":
+                        controller.show(0);
                         break;
                 }
             }
         };
 
+        IntentFilter intentFilter = new IntentFilter("Player");
+        LocalBroadcastManager.getInstance(this).registerReceiver(notificationReceiver, intentFilter);
+
+        setController();
+
         // prepare the song list
         getSongList();
-        songView = (ListView) findViewById(R.id.song_list);
+        ListView songView = (ListView) findViewById(R.id.song_list);
         songAdt = new SongAdapter(this, songList, AudioFileActivity.this);
         songView.setAdapter(songAdt);
         songView.setTextFilterEnabled(true);
-
         songView.setOnScrollListener(
             new AbsListView.OnScrollListener() {
                 @Override
@@ -126,7 +117,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     @Override
     protected void onStart() {
         super.onStart();
-//        Log.e(LOG_TAG, "onStart");
+
         if(playIntent == null){
             playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
@@ -136,11 +127,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
     @Override
     protected void onResume(){
-//        Log.e(LOG_TAG, "onResume");
         super.onResume();
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(notificationReceiver,
-                new IntentFilter("MEDIA_PLAYER_PREPARED"));
 
         if(paused){
             paused = false;
@@ -150,41 +137,42 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
     @Override
     protected void onPause(){
-//        Log.e(LOG_TAG, "onPause");
+        super.onPause();
+
+        paused = true;
         if (controller.isShowing())
             controller.hide();
-        paused = true;
-        super.onPause();
     }
 
     @Override
     protected void onStop() {
-//        Log.e(LOG_TAG, "onStop");
+        super.onStop();
+
         if (controller.isShowing())
             controller.hide();
-        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-//        Log.e(LOG_TAG, "onDestroy");
+        super.onDestroy();
+
         if (controller.isShowing())
             controller.hide();
+
         stopService(playIntent);
         unbindService(musicConnection);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(notificationReceiver);
+        notificationReceiver = null;
         controller = null;
-
-        super.onDestroy();
+        musicService = null;
     }
 
     @Override
     public void onBackPressed() {
-//        Log.e(LOG_TAG, "on back pressed");
-        musicService = null;
-        notificationReceiver = null;
-        controller.hide();
-
         super.onBackPressed();
+
+        if (controller.isShowing())
+            controller.hide();
     }
 
     @Override
@@ -281,8 +269,9 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
     private void setController(){
         //set the controller up
-        if (controller == null)
+        if (controller == null) {
             controller = new MediaController(this);
+        }
 
         controller.setPrevNextListeners(new View.OnClickListener() {
             @Override

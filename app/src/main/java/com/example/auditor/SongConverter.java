@@ -24,6 +24,8 @@ public class SongConverter{
 
     private AudioProcessor ap;
 
+    private int count = 0;
+
     SongConverter(final UniversalAudioInputStream universalAudioInputStream){
         // set pitch detect things
         dispatcher = new AudioDispatcher(
@@ -33,10 +35,12 @@ public class SongConverter{
 
         pdh = new PitchDetectionHandler() {
             @Override
-            public void handlePitch(PitchDetectionResult pdr,AudioEvent ae){
+            public void handlePitch(PitchDetectionResult pdr, AudioEvent ae){
                 float pitch = pdr.getPitch();
 
-                Log.i(LOG_TAG, "pitch: " + pitch);
+                Log.i(LOG_TAG, "pitch - " + (count++) + ": " + pitch);
+
+                // TODO log out from pitch frequency to notes
             }
         };
 
@@ -49,19 +53,19 @@ public class SongConverter{
     }
 
     public boolean convert(){
+
         Thread pitchDetectThread = new Thread(dispatcher, "Audio Dispatcher");
 
-        long startTime = System.currentTimeMillis();
-        Log.i(LOG_TAG, "start time: " + startTime);
+        long convertStartTime = System.currentTimeMillis();
+        long convertEndTime;
+        Log.i(LOG_TAG, "start time: " + convertStartTime);
         pitchDetectThread.start();
 
         try {
             pitchDetectThread.join();
 
-            long endTime = System.currentTimeMillis();
-            Log.i(LOG_TAG, "end time: " + endTime);
-            long whileLoopTime =  ((endTime - startTime) / dispatcher.getWhileLoopCounter());
-            Log.i(LOG_TAG, "a time in a loop: " + whileLoopTime);
+            convertEndTime = System.currentTimeMillis();
+            Log.i(LOG_TAG, "end time: " + convertEndTime);
         }
         catch (InterruptedException e) {
             Log.e(LOG_TAG, "Pitch detect thread join failed!");
@@ -69,6 +73,18 @@ public class SongConverter{
         }
 
         Log.i(LOG_TAG, "Pitch detect successfully!");
+
+        Log.e(LOG_TAG, "average convert period: " + (convertEndTime - convertStartTime) / count );
+
+        count = 0;
+
         return true;
     }
+
+/*    private String pitchToNotes(float pitch){
+        Enum
+    }*/
 }
+
+// TODO 偵測音準會出現基頻的泛音, 想辦法將泛音改成基頻，限制時間內出現泛音取鄰近基頻取代，否則就有可能是唱出的高低音
+// TODO design the map or array list to store the data of notes

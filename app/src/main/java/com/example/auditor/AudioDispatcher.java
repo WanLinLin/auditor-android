@@ -27,8 +27,9 @@ import be.tarsos.dsp.io.TarsosDSPAudioInputStream;
  */
 
 public class AudioDispatcher implements Runnable{
-    /* Added by Wan Lin */
-    private long whileLoopCounter = 0;
+    // added by Wan Lin
+    private static final int minConvertRate = 30;
+    private static final String LOG_TAG = "AudioDispatcher";
 
     /**
      * Log messages.
@@ -261,13 +262,15 @@ public class AudioDispatcher implements Runnable{
         try {
             int bytesRead = 0;
 
-            if(bytesToSkip!=0){
+            if(bytesToSkip != 0){
                 audioInputStream.skip(bytesToSkip);
                 bytesProcessed += bytesToSkip;
             }
+
+            // process first buffer
             if(zeroPad){
                 bytesRead = slideBuffer();
-            }else {
+            } else {
                 bytesRead = processFirstBuffer();
             }
 
@@ -276,7 +279,6 @@ public class AudioDispatcher implements Runnable{
             // bytes.
             audioLoop:
             while (bytesRead != -1 && !stopped) {
-
                 //Makes sure the right buffers are processed, they can be changed by audio processors.
                 audioEvent.setOverlap(floatOverlap);
                 audioEvent.setFloatBuffer(audioFloatBuffer);
@@ -294,7 +296,6 @@ public class AudioDispatcher implements Runnable{
                 // Read, convert and process consecutive overlapping buffers.
                 // Slide the buffer.
                 bytesRead = slideBuffer();
-                whileLoopCounter++;
             }
 
             // Notify all processors that no more data is available.
@@ -308,7 +309,7 @@ public class AudioDispatcher implements Runnable{
         }
     }
 
-    private void runNonSourcedDispatcher(){
+    private void runNonSourcedDispatcher() {
         audioFloatBuffer = new float[floatStepSize];
         audioEvent.setBytesProcessed(bytesProcessed);
         audioEvent.setFloatBuffer(audioFloatBuffer);
@@ -323,7 +324,7 @@ public class AudioDispatcher implements Runnable{
         }
     }
 
-    private int processFirstBuffer() throws IOException{
+    private int processFirstBuffer() throws IOException {
         //the overlap for the first buffer is zero.
         audioEvent.setOverlap(0);
         audioEvent.setFloatBuffer(audioFloatBuffer);
@@ -333,7 +334,7 @@ public class AudioDispatcher implements Runnable{
         //Always read a full byte buffer!
         int bytesRead = 0;
         int currentBytesRead = 0;
-        while(bytesRead != -1 && currentBytesRead<audioByteBuffer.length){
+        while(bytesRead != -1 && currentBytesRead < audioByteBuffer.length){
             bytesRead = audioInputStream.read(audioByteBuffer, currentBytesRead , audioByteBuffer.length - currentBytesRead);
             currentBytesRead += bytesRead;
         }
@@ -401,17 +402,18 @@ public class AudioDispatcher implements Runnable{
         assert floatOverlap < audioFloatBuffer.length;
 
         //Is array copy faster to shift an array? Probably..
-        System.arraycopy(audioFloatBuffer, floatStepSize, audioFloatBuffer,0 ,floatOverlap);
+        System.arraycopy(audioFloatBuffer, floatStepSize, audioFloatBuffer, 0 , floatOverlap);
 
-        int bytesRead=0;
+        int bytesRead = 0;
 
         //Check here if the dispatcher is stopped to prevent reading from a closed audio stream.
         if(stopped){
             bytesRead = -1;
-        }else{
+        }
+        else {
             int currentBytesRead = 0;
             //Always read a full byte buffer!
-            while(bytesRead != -1 && currentBytesRead<byteStepSize){
+            while(bytesRead != -1 && currentBytesRead < byteStepSize){
                 bytesRead = audioInputStream.read(audioByteBuffer, byteOverlap + currentBytesRead , byteStepSize - currentBytesRead);
                 currentBytesRead += bytesRead;
             }
@@ -429,12 +431,7 @@ public class AudioDispatcher implements Runnable{
      *
      * @return The currently processed number of seconds.
      */
-    public float secondsProcessed(){
-        return bytesProcessed / (format.getSampleSizeInBits() / 8) / format.getSampleRate() / format.getChannels() ;
-    }
-
-    /* Added by Wan Lin */
-    public long getWhileLoopCounter() {
-        return whileLoopCounter;
+    public float secondsProcessed() {
+        return bytesProcessed / (format.getSampleSizeInBits() / 8) / format.getSampleRate() / format.getChannels();
     }
 }
