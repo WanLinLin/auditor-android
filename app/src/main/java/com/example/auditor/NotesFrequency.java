@@ -178,11 +178,11 @@ public enum NotesFrequency {
     }
 
     /* get previous or next Object */
-    private NotesFrequency next(){
+    private NotesFrequency next() {
         return notesFrequencies[(this.ordinal() + 1) % notesFrequencies.length];
     }
 
-    private NotesFrequency previous(){
+    private NotesFrequency previous() {
         return notesFrequencies[(this.ordinal() - 1) % notesFrequencies.length];
     }
 }

@@ -19,8 +19,6 @@ import android.widget.RelativeLayout;
 import java.io.File;
 import java.io.IOException;
 
-import be.tarsos.dsp.io.TarsosDSPAudioFormat;
-
 
 public class AudioRecordActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
@@ -29,7 +27,6 @@ public class AudioRecordActivity extends ActionBarActivity {
     private final Context context = this;
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     public static final int bufferSize = 1024;
-    public static TarsosDSPAudioFormat tarsosDSPAudioFormat;
 
     class RecordButton extends Button {
         boolean mStartRecording = true;
