@@ -82,6 +82,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
                 switch (i.getStringExtra("action")) {
                     case "prepared":
                         controller.show(0);
+                        controller.onFinishInflate();
                         break;
                 }
             }

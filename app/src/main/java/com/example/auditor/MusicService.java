@@ -105,6 +105,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         notification.putExtra("action", "prepared");
         LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
 
+        Log.e(LOG_TAG, "song time: " + player.getDuration());
+
         startForeground(NOTIFY_ID, not);
     }
 
@@ -124,7 +126,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if(player.getCurrentPosition() > 0){
+        if(mp.getCurrentPosition() > 0){
+            mp.stop();
             mp.reset();
         }
     }

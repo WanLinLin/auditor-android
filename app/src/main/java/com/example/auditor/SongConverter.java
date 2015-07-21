@@ -1,7 +1,11 @@
 package com.example.auditor;
 
 import android.util.Log;
+import android.util.Pair;
 
+import java.util.ArrayList;
+
+import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.AudioProcessor;
 import be.tarsos.dsp.io.UniversalAudioInputStream;
@@ -16,7 +20,6 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 public class SongConverter{
     private static final String LOG_TAG = "SongConverter";
     // Stream is the song to be convert
-    private UniversalAudioInputStream stream;
 
     private AudioDispatcher dispatcher;
 
@@ -26,7 +29,9 @@ public class SongConverter{
 
     private int count = 0;
 
-    SongConverter(final UniversalAudioInputStream universalAudioInputStream){
+    private ArrayList<Pair<Float, Float>> pitchBuffer = new ArrayList<>();
+
+    SongConverter(UniversalAudioInputStream universalAudioInputStream){
         // set pitch detect things
         dispatcher = new AudioDispatcher(
                 universalAudioInputStream,
@@ -38,9 +43,13 @@ public class SongConverter{
             public void handlePitch(PitchDetectionResult pdr, AudioEvent ae){
                 float pitch = pdr.getPitch();
 
-                Log.i(LOG_TAG, "pitch - " + (count++) + ": " + pitch);
+                Pair<Float, Float> pitchAndTime = new Pair<>(pitch, ae.getConvertTime());
 
-                // TODO log out from pitch frequency to notes
+//                Log.i(LOG_TAG, "pitch - " + count + ": " + pitch);
+                Log.i(LOG_TAG, "note  - " + count + ": " + pitchToNotes(pitch));
+                count++;
+
+                pitchBuffer.add(pitchAndTime);
             }
         };
 
@@ -53,38 +62,35 @@ public class SongConverter{
     }
 
     public boolean convert(){
-
+        float songTotalTime = 0;
         Thread pitchDetectThread = new Thread(dispatcher, "Audio Dispatcher");
 
-        long convertStartTime = System.currentTimeMillis();
-        long convertEndTime;
-        Log.i(LOG_TAG, "start time: " + convertStartTime);
         pitchDetectThread.start();
 
         try {
             pitchDetectThread.join();
-
-            convertEndTime = System.currentTimeMillis();
-            Log.i(LOG_TAG, "end time: " + convertEndTime);
         }
         catch (InterruptedException e) {
             Log.e(LOG_TAG, "Pitch detect thread join failed!");
             return false;
         }
 
+        for (Pair p: pitchBuffer) {
+            songTotalTime += (Float)p.second;
+        }
+
+        Log.i(LOG_TAG, "song total time: " + songTotalTime);
         Log.i(LOG_TAG, "Pitch detect successfully!");
-
-        Log.e(LOG_TAG, "average convert period: " + (convertEndTime - convertStartTime) / count );
-
+        pitchBuffer.clear();
         count = 0;
-
         return true;
     }
 
-/*    private String pitchToNotes(float pitch){
-        Enum
-    }*/
+    private String pitchToNotes(float pitch){
+        return NotesFrequency.getNote(pitch);
+    }
 }
 
-// TODO 偵測音準會出現基頻的泛音, 想辦法將泛音改成基頻，限制時間內出現泛音取鄰近基頻取代，否則就有可能是唱出的高低音
+// TODO 偵測音準會出現基頻的泛音, 想辦法將泛音改成基頻：限制時間內出現泛音取鄰近基頻取代，否則就有可能是唱出的高低音
 // TODO design the map or array list to store the data of notes
+// TODO 依時間軸把沒被分開的convert sample連接成一個element，並過濾掉泛音轉換成音符，且記錄時間長度

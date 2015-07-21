@@ -190,44 +190,38 @@ public class AudioRecordActivity extends ActionBarActivity {
         // get audio_record_popup_window.xml view
         LayoutInflater li = LayoutInflater.from(context);
         View promptsView = li.inflate(R.layout.audio_record_popup_rename, null);
-
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
         // set audio_record_popup_window.xml to alert dialog builder
         alertDialogBuilder.setView(promptsView);
 
-        final EditText userInput = (EditText) promptsView
-                .findViewById(R.id.editTextDialogUserInput);
+        final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
 
         // set dialog message
-        alertDialogBuilder
-                .setCancelable(false)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(mFileName);
-                                File to = new File(auditorDir.getAbsolutePath() + "/" +
-                                                userInput.getText() + ".wav");
-                                if(from.renameTo(to))
-                                    Log.e(LOG_TAG, "Set name successfully!");
-                                else
-                                    Log.e(LOG_TAG, "Set name failed!");
+        alertDialogBuilder.setCancelable(false)
+                .setPositiveButton("Save",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            File from = new File(mFileName);
+                            File to = new File(auditorDir.getAbsolutePath() + "/" +
+                                            userInput.getText() + ".wav");
+
+                            if(from.renameTo(to)) {
+                                Log.e(LOG_TAG, "Set name successfully!");
                             }
-                        })
+                            else {
+                                Log.e(LOG_TAG, "Set name failed!");
+                            }
+                        }
+                    })
                 .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
 
-        // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
         alertDialog.show();
     }
 }
-
-// TODO turns pitch to notes
-// TODO how to get the Beats(time)
