@@ -29,6 +29,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -36,7 +37,6 @@ import java.util.Date;
 
 import be.tarsos.dsp.io.TarsosDSPAudioFormat;
 import be.tarsos.dsp.io.UniversalAudioInputStream;
-
 
 public class AudioFileActivity extends ActionBarActivity implements MediaPlayerControl{
     private static final String LOG_TAG = "AudioFileActivity";
@@ -95,12 +95,14 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
         // prepare the song list
         getSongList();
-        ListView songView = (ListView) findViewById(R.id.song_list);
+        final ListView songView = (ListView) findViewById(R.id.song_list);
         songAdt = new SongAdapter(this, songList, AudioFileActivity.this);
         songView.setAdapter(songAdt);
         songView.setTextFilterEnabled(true);
         songView.setOnScrollListener(
             new AbsListView.OnScrollListener() {
+                private int mLastFirstVisibleItem;
+
                 @Override
                 public void onScrollStateChanged(AbsListView view, int scrollState) {
                     // do nothing
@@ -108,8 +110,16 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    // do nothing
-                    controller.hide();
+
+                    if(mLastFirstVisibleItem < firstVisibleItem)
+                    {
+                        controller.hide();
+                    }
+                    else if(mLastFirstVisibleItem > firstVisibleItem)
+                    {
+                        controller.show(0);
+                    }
+                    mLastFirstVisibleItem = firstVisibleItem;
                 }
             }
         );
@@ -292,7 +302,13 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     }
 
     public void getSongList() {
-        File[] files = auditorDir.listFiles();
+        FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return filename.endsWith(".wav");
+            }
+        };
+        File[] files = auditorDir.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
             DateFormat sdf = DateFormat.getDateTimeInstance();
@@ -327,36 +343,6 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         if (playbackPaused) {
             playbackPaused = false;
         }
-    }
-
-    public boolean convertSong(final Song song) {
-        File file = new File(auditorDir + "/" + song.getTitle());
-        InputStream inputStream;
-
-        // open a file
-        try {
-            inputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "Failed to open a file!");
-            return false;
-        }
-
-        ExtAudioRecorder extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        // use exAudioRecorder to set TarsosDSP Audio format
-        TarsosDSPAudioFormat tarsosDSPAudioFormat =
-                new TarsosDSPAudioFormat(
-                        extAudioRecorder.getSampleRate(),
-                        extAudioRecorder.getBitSamples(),
-                        extAudioRecorder.getChannels(),
-                        false,  // indicates whether the data is signed or unsigned
-                        false); // indicates whether the data for a single sample
-
-        // set audio stream
-        UniversalAudioInputStream universalAudioInputStream =
-                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
-        SongConverter songConverter = new SongConverter(universalAudioInputStream);
-
-        return songConverter.convert();
     }
 
     public void renameSong(final Song song) {
@@ -449,10 +435,39 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
-}
 
-// TODO list view 小箭頭點開要有 轉檔 命名 刪除
-// TODO UI: change the alpha of LinearLayout of songView when the song is playing, or shows what song is currently playing
+    public boolean convertSong(final Song song) {
+        File file = new File(auditorDir + "/" + song.getTitle());
+        InputStream inputStream;
+
+        // open a file
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "Failed to open a file!");
+            return false;
+        }
+
+        ExtAudioRecorder extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
+        // use exAudioRecorder to set TarsosDSP Audio format
+        TarsosDSPAudioFormat tarsosDSPAudioFormat =
+                new TarsosDSPAudioFormat(
+                        extAudioRecorder.getSampleRate(),
+                        extAudioRecorder.getBitSamples(),
+                        extAudioRecorder.getChannels(),
+                        false,  // indicates whether the data is signed or unsigned
+                        false); // indicates whether the data for a single sample
+
+        // set audio stream
+        UniversalAudioInputStream universalAudioInputStream =
+                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
+        SongConverter songConverter = new SongConverter(universalAudioInputStream);
+
+        songConverter.convert();
+
+        return true;
+    }
+}
 
 // TODO http://code.tutsplus.com/tutorials/create-a-music-player-on-android-project-setup--mobile-22764,
 // http://code.tutsplus.com/tutorials/create-a-music-player-on-android-song-playback--mobile-22778,

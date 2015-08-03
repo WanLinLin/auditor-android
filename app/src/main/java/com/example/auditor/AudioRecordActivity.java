@@ -73,54 +73,6 @@ public class AudioRecordActivity extends ActionBarActivity {
         // add recordButton into the audioRecordRL
         rl.addView(recordButton, btLayoutParams);
         /* ----LAYOUT SETTING---- */
-
-//        extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-//        // use exAudioRecorder to set TarsosDSP Audio format
-//        tarsosDSPAudioFormat =
-//                new TarsosDSPAudioFormat(
-//                        extAudioRecorder.getSampleRate(),
-//                        extAudioRecorder.getBitSamples(),
-//                        extAudioRecorder.getChannels(),
-//                        false,  // indicates whether the data is signed or unsigned
-//                        false); // indicates whether the data for a single sample
-//
-//        // open a file
-//        try {
-//            inputStream = new FileInputStream(file);
-//        } catch (FileNotFoundException e) {
-//            Log.e(LOG_TAG, "Failed to open a file!");
-//        }
-//
-//        // set audio stream
-//        UniversalAudioInputStream universalAudioInputStream =
-//                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
-//
-//        // set pitch detect things
-//        AudioDispatcher dispatcher = new AudioDispatcher(
-//                universalAudioInputStream,
-//                bufferSize,
-//                bufferSize / 2);
-//        PitchDetectionHandler pdh = new PitchDetectionHandler() {
-//            @Override
-//            public void handlePitch(PitchDetectionResult result, AudioEvent e) {
-//                final float pitchInHz = result.getPitch();
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Log.e(LOG_TAG, "pitch: " + pitchInHz);
-//                    }
-//                });
-//            }
-//        };
-//        AudioProcessor pp = new PitchProcessor(
-//                PitchProcessor.PitchEstimationAlgorithm.FFT_YIN,
-//                extAudioRecorder.getSampleRate(),
-//                bufferSize, pdh);
-//        dispatcher.addAudioProcessor(pp);
-
-        // TODO This thread is going to get a specific file pitch, so don't run this line unless you have the file.
-//        new Thread(dispatcher,"Audio Dispatcher").start();
     }
 
     @Override

@@ -18,7 +18,7 @@ public class ExtAudioRecorder {
 
         if(recordingCompressed)
         {
-            Log.e("ExAudioRecorder", "Recording compressed!");
+//            Log.e("ExAudioRecorder", "Recording compressed!");
             result = new ExtAudioRecorder(	false,
                     MediaRecorder.AudioSource.MIC,
                     sampleRates[3],
@@ -27,7 +27,7 @@ public class ExtAudioRecorder {
         }
         else
         {
-            Log.e("ExAudioRecorder", "Recording uncompressed!");
+//            Log.e("ExAudioRecorder", "Recording uncompressed!");
             int i=0;
             do
             {

@@ -266,7 +266,7 @@ public class AudioDispatcher implements Runnable {
 	public void run() {
 		if(hasSource){
 			runSourcedDispatcher();
-		}else{
+		} else{
 			runNonSourcedDispatcher();
 		}
 	}
@@ -293,9 +293,9 @@ public class AudioDispatcher implements Runnable {
 			// bytes.
 		audioLoop:
 			while (bytesRead != -1 && !stopped) {
-                float convertTime = 0;
-				
-				//Makes sure the right buffers are processed, they can be changed by audio processors.
+                float convertTime;
+
+                //Makes sure the right buffers are processed, they can be changed by audio processors.
 				audioEvent.setOverlap(floatOverlap);
 				audioEvent.setFloatBuffer(audioFloatBuffer);
 				audioEvent.setBytesProcessed(bytesProcessed);

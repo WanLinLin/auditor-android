@@ -1,6 +1,8 @@
 package com.example.auditor;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +17,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 /**
- * Created by wanlin on 15/7/2.
+ * Created by Wan Lin on 15/7/2.
+ * To adapt song list view
  */
 public class SongAdapter extends BaseAdapter {
     private static final String LOG_TAG = "SongAdapter";
@@ -58,7 +61,7 @@ public class SongAdapter extends BaseAdapter {
         final Song currSong = songs.get(position);
 
         songTitle.setText(currSong.getTitle());
-        songModDate.setText(currSong.getLastModDate().toString());
+        songModDate.setText(currSong.getLastModDate());
 
         collapse.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,10 +73,7 @@ public class SongAdapter extends BaseAdapter {
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getTitle().toString()) {
                             case "Convert":
-                                if (!audioFileActivity.convertSong(currSong))
-                                    Toast.makeText(audioFileActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
-                                else
-                                    Toast.makeText(audioFileActivity, "Success!", Toast.LENGTH_SHORT).show();
+                                new ConvertSongTask().execute(currSong);
                                 break;
 
                             case "Rename":
@@ -84,7 +84,6 @@ public class SongAdapter extends BaseAdapter {
 
                                 audioFileActivity.deleteSong(currSong);
                         }
-
                         return true;
                     }
                 });
@@ -101,5 +100,30 @@ public class SongAdapter extends BaseAdapter {
     public void setSongs(ArrayList<Song> newSongs) {
         songs = newSongs;
     }
+
+    class ConvertSongTask extends AsyncTask<Song, Void, Boolean> {
+        private ProgressDialog progress;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progress = ProgressDialog.show(audioFileActivity, "Song converting...",
+                    "Please wait...", true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Song... songs) {
+            return audioFileActivity.convertSong(songs[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            progress.dismiss();
+            if (aBoolean)
+                Toast.makeText(audioFileActivity, "Success!", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(audioFileActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
-// TODO set collapse button onClickListener

@@ -126,7 +126,7 @@ public enum NotesFrequency {
 
     private String note;
     private float frequency; // int Hertz
-    private static NotesFrequency[] notesFrequencies = values();
+    private static NotesFrequency[] notesFrequencies = values(); // notes and frequencies array
 
     NotesFrequency(String note, float frequency) {
         this.note = note;
@@ -140,7 +140,7 @@ public enum NotesFrequency {
 
         // is a note
         for (NotesFrequency cur : notesFrequencies) {
-            if (cur.frequency == frequency) {
+            if (frequency == cur.frequency) {
                 return cur.note;
             }
 

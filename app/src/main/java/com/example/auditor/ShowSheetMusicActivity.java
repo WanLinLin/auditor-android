@@ -21,7 +21,7 @@ import nu.xom.Serializer;
 
 public class ShowSheetMusicActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
-    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,13 +31,13 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
         FileOutputStream file;
 
         try {
-//            file = this.openFileOutput("music.xml", MODE_PRIVATE);
             file = new FileOutputStream(new File(auditorDir + "/music.xml"));
             MusicXmlRenderer renderer = new MusicXmlRenderer();
             MusicStringParser parser = new MusicStringParser();
             parser.addParserListener(renderer);
 
-            Pattern pattern = new Pattern("C D E F G A B |");
+            Pattern pattern = new Pattern("G5q B5q G5q C6q- C6-w- C6-w- C6-q B5q A5q G5q");
+
             parser.parse(pattern);
 
             Serializer serializer = new Serializer(file, "UTF-8");
