@@ -4,7 +4,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    android:id="@+id/audioRecordRL"
+    android:id="@+id/activity_audio_record"
     tools:context="com.example.project.gp.AudioRecordActivity">
 
     <LinearLayout

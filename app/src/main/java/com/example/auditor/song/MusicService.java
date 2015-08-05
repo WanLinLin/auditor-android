@@ -1,4 +1,4 @@
-package com.example.auditor;
+package com.example.auditor.song;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -12,6 +12,9 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.example.auditor.AudioFileActivity;
+import com.example.auditor.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,7 +39,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private Intent notification;
 
     public class MusicBinder extends Binder {
-        MusicService getService() {
+        public MusicService getService() {
             return MusicService.this;
         }
     }

@@ -26,6 +26,12 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.auditor.song.ExtAudioRecorder;
+import com.example.auditor.song.MusicService;
+import com.example.auditor.song.Song;
+import com.example.auditor.song.SongAdapter;
+import com.example.auditor.convert.SongConverter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,7 +49,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     private MediaController controller;
     private MusicService musicService;
-    private ArrayList<Song> songList = new ArrayList<>();
+    private ArrayList<Song> songList;
     private SongAdapter songAdt;
     private Intent playIntent;
     private ServiceConnection musicConnection;
@@ -58,6 +64,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_file);
 
+        songList = new ArrayList<>();
         musicConnection = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {

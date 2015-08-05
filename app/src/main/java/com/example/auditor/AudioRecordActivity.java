@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
+import com.example.auditor.song.ExtAudioRecorder;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -60,7 +62,7 @@ public class AudioRecordActivity extends ActionBarActivity {
         mFileName = auditorDir.getAbsolutePath() + "/tmp.wav";
 
         /* ----LAYOUT SETTING---- */
-        RelativeLayout rl = (RelativeLayout) findViewById(R.id.audioRecordRL);
+        RelativeLayout rl = (RelativeLayout) findViewById(R.id.activity_audio_record);
         RecordButton recordButton = new RecordButton(this);
         // setting basic recordButton parameters
         RelativeLayout.LayoutParams btLayoutParams = new RelativeLayout.LayoutParams(

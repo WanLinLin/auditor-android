@@ -45,7 +45,7 @@
             android:screenOrientation="portrait"
             android:parentActivityName=".AudioRecordActivity" >
         </activity>
-        <service android:name=".MusicService" />
+        <service android:name=".song.MusicService" />
         <activity
             android:name=".ShowSheetMusicActivity"
             android:label="@string/title_activity_show_sheet_music"

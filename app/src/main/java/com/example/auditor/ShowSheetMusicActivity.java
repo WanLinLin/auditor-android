@@ -1,26 +1,24 @@
 package com.example.auditor;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RelativeLayout;
 
-import org.jfugue.MusicStringParser;
-import org.jfugue.MusicXmlRenderer;
-import org.jfugue.Pattern;
+import com.example.auditor.score.AccidentalView;
+import com.example.auditor.score.LengthView;
+import com.example.auditor.score.NoteViewGroup;
+import com.example.auditor.score.NumberNoteView;
+import com.example.auditor.score.OctaveView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-import nu.xom.Serializer;
 
 public class ShowSheetMusicActivity extends ActionBarActivity {
-    private static final String LOG_TAG = "AudioRecordActivity";
+    private static final String LOG_TAG = "ShowSheetMusicActivity";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
     @Override
@@ -28,33 +26,68 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_sheet_music);
 
-        FileOutputStream file;
+        int octave = Integer.parseInt("1");
+        String note = "A";
+        String accidental = "#";
+        String length = "-";
 
-        try {
-            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
-            MusicXmlRenderer renderer = new MusicXmlRenderer();
-            MusicStringParser parser = new MusicStringParser();
-            parser.addParserListener(renderer);
+        int noteWidth = 200;
+        int noteHeight = 200;
 
-            Pattern pattern = new Pattern("G5q B5q G5q C6q- C6-w- C6-w- C6-q B5q A5q G5q");
+        RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_sheet_music);
+        NoteViewGroup noteViewGroup = new NoteViewGroup(this);
+        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(noteWidth, noteHeight);
+        rlp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        rlp.addRule(RelativeLayout.CENTER_VERTICAL);
 
-            parser.parse(pattern);
+        noteViewGroup.setLayoutParams(rlp);
+        noteViewGroup.getRootView().setBackgroundColor(Color.parseColor("#DDDDDD"));
+        rl.addView(noteViewGroup);
 
-            Serializer serializer = new Serializer(file, "UTF-8");
-            serializer.setIndent(4);
-            serializer.write(renderer.getMusicXMLDoc());
+        // Number note view
+        NumberNoteView n = new NumberNoteView(this);
+        n.setNote(note);
+        NoteViewGroup.LayoutParams nlp = new NoteViewGroup.LayoutParams(noteWidth / 3, (int) (noteHeight * 0.5));
+        nlp.gravity = Gravity.CENTER_VERTICAL;
+        nlp.position = NoteViewGroup.LayoutParams.POSITION_MIDDLE;
+        n.setLayoutParams(nlp);
+        n.setBackgroundColor(Color.parseColor("#F5DA81"));
+        noteViewGroup.addView(n);
 
-            file.flush();
-            file.close();
-        }
-        catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "file not found");
-        }
-        catch (UnsupportedEncodingException e) {
-            Log.e(LOG_TAG, "unsupported encoding exception");
-        }
-        catch (IOException e) {
-            Log.e(LOG_TAG, "io exception");
+        // Accidental view
+        AccidentalView a = new AccidentalView(this);
+        a.setAccidental(accidental);
+        NoteViewGroup.LayoutParams alp = new NoteViewGroup.LayoutParams(noteWidth / 3, (int) (noteHeight * 0.5));
+        alp.gravity = Gravity.CENTER_VERTICAL;
+        alp.position = NoteViewGroup.LayoutParams.POSITION_LEFT;
+        a.setPadding(5, 5, 5, 5);
+        a.setLayoutParams(alp);
+        a.setBackgroundColor(Color.parseColor("#CEF6EC"));
+        noteViewGroup.addView(a);
+
+        // Accidental view
+        LengthView l = new LengthView(this);
+        l.setLength(length);
+        NoteViewGroup.LayoutParams llp = new NoteViewGroup.LayoutParams(noteWidth / 3, (int) (noteHeight * 0.5));
+        llp.gravity = Gravity.CENTER_VERTICAL;
+        llp.position = NoteViewGroup.LayoutParams.POSITION_RIGHT;
+        l.setLayoutParams(llp);
+        l.setBackgroundColor(Color.parseColor("#F5A9A9"));
+        noteViewGroup.addView(l);
+
+        // Octave view
+        if(octave != 4) {
+            OctaveView o = new OctaveView(this);
+            o.setOctave(octave);
+            NoteViewGroup.LayoutParams olp = new NoteViewGroup.LayoutParams(noteWidth / 3, (int) (noteHeight * 0.25));
+            if (octave > 4)
+                olp.gravity = Gravity.TOP;
+            else
+                olp.gravity = Gravity.BOTTOM;
+            olp.position = NoteViewGroup.LayoutParams.POSITION_MIDDLE;
+            o.setLayoutParams(olp);
+            o.setBackgroundColor(Color.parseColor("#CCCCCC"));
+            noteViewGroup.addView(o);
         }
     }
 

@@ -1,8 +1,10 @@
-package com.example.auditor;
+package com.example.auditor.convert;
 
 import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
+
+import com.example.auditor.AudioRecordActivity;
 
 import org.jfugue.MusicStringParser;
 import org.jfugue.Pattern;
@@ -29,6 +31,7 @@ import nu.xom.Serializer;
  */
 public class SongConverter{
     private static final String LOG_TAG = "SongConverter";
+    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
 
     private static final float tooShortForHumanToSing = 0.02f; // 0.03 second can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
@@ -39,13 +42,14 @@ public class SongConverter{
     private AudioDispatcher dispatcher;
 
     // Pair<String, Float> stores the String: note name, and Float: time duration of this note
-    private ArrayList<Pair<String, Float>> notationAndTimeList; // store pitch result
-    private ArrayList<Pair<String, Float>> notationAndTimeResultList;
-    private ArrayList<NoteResult> noteResults = new ArrayList<>();
+    private ArrayList<Pair<String, Float>> noteAndTimeList; // store pitch result
+    private ArrayList<Pair<String, Float>> noteAndTimeResultList;
+    private ArrayList<NoteResult> noteResults;
 
     public SongConverter(UniversalAudioInputStream universalAudioInputStream) {
-        notationAndTimeList = new ArrayList<>();
-        notationAndTimeResultList  = new ArrayList<>();
+        noteAndTimeList = new ArrayList<>();
+        noteAndTimeResultList = new ArrayList<>();
+        noteResults = new ArrayList<>();
 
         // set pitch detect things
         dispatcher = new AudioDispatcher(
@@ -61,25 +65,25 @@ public class SongConverter{
                 Log.i(LOG_TAG, "notation: " + notation + ", time: " + sampleTime);
 
                 // handle the first pitch
-                if(notationAndTimeList.isEmpty()) {
+                if(noteAndTimeList.isEmpty()) {
                     Pair<String, Float> p = new Pair<>(notation, sampleTime);
-                    notationAndTimeList.add(p);
+                    noteAndTimeList.add(p);
                     return;
                 }
 
-                Pair last = notationAndTimeList.get(notationAndTimeList.size() - 1);
+                Pair last = noteAndTimeList.get(noteAndTimeList.size() - 1);
 
                 if(notation == last.first) {
                     Pair<String, Float> p = new Pair<>(notation, sampleTime + (Float)last.second);
-                    notationAndTimeList.set(notationAndTimeList.size() -1, p);
+                    noteAndTimeList.set(noteAndTimeList.size() -1, p);
                 }
                 else if (notation == null) { // I don't know why get null
                     Pair<String, Float> p = new Pair<>("Pause", sampleTime);
-                    notationAndTimeList.add(p);
+                    noteAndTimeList.add(p);
                 }
                 else {
                     Pair<String, Float> p = new Pair<>(notation, sampleTime);
-                    notationAndTimeList.add(p);
+                    noteAndTimeList.add(p);
                 }
             }
         };
@@ -96,32 +100,32 @@ public class SongConverter{
         // convert byte file into float pitches, and store note names and time duration into
         dispatcher.run();
 
-        for(int i = 0; i < notationAndTimeList.size(); i++) {
-            Pair<String, Float> p = notationAndTimeList.get(i);
+        for(int i = 0; i < noteAndTimeList.size(); i++) {
+            Pair<String, Float> p = noteAndTimeList.get(i);
 
             // long enough
             if(p.second > tooShortForHumanToSing) {
-                if(!notationAndTimeResultList.isEmpty()) { // is not empty
-                    Pair<String, Float> last = notationAndTimeResultList.get(notationAndTimeResultList.size() -1);
+                if(!noteAndTimeResultList.isEmpty()) { // is not empty
+                    Pair<String, Float> last = noteAndTimeResultList.get(noteAndTimeResultList.size() -1);
 
                     if(p.first.equals(last.first)) { // same note, but split by a garbage, so concat
-                        notationAndTimeResultList.set(notationAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                        noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                     }
                     else { // maybe pause or a different notation and time, so add
-                        notationAndTimeResultList.add(p);
+                        noteAndTimeResultList.add(p);
                     }
                 }
                 else { // handle the first notation and time
-                    notationAndTimeResultList.add(p);
+                    noteAndTimeResultList.add(p);
                 }
             }
             else { // too short for human to sing
                 if(p.first.equals(NotesFrequency.Pause.name())) { // garbage pause
-                    if(!notationAndTimeResultList.isEmpty()) { // is not empty
-                        Pair<String, Float> last = notationAndTimeResultList.get(notationAndTimeResultList.size() -1);
+                    if(!noteAndTimeResultList.isEmpty()) { // is not empty
+                        Pair<String, Float> last = noteAndTimeResultList.get(noteAndTimeResultList.size() -1);
 
                         // add the garbage pause time to the last notation and time result
-                        notationAndTimeResultList.set(notationAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                        noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                     }
                 }
                 else {
@@ -130,35 +134,33 @@ public class SongConverter{
                     // case 1:
                     // e.g: notation: F4sAndG4f, time: 0.1044898
                     //      notation: G4,        time: 0.04643991
-                    if(!notationAndTimeResultList.isEmpty()) { // is not empty
-                        Pair<String, Float> last = notationAndTimeResultList.get(notationAndTimeResultList.size() -1);
+                    if(!noteAndTimeResultList.isEmpty()) { // is not empty
+                        Pair<String, Float> last = noteAndTimeResultList.get(noteAndTimeResultList.size() -1);
                         try {
                             if (last.first.contains(p.first.substring(0, 1)) || last.first.contains(p.first.substring(6, 7))) {
                                 // add the similar note time to the last nation and time result
-                                notationAndTimeResultList.set(notationAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                                noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                                 continue;
                             }
                         }
                         catch (IndexOutOfBoundsException e) {
                             // last notation string is shorter than 6
-                            // I decide to do nothing
                         }
                     }
 
                     // case 2:
                     // e.g: notation: D4sAndE4f, time: 0.023219954
                     //      notation: D4,        time: 0.058049887
-                    if(i + 1 < notationAndTimeList.size()) { // prevent out of index
-                        Pair<String, Float> next = notationAndTimeList.get(i + 1);
+                    if(i + 1 < noteAndTimeList.size()) { // prevent out of index
+                        Pair<String, Float> next = noteAndTimeList.get(i + 1);
                         try {
                             if (next.first.contains(p.first.substring(0, 1)) || next.first.contains(p.first.substring(6, 7))) {
                                 // check the next
-                                notationAndTimeList.set(i + 1, new Pair<>(next.second > p.second ? next.first : p.first, next.second + p.second));
+                                noteAndTimeList.set(i + 1, new Pair<>(next.second > p.second ? next.first : p.first, next.second + p.second));
                             }
                         }
                         catch (IndexOutOfBoundsException e) {
                             // last notation string is shorter than 6
-                            // I decide to do nothing
                         }
                     }
                 }
@@ -166,7 +168,7 @@ public class SongConverter{
         }
 
         // process time to note duration
-        for(Pair p: notationAndTimeResultList) {
+        for(Pair p: noteAndTimeResultList) {
             NoteResult noteResult = timeToNotes(p.first.toString(), (float) p.second);
             if(noteResult != null)
                 noteResults.add(noteResult);
@@ -235,7 +237,6 @@ public class SongConverter{
             musicString += "| ";
         }
 
-        File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
         FileOutputStream file;
         try {
             file = new FileOutputStream(new File(auditorDir + "/music.xml"));
@@ -266,8 +267,9 @@ public class SongConverter{
         Log.d(LOG_TAG, musicString);
 
         Log.i(LOG_TAG, "Pitch detect successfully!");
-        notationAndTimeList.clear();
-        notationAndTimeResultList.clear();
+
+        noteAndTimeList.clear();
+        noteAndTimeResultList.clear();
     }
 
     private String pitchToNotation(float pitch) {
@@ -296,4 +298,4 @@ public class SongConverter{
 
 // TODO float add err make it lose precision, using BigDecimal to avoid this (Maybe we can ignore this issue)
 
-// TODO list all the event will encounter when handle the pitch, and solve it one by one
+// TODO fixed jfugue for android fucking save midi problem

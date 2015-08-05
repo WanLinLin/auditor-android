@@ -1,4 +1,4 @@
-package com.example.auditor;
+package com.example.auditor.song;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;

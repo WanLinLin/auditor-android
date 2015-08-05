@@ -1,4 +1,4 @@
-package com.example.auditor;
+package com.example.auditor.song;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,6 +13,9 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.auditor.AudioFileActivity;
+import com.example.auditor.R;
 
 import java.util.ArrayList;
 

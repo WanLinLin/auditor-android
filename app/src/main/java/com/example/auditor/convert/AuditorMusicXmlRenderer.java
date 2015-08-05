@@ -1,4 +1,4 @@
-package com.example.auditor;
+package com.example.auditor.convert;
 
 import org.jfugue.ChannelPressure;
 import org.jfugue.Controller;
