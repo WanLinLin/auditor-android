@@ -15,7 +15,6 @@ public class MainActivity extends ActionBarActivity {
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
 
     public void goToAudioRecord(View view){
-        // Do something in response to button
         Intent intent = new Intent(this, AudioRecordActivity.class);
         startActivity(intent);
     }

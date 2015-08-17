@@ -8,7 +8,8 @@ import android.view.View;
 
 /**
  * Created by Wan Lin on 15/8/4.
- * Turns octave number to dot
+ * An octave or perfect octave is the interval between one musical pitch and another with half or
+ * double its frequency.
  */
 public class OctaveView extends View {
     private static final String LOG_TAG = "OctaView";
@@ -39,10 +40,10 @@ public class OctaveView extends View {
         // env init
         int dotCount = Math.abs(octave - 4);
         int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
+        float height = getHeight();
         int center_x = width / 2;
-        int heightTab = height / (dotCount+1);
-        int dotRadius = 4;
+        float heightTab = height / (dotCount+1);
+        float dotRadius = height * 0.08f;
 
         if(octave > 4) {
             heightTab = -heightTab;
@@ -53,7 +54,7 @@ public class OctaveView extends View {
         }
 
         for(int i = 0; i < dotCount; i++) {
-            int center_y = height + i * heightTab;
+            float center_y = height + i * heightTab;
             canvas.drawCircle(center_x, center_y, dotRadius, mPaint);
         }
     }

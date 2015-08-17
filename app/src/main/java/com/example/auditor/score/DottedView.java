@@ -10,11 +10,11 @@ import android.view.View;
  * Created by Wan Lin on 15/8/5.
  * Draw note length
  */
-public class LengthView extends View{
+public class DottedView extends View{
     private Paint mPaint;
-    private String length;
+    private String dot;
 
-    public LengthView(Context context) {
+    public DottedView(Context context) {
         super(context);
         init();
     }
@@ -35,17 +35,27 @@ public class LengthView extends View{
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawLine(0, getMeasuredHeight()/2, getMeasuredWidth(), getMeasuredHeight()/2, mPaint);
+        int left = getPaddingLeft();
+        int top = getPaddingTop();
+        int right = getWidth() - getPaddingRight();
+        int bottom = getHeight() - getPaddingBottom();
+        int widthWithoutPadding = right - left;
+        int heightWithoutPadding = bottom - top;
+
+        // only draw one dot because Jfugue only support one dot duration
+        if(dot.equals(".")) {
+            float dotRadius = widthWithoutPadding/8;
+            canvas.drawCircle(left + dotRadius, getHeight()/2, dotRadius, mPaint);
+        }
     }
 
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(8);
+        mPaint.setStyle(Paint.Style.FILL);
     }
 
-    public void setLength(String length) {
-        this.length = length;
+    public void setLength(String dot) {
+        this.dot = dot;
     }
 }

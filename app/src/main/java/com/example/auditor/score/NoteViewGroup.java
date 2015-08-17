@@ -22,11 +22,6 @@ public class NoteViewGroup extends ViewGroup {
     private final Rect mTmpContainerRect = new Rect();
     private final Rect mTmpChildRect = new Rect();
 
-    // child view
-    private NumberNoteView numberNoteView;
-    private OctaveView octaveView;
-    private AccidentalView accidentalView;
-
 
     public NoteViewGroup(Context context) {
         super(context);
@@ -170,29 +165,5 @@ public class NoteViewGroup extends ViewGroup {
         public LayoutParams(ViewGroup.LayoutParams source) {
             super(source);
         }
-    }
-
-    public void setNumberNoteView(NumberNoteView numberNoteView) {
-        this.numberNoteView = numberNoteView;
-    }
-
-    public NumberNoteView getNumberNoteView() {
-        return numberNoteView;
-    }
-
-    public void setOctaveView(OctaveView octaveView) {
-        this.octaveView = octaveView;
-    }
-
-    public OctaveView getOctaveView() {
-        return octaveView;
-    }
-
-    public void setAccidentalView(AccidentalView accidentalView) {
-        this.accidentalView = accidentalView;
-    }
-
-    public AccidentalView getAccidentalView() {
-        return accidentalView;
     }
 }

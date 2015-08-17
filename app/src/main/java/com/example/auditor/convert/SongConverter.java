@@ -32,6 +32,7 @@ import nu.xom.Serializer;
 public class SongConverter{
     private static final String LOG_TAG = "SongConverter";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+    private File musicDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
     private static final float tooShortForHumanToSing = 0.02f; // 0.03 second can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
