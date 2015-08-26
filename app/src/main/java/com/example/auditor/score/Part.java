@@ -9,16 +9,15 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import com.example.auditor.ShowSheetMusicActivity;
-
 import java.util.ArrayList;
 
 /**
  * Created by Wan Lin on 15/8/20.
- * Store measures.
+ * A part contains numbers of measures.
  */
-public class PartViewGroup extends RelativeLayout{
+public class Part extends RelativeLayout{
     private static final String LOG_TAG = "PartViewGroup";
+    public static final int measureStartId = 101;
     private int noteViewGroupHeight;
     private float tieStrokeWidth;
     private Context context;
@@ -28,11 +27,11 @@ public class PartViewGroup extends RelativeLayout{
     public static float barStrokeWidth;
     public static int tieViewHeight;
 
-    public PartViewGroup(Context context) {
+    public Part(Context context) {
         super(context);
     }
 
-    public PartViewGroup(Context context, int noteViewGroupHeight) {
+    public Part(Context context, int noteViewGroupHeight) {
         super(context);
         this.context = context;
         this.noteViewGroupHeight = noteViewGroupHeight;
@@ -53,9 +52,11 @@ public class PartViewGroup extends RelativeLayout{
         setMeasuredDimension(widthMeasureSpec, noteViewGroupHeight + tieViewHeight);
     }
 
-    public void addMeasure(View measure, int measureId) {
+    public void printMeasure(Measure measure, int i) {
+        int measureViewGroupId = i + measureStartId;
+
         // add first bar
-        if(measureId == ShowSheetMusicActivity.measureStartId) {
+        if(measureViewGroupId == measureStartId) {
             BarView barView = new BarView(context);
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             lp.topMargin = tieViewHeight;
@@ -68,11 +69,12 @@ public class PartViewGroup extends RelativeLayout{
         RelativeLayout.LayoutParams rlp = new LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         rlp.topMargin = tieViewHeight;
         rlp.leftMargin = (int)(3 * barStrokeWidth);
-        if(measureId > ShowSheetMusicActivity.measureStartId)
-            rlp.addRule(RIGHT_OF, measureId - 1); // previous measure id
+        if(measureViewGroupId > measureStartId)
+            rlp.addRule(RIGHT_OF, measureViewGroupId - 1); // previous measure id
         else
             rlp.addRule(ALIGN_PARENT_LEFT);
         measure.setLayoutParams(rlp);
+        measure.setId(measureViewGroupId);
         this.addView(measure);
 
         // add a new bar right of this measure
@@ -137,7 +139,7 @@ public class PartViewGroup extends RelativeLayout{
             super.onDraw(canvas);
             mPaint.setColor(Color.BLACK);
             mPaint.setStrokeWidth(barStrokeWidth);
-            canvas.drawLine(barStrokeWidth/2, 0, barStrokeWidth/2, ShowSheetMusicActivity.noteHeight, mPaint);
+            canvas.drawLine(barStrokeWidth/2, 0, barStrokeWidth/2, noteViewGroupHeight, mPaint);
         }
     }
 
