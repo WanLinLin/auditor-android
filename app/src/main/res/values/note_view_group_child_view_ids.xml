@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="number_note_view" type="id" />
+    <item name="number_view" type="id" />
     <item name="accidental_view" type="id" />
     <item name="octave_view" type="id" />
     <item name="dotted_view" type="id" />

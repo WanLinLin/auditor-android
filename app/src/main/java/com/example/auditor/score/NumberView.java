@@ -10,17 +10,18 @@ import android.view.View;
  * Created by Wan Lin on 15/8/4.
  * Draw the number note
  */
-public class NumberNoteView extends View {
+public class NumberView extends View {
     private String note;
     private Paint mPaint;
 
-    public NumberNoteView(Context context) {
+    public NumberView(Context context) {
         super(context);
         init();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         // env init
         mPaint.setTextSize(getMeasuredHeight());
         mPaint.setTextAlign(Paint.Align.CENTER);
@@ -53,20 +54,6 @@ public class NumberNoteView extends View {
                 canvas.drawText("0", x, y, mPaint);
                 break;
         }
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Try for a width based on our minimum
-        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
-        int w = resolveSizeAndState(minw, widthMeasureSpec, 1);
-
-        // Whatever the width ends up being, ask for a height that would let the pie
-        // get as big as it can
-        int minh = MeasureSpec.getSize(w) + getPaddingBottom() + getPaddingTop();
-        int h = resolveSizeAndState(MeasureSpec.getSize(w), heightMeasureSpec, 0);
-
-        setMeasuredDimension(w, h);
     }
 
     private void init() {

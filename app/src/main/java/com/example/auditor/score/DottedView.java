@@ -20,21 +20,8 @@ public class DottedView extends View{
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Try for a width based on our minimum
-        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
-        int w = resolveSizeAndState(minw, widthMeasureSpec, 1);
-
-        // Whatever the width ends up being, ask for a height that would let the pie
-        // get as big as it can
-        int minh = MeasureSpec.getSize(w) + getPaddingBottom() + getPaddingTop();
-        int h = resolveSizeAndState(MeasureSpec.getSize(w), heightMeasureSpec, 0);
-
-        setMeasuredDimension(w, h);
-    }
-
-    @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         int left = getPaddingLeft();
         int top = getPaddingTop();
         int right = getWidth() - getPaddingRight();

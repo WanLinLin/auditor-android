@@ -28,6 +28,7 @@ public class AccidentalView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         int incline = 5;
 
         int left = 0;
@@ -36,9 +37,9 @@ public class AccidentalView extends View {
         int bottom = getHeight() - getHeight() / 8;
         int ratioHeight = bottom - top;
 
-        switch(accidental) {
+        switch (accidental) {
             case "#":
-                left = getWidth()/6;
+                left = getWidth() / 6;
                 right = getWidth();
                 int ratioWidth = right - left;
 
@@ -46,12 +47,12 @@ public class AccidentalView extends View {
                 mPaint2.setStrokeWidth(getHeight() / 17); // draw vertical line
                 float[] pos = {
                         // horizontal line
-                        left, top + ratioHeight/3 + incline,   right, top + ratioHeight  /3 - incline,
-                        left, top + ratioHeight*2/3 + incline, right, top + ratioHeight*2/3 - incline,
+                        left, top + ratioHeight / 3 + incline, right, top + ratioHeight / 3 - incline,
+                        left, top + ratioHeight * 2 / 3 + incline, right, top + ratioHeight * 2 / 3 - incline,
 
                         // vertical line
-                        left + ratioWidth  /3, top + incline,  left + ratioWidth/3,   bottom,
-                        left + ratioWidth*2/3, top,            left + ratioWidth*2/3, bottom - incline,
+                        left + ratioWidth / 3, top + incline, left + ratioWidth / 3, bottom,
+                        left + ratioWidth * 2 / 3, top, left + ratioWidth * 2 / 3, bottom - incline,
                 };
                 canvas.drawLines(pos, 0, 8, mPaint);
                 canvas.drawLines(pos, 8, 8, mPaint2);
@@ -64,32 +65,16 @@ public class AccidentalView extends View {
                 bottom = bottom - ratioHeight / 10;
 
                 // draw the variable width arc
-                rect.set(left, top + ratioHeight / 1.8f, right - arcStrokeRatioWidth/2, bottom);
+                rect.set(left, top + ratioHeight / 1.8f, right - arcStrokeRatioWidth / 2, bottom);
                 mPaint.setStrokeWidth(arcStrokeRatioWidth);
                 canvas.drawArc(rect, 270, sweepAngle, false, mPaint);
 
                 // draw the vertical line
                 mPaint.setStrokeWidth(getHeight() / 15);
-                canvas.drawLine((left + right)/2, top, (left + right)/2, bottom + arcStrokeRatioWidth/2, mPaint);
+                canvas.drawLine((left + right) / 2, top, (left + right) / 2, bottom + arcStrokeRatioWidth / 2, mPaint);
                 break;
         }
     }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        // Try for a width based on our minimum
-        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
-        int w = resolveSizeAndState(minw, widthMeasureSpec, 1);
-
-        // Whatever the width ends up being, ask for a height that would let the pie
-        // get as big as it can
-        int minh = MeasureSpec.getSize(w) + getPaddingBottom() + getPaddingTop();
-        int h = resolveSizeAndState(MeasureSpec.getSize(w), heightMeasureSpec, 0);
-
-        setMeasuredDimension(w, h);
-    }
-
 
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
