@@ -6,14 +6,10 @@ import android.util.Pair;
 
 import com.example.auditor.AudioRecordActivity;
 
-import org.jfugue.MusicStringParser;
 import org.jfugue.Pattern;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -23,7 +19,6 @@ import be.tarsos.dsp.io.UniversalAudioInputStream;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
-import nu.xom.Serializer;
 
 /**
  * Created by Wan Lin on 15/7/15.
@@ -31,8 +26,8 @@ import nu.xom.Serializer;
  */
 public class SongConverter{
     private static final String LOG_TAG = "SongConverter";
-    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
-    private File musicDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
+    private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    private String musicDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music/";
 
     private static final float tooShortForHumanToSing = 0.02f; // 0.03 second can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
@@ -238,32 +233,40 @@ public class SongConverter{
             musicString += "| ";
         }
 
-        FileOutputStream file;
+        Pattern pattern = new Pattern(musicString);
         try {
-            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
-            AuditorMusicXmlRenderer renderer = new AuditorMusicXmlRenderer();
-            MusicStringParser parser = new MusicStringParser();
-            parser.addParserListener(renderer);
+            pattern.savePattern(new File(auditorDir + "pattern.txt"));
+        }
+        catch (IOException e)
+        {
+            Log.e(LOG_TAG, "IOE");
+        }
 
-            Pattern pattern = new Pattern(musicString);
-            parser.parse(pattern);
-
-            Serializer serializer = new Serializer(file, "UTF-8");
-            serializer.setIndent(4);
-            serializer.write(renderer.getMusicXMLDoc());
-
-            file.flush();
-            file.close();
-        }
-        catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "file not found");
-        }
-        catch (UnsupportedEncodingException e) {
-            Log.e(LOG_TAG, "unsupported encoding exception");
-        }
-        catch (IOException e) {
-            Log.e(LOG_TAG, "io exception");
-        }
+//        try {
+//            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
+//            AuditorMusicXmlRenderer renderer = new AuditorMusicXmlRenderer();
+//            MusicStringParser parser = new MusicStringParser();
+//            parser.addParserListener(renderer);
+//
+//            Pattern pattern = new Pattern(musicString);
+//            parser.parse(pattern);
+//
+//            Serializer serializer = new Serializer(file, "UTF-8");
+//            serializer.setIndent(4);
+//            serializer.write(renderer.getMusicXMLDoc());
+//
+//            file.flush();
+//            file.close();
+//        }
+//        catch (FileNotFoundException e) {
+//            Log.e(LOG_TAG, "file not found");
+//        }
+//        catch (UnsupportedEncodingException e) {
+//            Log.e(LOG_TAG, "unsupported encoding exception");
+//        }
+//        catch (IOException e) {
+//            Log.e(LOG_TAG, "io exception");
+//        }
 
         Log.d(LOG_TAG, musicString);
 

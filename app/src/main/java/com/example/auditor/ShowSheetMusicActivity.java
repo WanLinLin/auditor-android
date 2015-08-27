@@ -3,17 +3,21 @@ package com.example.auditor;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.score.NumberedMusicalNotationParser;
 
+import org.jfugue.Pattern;
+
 import java.io.File;
+import java.io.IOException;
 
 public class ShowSheetMusicActivity extends ActionBarActivity {
     private static final String LOG_TAG = "ShowSheetMusicActivity";
-    private File musicDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
+    private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private final boolean SHOW_PARENT_VIEW_GROUP_COLOR = false;
 
     // width:height = 2:3
@@ -27,15 +31,28 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
 
         // root view
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_sheet_music);
+//        HorizontalScrollView hScrollView = new HorizontalScrollView(this);
+//        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+//        hScrollView.setLayoutParams(lp);
+//        rl.addView(hScrollView);
 
         // TODO add custom vertical and horizontal scroll view
         // TODO http://stackoverflow.com/questions/2044775/scrollview-vertical-and-horizontal-in-android
 
-        NumberedMusicalNotationParser numberedMusicalNotationParser =
-                new NumberedMusicalNotationParser(this, noteHeight, "B4t");
+        Pattern pattern;
 
-        numberedMusicalNotationParser.parse();
-        rl.addView(numberedMusicalNotationParser.getScore());
+        try {
+            pattern = Pattern.loadPattern(new File(auditorDir + "pattern.txt"));
+
+            NumberedMusicalNotationParser numberedMusicalNotationParser =
+                    new NumberedMusicalNotationParser(this, noteHeight, pattern.getMusicString());
+
+            numberedMusicalNotationParser.parse();
+            rl.addView(numberedMusicalNotationParser.getScore());
+        }
+        catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
     }
 
     @Override

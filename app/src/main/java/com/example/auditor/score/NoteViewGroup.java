@@ -110,9 +110,10 @@ public class NoteViewGroup extends RelativeLayout {
         this.addView(b);
     }
 
-    public void printOctaveView(int octave, boolean hasBeamView, boolean hasAccidentalView) {
+    public void printOctaveView(String oct, boolean hasBeamView, boolean hasAccidentalView) {
         // Octave view
         OctaveView o = new OctaveView(context, noteViewGroupHeight);
+        int octave = Integer.parseInt(oct);
         o.setOctave(octave);
         o.setId(R.id.octave_view);
         RelativeLayout.LayoutParams olp;

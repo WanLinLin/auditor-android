@@ -28,15 +28,14 @@ public class Measure extends RelativeLayout {
 
     public void printNote(String note, String accidental, String dot, String octave, String duration, int i) {
         int noteViewGroupId = i + noteStartId;
-        int o = Integer.parseInt(octave);
         float adaptWidth = noteViewGroupWidth;
         RelativeLayout.LayoutParams rlp;
         NoteViewGroup noteViewGroup;
 
         /* adjust note view group width */
-        if (accidental.equals(""))
+        if (accidental.isEmpty())
             adaptWidth -= noteViewGroupWidth * 0.25f;
-        if (dot.equals(""))
+        if (dot.isEmpty())
             adaptWidth -= noteViewGroupWidth * 0.25f;
 
         rlp = new RelativeLayout.LayoutParams((int) adaptWidth, noteViewGroupHeight);
@@ -55,14 +54,14 @@ public class Measure extends RelativeLayout {
         noteViewGroup.setId(noteViewGroupId);
 
         // add number view
-        noteViewGroup.printNumberView(note, !accidental.equals(""));
+        noteViewGroup.printNumberView(note, !accidental.isEmpty());
 
         // has accidental
-        if(!accidental.equals(""))
+        if(!accidental.isEmpty())
             noteViewGroup.printAccidentalView(accidental);
 
         // has dot
-        if(!dot.equals(""))
+        if(!dot.isEmpty())
             noteViewGroup.printDottedView(dot);
 
         // has duration shorter than quarter note
@@ -70,8 +69,8 @@ public class Measure extends RelativeLayout {
             noteViewGroup.printBeamView(duration);
 
         // octave is 0 ~ 3, 5 ~ 8
-        if(o >= 0 && o <= 8 && o != 4)
-            noteViewGroup.printOctaveView(o, !duration.equals(""), !accidental.equals(""));
+        if(!octave.isEmpty())
+            noteViewGroup.printOctaveView(octave, !duration.isEmpty(), !accidental.isEmpty());
 
         this.addView(noteViewGroup);
     }
