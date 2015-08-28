@@ -58,7 +58,6 @@ public class SongConverter{
             public void handlePitch(PitchDetectionResult pdr, AudioEvent ae){
                 String notation = pitchToNotation(pdr.getPitch());
                 Float sampleTime = ae.getConvertTime();
-                Log.i(LOG_TAG, "notation: " + notation + ", time: " + sampleTime);
 
                 // handle the first pitch
                 if(noteAndTimeList.isEmpty()) {
@@ -182,19 +181,25 @@ public class SongConverter{
 
         for(NoteResult n: noteResults) {
             ArrayList<Pair<String, Integer>> noteTimArr = n.getNoteTimeArr();
-            String jfugueNotation = n.getNoteName().substring(0, 2);
+            String jfugueNotation = n.getNoteName();
 
-            for(int i = 0; i < noteTimArr.size(); i++) {
-                if(jfugueNotation.equals("Pa")) { // "Pa"use -> "R"est
+            if(n.getNoteName().length() > 2) {
+                jfugueNotation = n.getNoteName().substring(0, 3);
+
+                if(jfugueNotation.equals("Pau")) { // "Pau"use -> "R"est
                     jfugueNotation = "R";
                 }
-                else if(jfugueNotation.length() == 3) { // sharp or flat
-                    if(jfugueNotation.endsWith("s"))
+                else { // sharp or flat
+                    if(jfugueNotation.endsWith("s")) {
                         jfugueNotation = jfugueNotation.substring(0, 1) + "#" + jfugueNotation.substring(1, 2);
-                    else if(jfugueNotation.endsWith("f"))
+                    }
+                    else if(jfugueNotation.endsWith("f")) {
                         jfugueNotation = jfugueNotation.substring(0, 1) + "b" + jfugueNotation.substring(1, 2);
+                    }
                 }
+            }
 
+            for(int i = 0; i < noteTimArr.size(); i++) {
                 musicString += jfugueNotation;
                 Pair p = noteTimArr.get(i);
 

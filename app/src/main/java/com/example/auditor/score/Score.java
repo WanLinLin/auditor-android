@@ -1,7 +1,6 @@
 package com.example.auditor.score;
 
 import android.content.Context;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 /**
@@ -14,14 +13,10 @@ public class Score extends RelativeLayout {
     public Score(Context context) {
         super(context);
 
-//        RelativeLayout.LayoutParams slp =
-//                new RelativeLayout.LayoutParams(
-//                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-//                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-        FrameLayout.LayoutParams slp =
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams slp =
+                new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         this.setLayoutParams(slp);
     }

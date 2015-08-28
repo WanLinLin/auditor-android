@@ -70,7 +70,7 @@ public class OctaveView extends View {
         dotCount = Math.abs(octave - 4);
     }
 
-    public int geth() {
+    public int getH() {
         return Math.round(2 * dotRadius + (dotCount - 1) * space + padding);
     }
 }

@@ -64,7 +64,6 @@ public class NumberedMusicalNotationParser {
                 default:
                     // add a new note view group
                     parseNoteContext(t);
-                    noteContext.printNoteContext();
                     addNote(measure.getId(), part.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                     noteContext = null;
@@ -122,7 +121,9 @@ public class NumberedMusicalNotationParser {
                 case 'w':
                 case 'h':
                 case 'q':
-                // will have beam view
+                    if(noteContext.tieEnd == null)
+                        noteContext.tieEnd = false;
+                    break;
                 case 'i':
                 case 's':
                 case 't':

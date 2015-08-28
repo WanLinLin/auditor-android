@@ -29,7 +29,7 @@ public class AccidentalView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int incline = 5;
+        int incline = getHeight() / 15;
 
         int left = 0;
         int top = getHeight() / 8;

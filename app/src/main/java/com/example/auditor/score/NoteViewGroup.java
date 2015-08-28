@@ -120,7 +120,7 @@ public class NoteViewGroup extends RelativeLayout {
         olp = new RelativeLayout.LayoutParams((int)(noteViewGroupWidth * 0.5), RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         if(octave > 4) {
-            olp.topMargin = (int)(noteViewGroupHeight * 0.225f - o.geth());
+            olp.topMargin = (int)(noteViewGroupHeight * 0.225f - o.getH());
             olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }
         else if(octave < 4 && hasBeamView) {

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -52,7 +51,6 @@ public class NumberView extends View {
                 canvas.drawText("7", x, y, mPaint);
                 break;
             case "R":
-                Log.e(getClass().getName(), "Rest");
                 canvas.drawText("0", x, y, mPaint);
                 break;
         }

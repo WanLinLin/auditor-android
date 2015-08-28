@@ -21,7 +21,7 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
     private final boolean SHOW_PARENT_VIEW_GROUP_COLOR = false;
 
     // width:height = 2:3
-    public int noteHeight = 200;
+    public int noteHeight = 75;
 //    public int noteWidth = noteHeight / 3 * 2;
 
     @Override
@@ -31,10 +31,6 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
 
         // root view
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_sheet_music);
-//        HorizontalScrollView hScrollView = new HorizontalScrollView(this);
-//        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-//        hScrollView.setLayoutParams(lp);
-//        rl.addView(hScrollView);
 
         // TODO add custom vertical and horizontal scroll view
         // TODO http://stackoverflow.com/questions/2044775/scrollview-vertical-and-horizontal-in-android
