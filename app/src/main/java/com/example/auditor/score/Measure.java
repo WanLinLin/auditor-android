@@ -22,24 +22,27 @@ public class Measure extends RelativeLayout {
     public Measure(Context context, int noteViewGroupWidth, int noteViewGroupHeight) {
         super(context);
         this.context = context;
-        this.noteViewGroupWidth = noteViewGroupWidth;
+        this.noteViewGroupWidth = Math.round(noteViewGroupWidth);
         this.noteViewGroupHeight = noteViewGroupHeight;
     }
 
     public void printNote(String note, String accidental, String dot, String octave, String duration, int i) {
         int noteViewGroupId = i + noteStartId;
-        float adaptWidth = noteViewGroupWidth;
+        curNoteViewGroupWidth = noteViewGroupWidth;
         RelativeLayout.LayoutParams rlp;
         NoteViewGroup noteViewGroup;
 
         /* adjust note view group width */
         if (accidental.isEmpty())
-            adaptWidth -= noteViewGroupWidth * 0.25f;
+            curNoteViewGroupWidth -= noteViewGroupWidth * 0.25f;
         if (dot.isEmpty())
-            adaptWidth -= noteViewGroupWidth * 0.25f;
+            curNoteViewGroupWidth -= noteViewGroupWidth * 0.25f;
 
-        rlp = new RelativeLayout.LayoutParams((int) adaptWidth, noteViewGroupHeight);
-        curNoteViewGroupWidth = Math.round(adaptWidth);
+        /* mysterious bug: if curNoteViewGroupWidth is odd number, tie view would crash */
+        if(curNoteViewGroupWidth % 2 != 0)
+            curNoteViewGroupWidth += 1;
+
+        rlp = new RelativeLayout.LayoutParams(curNoteViewGroupWidth, noteViewGroupHeight);
 
         if (noteViewGroupId == noteStartId) { // is the first note, make it align left
             rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
@@ -75,7 +78,7 @@ public class Measure extends RelativeLayout {
         this.addView(noteViewGroup);
     }
 
-    public int getCurNoteViewGroupWidth() {
+    public float getCurNoteViewGroupWidth() {
         return curNoteViewGroupWidth;
     }
 }

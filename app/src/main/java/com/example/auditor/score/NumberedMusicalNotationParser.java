@@ -45,6 +45,8 @@ public class NumberedMusicalNotationParser {
         Measure measure = new Measure(context, noteViewGroupWidth, noteViewGroupHeight);
         part.printMeasure(measure, measureIndex);
         curX += Part.barStrokeWidth * 3;
+        Log.e(getClass().getName(), "barStrokeWidth: " + Part.barStrokeWidth * 3);
+
         measureIndex++;
 
         for(String t : tokens) {
@@ -148,6 +150,7 @@ public class NumberedMusicalNotationParser {
 
         /* calculate current x position */
         curX += measure.getCurNoteViewGroupWidth() / 2;
+        Log.e(getClass().getName(), "half width: " + measure.getCurNoteViewGroupWidth() / 2);
         if(noteContext.tieEnd)
             part.addTieInfo(new Pair<>(curX, "end"));
         if(noteContext.tieStart)

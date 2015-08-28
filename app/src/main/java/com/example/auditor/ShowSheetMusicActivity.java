@@ -18,10 +18,9 @@ import java.io.IOException;
 public class ShowSheetMusicActivity extends ActionBarActivity {
     private static final String LOG_TAG = "ShowSheetMusicActivity";
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
-    private final boolean SHOW_PARENT_VIEW_GROUP_COLOR = false;
 
     // width:height = 2:3
-    public int noteHeight = 75;
+    public int noteHeight = 130;
 //    public int noteWidth = noteHeight / 3 * 2;
 
     @Override

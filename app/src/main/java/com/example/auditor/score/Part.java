@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * A part contains numbers of measures.
  */
 public class Part extends RelativeLayout{
-    private static final String LOG_TAG = "PartViewGroup";
+    private static final boolean SHOW_TIE_VIEW_COLOR = false;
     public static final int measureStartId = 101;
     private int noteViewGroupHeight;
     private float tieStrokeWidth;
@@ -24,7 +24,7 @@ public class Part extends RelativeLayout{
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
 
-    public static float barStrokeWidth;
+    public static int barStrokeWidth;
     public static int tieViewHeight;
 
     public Part(Context context) {
@@ -39,7 +39,7 @@ public class Part extends RelativeLayout{
 
         tieViewHeight = (int)(noteViewGroupHeight * 0.225f);
         tieStrokeWidth = (int)(noteViewGroupHeight * 0.022f);
-        barStrokeWidth = noteViewGroupHeight * 0.03f;
+        barStrokeWidth = Math.round(noteViewGroupHeight * 0.03f);
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
@@ -68,7 +68,7 @@ public class Part extends RelativeLayout{
         // add this measure
         RelativeLayout.LayoutParams rlp = new LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         rlp.topMargin = tieViewHeight;
-        rlp.leftMargin = (int)(3 * barStrokeWidth);
+        rlp.leftMargin = Math.round(3 * barStrokeWidth);
         if(measureViewGroupId > measureStartId)
             rlp.addRule(RIGHT_OF, measureViewGroupId - 1); // previous measure id
         else
@@ -108,6 +108,8 @@ public class Part extends RelativeLayout{
 
                 RectF rectF = new RectF(0 + tieStrokeWidth / 2, tieViewHeight / 2, rectWidth + tieStrokeWidth / 2, tieViewHeight * 3 / 2);
                 TieView tieView = new TieView(context, rectF);
+                if(SHOW_TIE_VIEW_COLOR)
+                    tieView.setBackgroundColor(Color.RED);
 
                 RelativeLayout.LayoutParams rlp =
                         new RelativeLayout.LayoutParams(
