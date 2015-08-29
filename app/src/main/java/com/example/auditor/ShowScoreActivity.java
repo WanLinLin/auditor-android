@@ -1,5 +1,6 @@
 package com.example.auditor;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -15,50 +16,48 @@ import org.jfugue.Pattern;
 import java.io.File;
 import java.io.IOException;
 
-public class ShowSheetMusicActivity extends ActionBarActivity {
-    private static final String LOG_TAG = "ShowSheetMusicActivity";
+public class ShowScoreActivity extends ActionBarActivity {
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    private String scoreName;
 
     // width:height = 2:3
     public int noteHeight = 130;
 //    public int noteWidth = noteHeight / 3 * 2;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_show_sheet_music);
-
-        // root view
-        RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_sheet_music);
+        setContentView(R.layout.activity_show_score);
 
         // TODO add custom vertical and horizontal scroll view
         // TODO http://stackoverflow.com/questions/2044775/scrollview-vertical-and-horizontal-in-android
 
+        // root view
+        RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_score);
         Pattern pattern;
 
+        Intent intent = getIntent();
+        scoreName  = intent.getStringExtra("score name");
+
         try {
-            pattern = Pattern.loadPattern(new File(auditorDir + "pattern.txt"));
+            pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
 
             NumberedMusicalNotationParser numberedMusicalNotationParser =
                     new NumberedMusicalNotationParser(this, noteHeight, pattern.getMusicString());
 
             numberedMusicalNotationParser.parse();
-            rl.addView(numberedMusicalNotationParser.getScore());
+            rl.addView(numberedMusicalNotationParser.getScoreViewGroup());
         }
         catch (IOException e) {
-            Log.e(LOG_TAG, e.getMessage());
+            Log.e(getClass().getName(), e.getMessage());
         }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_show_sheet_music, menu);
+        getMenuInflater().inflate(R.menu.menu_musc_score, menu);
         return true;
     }
 
@@ -75,10 +74,5 @@ public class ShowSheetMusicActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
     }
 }

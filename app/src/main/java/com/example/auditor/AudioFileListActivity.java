@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.MediaController;
@@ -26,25 +27,18 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.auditor.song.ExtAudioRecorder;
+import com.example.auditor.convert.SongConverter;
 import com.example.auditor.song.MusicService;
 import com.example.auditor.song.Song;
 import com.example.auditor.song.SongAdapter;
-import com.example.auditor.convert.SongConverter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import be.tarsos.dsp.io.TarsosDSPAudioFormat;
-import be.tarsos.dsp.io.UniversalAudioInputStream;
-
-public class AudioFileActivity extends ActionBarActivity implements MediaPlayerControl{
+public class AudioFileListActivity extends ActionBarActivity implements MediaPlayerControl{
     private static final String LOG_TAG = "AudioFileActivity";
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     private MediaController controller;
@@ -102,34 +96,38 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
 
         // prepare the song list
         getSongList();
-        final ListView songView = (ListView) findViewById(R.id.song_list);
-        songAdt = new SongAdapter(this, songList, AudioFileActivity.this);
-        songView.setAdapter(songAdt);
-        songView.setTextFilterEnabled(true);
-        songView.setOnScrollListener(
-            new AbsListView.OnScrollListener() {
-                private int mLastFirstVisibleItem;
 
-                @Override
-                public void onScrollStateChanged(AbsListView view, int scrollState) {
-                    // do nothing
-                }
+        final ListView songListView = (ListView) findViewById(R.id.song_list);
+        songAdt = new SongAdapter(this, songList);
+        songListView.setAdapter(songAdt);
+        songListView.setTextFilterEnabled(true);
+        songListView.setOnScrollListener(
+                new AbsListView.OnScrollListener() {
+                    private int mLastFirstVisibleItem;
 
-                @Override
-                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-                    if(mLastFirstVisibleItem < firstVisibleItem)
-                    {
-                        controller.hide();
+                    @Override
+                    public void onScrollStateChanged(AbsListView view, int scrollState) {
+                        // do nothing
                     }
-                    else if(mLastFirstVisibleItem > firstVisibleItem)
-                    {
-                        controller.show(0);
+
+                    @Override
+                    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                        if (mLastFirstVisibleItem < firstVisibleItem) {
+                            controller.hide();
+                        } else if (mLastFirstVisibleItem > firstVisibleItem) {
+                            controller.show(0);
+                        }
+                        mLastFirstVisibleItem = firstVisibleItem;
                     }
-                    mLastFirstVisibleItem = firstVisibleItem;
                 }
-            }
         );
+        songListView.setOnItemClickListener(new ListView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                songPicked(view);
+            }
+        });
     }
 
     @Override
@@ -323,7 +321,7 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
             File file = files[i];
             Date lastModDate = new Date(file.lastModified());
             String lmd = sdf.format(lastModDate);
-            String songTitle = file.getName();
+            String songTitle = file.getName().substring(0, file.getName().length() - 4);
             Song song = new Song(i, songTitle, lmd);
             songList.add(song);
         }
@@ -414,13 +412,13 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
                                 File fileToDelete = new File(auditorDir + "/" + song.getTitle());
                                 if (fileToDelete.delete())
                                     Toast.makeText(
-                                            AudioFileActivity.this,
+                                            AudioFileListActivity.this,
                                             "Delete successfully!",
                                             Toast.LENGTH_SHORT
                                     ).show();
                                 else
                                     Toast.makeText(
-                                            AudioFileActivity.this,
+                                            AudioFileListActivity.this,
                                             "Delete failed!",
                                             Toast.LENGTH_SHORT
                                     ).show();
@@ -444,34 +442,12 @@ public class AudioFileActivity extends ActionBarActivity implements MediaPlayerC
     }
 
     public boolean convertSong(final Song song) {
-        File file = new File(auditorDir + "/" + song.getTitle());
-        InputStream inputStream;
+        SongConverter songConverter = new SongConverter(song.getTitle());
 
-        // open a file
-        try {
-            inputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "Failed to open a file!");
+        if(!songConverter.setUp())
             return false;
-        }
-
-        ExtAudioRecorder extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        // use exAudioRecorder to set TarsosDSP Audio format
-        TarsosDSPAudioFormat tarsosDSPAudioFormat =
-                new TarsosDSPAudioFormat(
-                        extAudioRecorder.getSampleRate(),
-                        extAudioRecorder.getBitSamples(),
-                        extAudioRecorder.getChannels(),
-                        false,  // indicates whether the data is signed or unsigned
-                        false); // indicates whether the data for a single sample
-
-        // set audio stream
-        UniversalAudioInputStream universalAudioInputStream =
-                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
-        SongConverter songConverter = new SongConverter(universalAudioInputStream);
 
         songConverter.convert();
-
         return true;
     }
 }

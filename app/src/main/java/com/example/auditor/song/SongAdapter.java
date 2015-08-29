@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.auditor.AudioFileActivity;
+import com.example.auditor.AudioFileListActivity;
 import com.example.auditor.R;
 
 import java.util.ArrayList;
@@ -24,15 +24,14 @@ import java.util.ArrayList;
  * To adapt song list view
  */
 public class SongAdapter extends BaseAdapter {
-    private static final String LOG_TAG = "SongAdapter";
     private ArrayList<Song> songs;
     private LayoutInflater songInflater;
-    private AudioFileActivity audioFileActivity;
+    private AudioFileListActivity audioFileListActivity;
 
-    public SongAdapter(Context c, ArrayList<Song> theSongs, AudioFileActivity a){
+    public SongAdapter(Context c, ArrayList<Song> theSongs){
         songs = theSongs;
         songInflater = LayoutInflater.from(c);
-        audioFileActivity = a;
+        this.audioFileListActivity = (AudioFileListActivity)c;
     }
 
     @Override
@@ -55,10 +54,10 @@ public class SongAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // map to song layout
-        RelativeLayout songLayout = (RelativeLayout)songInflater.inflate(R.layout.song, parent, false);
+        RelativeLayout songLayout = (RelativeLayout)songInflater.inflate(R.layout.file_item_view, parent, false);
 
-        TextView songTitle = (TextView)songLayout.findViewById(R.id.song_title);
-        TextView songModDate = (TextView)songLayout.findViewById(R.id.song_mod_date);
+        TextView songTitle = (TextView)songLayout.findViewById(R.id.file_title);
+        TextView songModDate = (TextView)songLayout.findViewById(R.id.file_mod_date);
         final ImageButton collapse = (ImageButton)songLayout.findViewById(R.id.collapse);
 
         final Song currSong = songs.get(position);
@@ -69,7 +68,7 @@ public class SongAdapter extends BaseAdapter {
         collapse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(audioFileActivity, collapse);
+                PopupMenu popupMenu = new PopupMenu(audioFileListActivity, collapse);
                 popupMenu.getMenuInflater().inflate(R.menu.audio_file_popup_menu, popupMenu.getMenu());
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -80,12 +79,12 @@ public class SongAdapter extends BaseAdapter {
                                 break;
 
                             case "Rename":
-                                audioFileActivity.renameSong(currSong);
+                                audioFileListActivity.renameSong(currSong);
                                 break;
 
                             case "Delete":
-
-                                audioFileActivity.deleteSong(currSong);
+                                audioFileListActivity.deleteSong(currSong);
+                                break;
                         }
                         return true;
                     }
@@ -110,13 +109,13 @@ public class SongAdapter extends BaseAdapter {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progress = ProgressDialog.show(audioFileActivity, "Song converting...",
+            progress = ProgressDialog.show(audioFileListActivity, "Song converting...",
                     "Please wait...", true);
         }
 
         @Override
         protected Boolean doInBackground(Song... songs) {
-            return audioFileActivity.convertSong(songs[0]);
+            return audioFileListActivity.convertSong(songs[0]);
         }
 
         @Override
@@ -124,9 +123,9 @@ public class SongAdapter extends BaseAdapter {
             super.onPostExecute(aBoolean);
             progress.dismiss();
             if (aBoolean)
-                Toast.makeText(audioFileActivity, "Success!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(audioFileListActivity, "Success!", Toast.LENGTH_SHORT).show();
             else
-                Toast.makeText(audioFileActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(audioFileListActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
         }
     }
 }

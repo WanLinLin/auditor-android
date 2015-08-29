@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * Created by Wan Lin on 15/8/20.
  * A part contains numbers of measures.
  */
-public class Part extends RelativeLayout{
+public class PartViewGroup extends RelativeLayout{
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
     public static final int measureStartId = 101;
     private int noteViewGroupHeight;
@@ -27,11 +27,11 @@ public class Part extends RelativeLayout{
     public static int barStrokeWidth;
     public static int tieViewHeight;
 
-    public Part(Context context) {
+    public PartViewGroup(Context context) {
         super(context);
     }
 
-    public Part(Context context, int noteViewGroupHeight) {
+    public PartViewGroup(Context context, int noteViewGroupHeight) {
         super(context);
         this.context = context;
         this.noteViewGroupHeight = noteViewGroupHeight;
@@ -52,7 +52,7 @@ public class Part extends RelativeLayout{
         setMeasuredDimension(widthMeasureSpec, noteViewGroupHeight + tieViewHeight);
     }
 
-    public void printMeasure(Measure measure, int i) {
+    public void printMeasure(MeasureViewGroup measureViewGroup, int i) {
         int measureViewGroupId = i + measureStartId;
 
         // add first bar
@@ -73,14 +73,14 @@ public class Part extends RelativeLayout{
             rlp.addRule(RIGHT_OF, measureViewGroupId - 1); // previous measure id
         else
             rlp.addRule(ALIGN_PARENT_LEFT);
-        measure.setLayoutParams(rlp);
-        measure.setId(measureViewGroupId);
-        this.addView(measure);
+        measureViewGroup.setLayoutParams(rlp);
+        measureViewGroup.setId(measureViewGroupId);
+        this.addView(measureViewGroup);
 
         // add a new bar right of this measure
         BarView barView = new BarView(context);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        lp.addRule(RIGHT_OF, measure.getId());
+        lp.addRule(RIGHT_OF, measureViewGroup.getId());
         lp.topMargin = tieViewHeight;
         lp.leftMargin = barStrokeWidth;
         lp.rightMargin = barStrokeWidth;

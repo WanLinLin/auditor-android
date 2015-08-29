@@ -1,9 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:onClick="songPicked"
     android:padding="10dp"
-    android:id="@+id/song_list_view_item" >
+    android:descendantFocusability="blocksDescendants"
+    android:id="@+id/file_item_view" >
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true" >
 
         <TextView
-            android:id="@+id/song_title"
+            android:id="@+id/file_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textColor="#000000"
@@ -22,7 +22,7 @@
             android:textSize="20sp" />
 
         <TextView
-            android:id="@+id/song_mod_date"
+            android:id="@+id/file_mod_date"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textColor="#555555"

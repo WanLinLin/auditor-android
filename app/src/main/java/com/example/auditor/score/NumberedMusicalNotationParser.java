@@ -16,7 +16,7 @@ public class NumberedMusicalNotationParser {
     private int noteViewGroupHeight;
     private int noteViewGroupWidth;
     private int curX; // relative to measure view, refresh every part
-    private Score score;
+    private ScoreViewGroup scoreViewGroup;
     private NoteContext noteContext;
 
     public NumberedMusicalNotationParser(Context context, int noteViewGroupHeight, String musicString) {
@@ -26,7 +26,7 @@ public class NumberedMusicalNotationParser {
         this.noteViewGroupWidth = noteViewGroupHeight / 3 * 2;
         noteContext = new NoteContext();
         curX = 0;
-        score = new Score(context);
+        scoreViewGroup = new ScoreViewGroup(context);
     }
 
     public void parse() {
@@ -38,13 +38,13 @@ public class NumberedMusicalNotationParser {
         String[] tokens = pattern.getTokens();
 
         // add first part
-        Part part = new Part(context, noteViewGroupHeight);
-        score.printPart(part, partIndex);
+        PartViewGroup partViewGroup = new PartViewGroup(context, noteViewGroupHeight);
+        scoreViewGroup.printPart(partViewGroup, partIndex);
 
         // add first measure
-        Measure measure = new Measure(context, noteViewGroupWidth, noteViewGroupHeight);
-        part.printMeasure(measure, measureIndex);
-        curX += Part.barStrokeWidth * 3;
+        MeasureViewGroup measureViewGroup = new MeasureViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);
+        partViewGroup.printMeasure(measureViewGroup, measureIndex);
+        curX += PartViewGroup.barStrokeWidth * 3;
 
         measureIndex++;
 
@@ -61,9 +61,9 @@ public class NumberedMusicalNotationParser {
 
                 case "|":
                     // add a new measure
-                    measure = new Measure(context, noteViewGroupWidth, noteViewGroupHeight);
-                    part.printMeasure(measure, measureIndex);
-                    curX += Part.barStrokeWidth * 3;
+                    measureViewGroup = new MeasureViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);
+                    partViewGroup.printMeasure(measureViewGroup, measureIndex);
+                    curX += PartViewGroup.barStrokeWidth * 3;
                     measureIndex++;
                     noteViewGroupIndex = 0;
                     break;
@@ -71,7 +71,7 @@ public class NumberedMusicalNotationParser {
                 default:
                     // add a new note view group
                     parseNoteContext(token);
-                    addNote(measure.getId(), part.getId(), noteViewGroupIndex);
+                    addNote(measureViewGroup.getId(), partViewGroup.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                     break;
             }
@@ -88,7 +88,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.note = durationNote;
                 noteContext.tieEnd = false;
                 for(int i = 0; i < 3; i++) {
-                    addNote(measure.getId(), part.getId(), noteViewGroupIndex);
+                    addNote(measureViewGroup.getId(), partViewGroup.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                 }
             }
@@ -97,12 +97,12 @@ public class NumberedMusicalNotationParser {
                 noteContext = new NoteContext();
                 noteContext.note = durationNote;
                 noteContext.tieEnd = false;
-                addNote(measure.getId(), part.getId(), noteViewGroupIndex);
+                addNote(measureViewGroup.getId(), partViewGroup.getId(), noteViewGroupIndex);
                 noteViewGroupIndex++;
             }
         }
 
-        part.addTieView();
+        partViewGroup.addTieView();
     }
 
     private void parseNoteContext(String t) {
@@ -174,21 +174,21 @@ public class NumberedMusicalNotationParser {
     }
 
     private void addNote(int measureId, int partId, int noteViewGroupIndex) {
-        Part part = (Part)score.findViewById(partId);
-        Measure measure = (Measure)score.findViewById(measureId);
-        measure.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteViewGroupIndex);
+        PartViewGroup partViewGroup = (PartViewGroup) scoreViewGroup.findViewById(partId);
+        MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
+        measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteViewGroupIndex);
 
         /* calculate current x position */
-        curX += measure.getCurNoteViewGroupWidth() / 2;
+        curX += measureViewGroup.getCurNoteViewGroupWidth() / 2;
         if(noteContext.tieEnd)
-            part.addTieInfo(new Pair<>(curX, "end"));
+            partViewGroup.addTieInfo(new Pair<>(curX, "end"));
         if(noteContext.tieStart)
-            part.addTieInfo(new Pair<>(curX, "start"));
-        curX += measure.getCurNoteViewGroupWidth() / 2;
+            partViewGroup.addTieInfo(new Pair<>(curX, "start"));
+        curX += measureViewGroup.getCurNoteViewGroupWidth() / 2;
     }
 
-    public Score getScore() {
-        return score;
+    public ScoreViewGroup getScoreViewGroup() {
+        return scoreViewGroup;
     }
 
     class NoteContext {

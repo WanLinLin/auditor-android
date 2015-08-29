@@ -7,7 +7,7 @@ import android.widget.RelativeLayout;
  * Created by Wan Lin on 15/8/26.
  * A measure contains numbers of note view groups.
  */
-public class Measure extends RelativeLayout {
+public class MeasureViewGroup extends RelativeLayout {
     private Context context;
     private int noteViewGroupWidth;
     private int noteViewGroupHeight;
@@ -15,11 +15,11 @@ public class Measure extends RelativeLayout {
 
     public static final int noteStartId = 1;
 
-    public Measure(Context context) {
+    public MeasureViewGroup(Context context) {
         super(context);
     }
 
-    public Measure(Context context, int noteViewGroupWidth, int noteViewGroupHeight) {
+    public MeasureViewGroup(Context context, int noteViewGroupWidth, int noteViewGroupHeight) {
         super(context);
         this.context = context;
         this.noteViewGroupWidth = Math.round(noteViewGroupWidth);

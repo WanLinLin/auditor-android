@@ -11,13 +11,16 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Using USB MIDI -->
-    <!--<uses-feature android:name="android.hardware.usb.host" />-->
+    <!-- <uses-feature android:name="android.hardware.usb.host" /> -->
+
 
     <!-- Using BLE MIDI -->
-    <!--<uses-permission android:name="android.permission.BLUETOOTH" />-->
-    <!--<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH" /> -->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> -->
 
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -39,17 +42,23 @@
             android:parentActivityName=".MainActivity" >
         </activity>
         <activity
-            android:name=".AudioFileActivity"
+            android:name=".AudioFileListActivity"
             android:label="@string/title_activity_audio_file"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
+            android:parentActivityName=".AudioRecordActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+
+        <service android:name=".song.MusicService" />
+
+        <activity
+            android:name=".ScoreListActivity"
+            android:label="@string/title_activity_score_list"
             android:parentActivityName=".AudioRecordActivity" >
         </activity>
-        <service android:name=".song.MusicService" />
         <activity
-            android:name=".ShowSheetMusicActivity"
-            android:label="@string/title_activity_show_sheet_music"
-            android:parentActivityName=".AudioRecordActivity" >
+            android:name=".ShowScoreActivity"
+            android:label="@string/title_activity_show_score" >
         </activity>
     </application>
 

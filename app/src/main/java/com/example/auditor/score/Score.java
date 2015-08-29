@@ -1,42 +1,20 @@
 package com.example.auditor.score;
 
-import android.content.Context;
-import android.widget.RelativeLayout;
-
 /**
- * Created by Wan Lin on 15/8/4.
- * Keep Part
+ * Created by wanlin on 15/8/29.
  */
-public class Score extends RelativeLayout {
-    private static final int partStartId = 10001;
+public class Score {
+    private long id;
+    private String title;
+    private String lastModDate;
 
-    public Score(Context context) {
-        super(context);
-
-        RelativeLayout.LayoutParams slp =
-                new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        this.setLayoutParams(slp);
+    public Score(long scoreID, String scoreTitle, String scoreModDate) {
+        id = scoreID;
+        title = scoreTitle;
+        lastModDate = scoreModDate;
     }
 
-    public void printPart(Part part, int i) {
-        int partViewGroupId = i + partStartId;
-        RelativeLayout.LayoutParams plp =
-                new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        part.setId(partViewGroupId);
-
-        if(partViewGroupId == partStartId) {
-            plp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        }
-        else if(partViewGroupId > partStartId) {
-            plp.addRule(RelativeLayout.BELOW, part.getId() - 1);
-        }
-        part.setLayoutParams(plp);
-        this.addView(part);
-    }
+    public long getID() {return id;}
+    public String getTitle() {return title;}
+    public String getLastModDate() {return lastModDate;}
 }

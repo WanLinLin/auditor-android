@@ -2,18 +2,13 @@ package com.example.auditor;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import java.io.File;
-
 
 public class MainActivity extends ActionBarActivity {
-    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
-
     public void goToAudioRecord(View view){
         Intent intent = new Intent(this, AudioRecordActivity.class);
         startActivity(intent);

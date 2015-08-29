@@ -13,7 +13,7 @@ import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.example.auditor.AudioFileActivity;
+import com.example.auditor.AudioFileListActivity;
 import com.example.auditor.R;
 
 import java.io.File;
@@ -89,7 +89,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         //start playback
         mp.start();
 
-        Intent notIntent = new Intent(this, AudioFileActivity.class);
+        Intent notIntent = new Intent(this, AudioFileListActivity.class);
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
                 notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -142,7 +142,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         songTitle = playSong.getTitle();
 
         //set uri
-        String songPath = auditorDir + "/" + playSong.getTitle();
+        String songPath = auditorDir + "/" + playSong.getTitle() + ".wav";
 
         try{
             player.setDataSource(songPath);

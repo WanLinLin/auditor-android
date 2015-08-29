@@ -5,16 +5,21 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.example.auditor.AudioRecordActivity;
+import com.example.auditor.song.ExtAudioRecorder;
 
 import org.jfugue.Pattern;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
 import be.tarsos.dsp.io.UniversalAudioInputStream;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
@@ -35,6 +40,7 @@ public class SongConverter{
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
     private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
+    private String songTitle;
 
     private AudioDispatcher dispatcher;
 
@@ -43,10 +49,38 @@ public class SongConverter{
     private ArrayList<Pair<String, Float>> noteAndTimeResultList;
     private ArrayList<NoteResult> noteResults;
 
-    public SongConverter(UniversalAudioInputStream universalAudioInputStream) {
+    public SongConverter(String songTitle) {
         noteAndTimeList = new ArrayList<>();
         noteAndTimeResultList = new ArrayList<>();
         noteResults = new ArrayList<>();
+        this.songTitle = songTitle;
+    }
+
+    public boolean setUp() {
+        File file = new File(auditorDir + songTitle);
+        InputStream inputStream;
+
+        // open a file
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "Failed to open a file!");
+            return false;
+        }
+
+        ExtAudioRecorder extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
+        // use exAudioRecorder to set TarsosDSP Audio format
+        TarsosDSPAudioFormat tarsosDSPAudioFormat =
+                new TarsosDSPAudioFormat(
+                        extAudioRecorder.getSampleRate(),
+                        extAudioRecorder.getBitSamples(),
+                        extAudioRecorder.getChannels(),
+                        false,  // indicates whether the data is signed or unsigned
+                        false); // indicates whether the data for a single sample
+
+        // set audio stream
+        UniversalAudioInputStream universalAudioInputStream =
+                new UniversalAudioInputStream(inputStream, tarsosDSPAudioFormat);
 
         // set pitch detect things
         dispatcher = new AudioDispatcher(
@@ -90,17 +124,146 @@ public class SongConverter{
                 AudioRecordActivity.bufferSize, pdh);
 
         dispatcher.addAudioProcessor(ap);
+
+        return true;
     }
 
     public void convert() {
-        String keySignature = "KCmaj ";
-        String tempo = "T" + beatsPerMinute + " ";
-        String musicString =  keySignature + tempo;
+        String musicString;
         Pattern pattern;
 
         // convert byte file into float pitches, and store note names and time duration into
         dispatcher.run();
 
+        // concat notes, handle vibration and overtone
+        processNoteAndTimeList();
+
+        // cut time to note duration
+        for(Pair p: noteAndTimeResultList) {
+            NoteResult noteResult = timeToNotes(p.first.toString(), (float) p.second);
+            if(noteResult != null)
+                noteResults.add(noteResult);
+        }
+
+        // delete pause at the beginning
+        for(int i = 0; i < noteResults.size(); i++) {
+            if (noteResults.get(i).getNoteName().equals("Pause"))
+                noteResults.remove(i);
+            else
+                break;
+        }
+
+        // convert result to music string
+        musicString = processIntoMusicString();
+
+        pattern = new Pattern(musicString);
+        try {
+            pattern.savePattern(new File(auditorDir + songTitle.substring(0, songTitle.length() - 4) + ".txt"));
+        }
+        catch (IOException e)
+        {
+            Log.e(LOG_TAG, "IOE");
+        }
+
+//        try {
+//            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
+//            AuditorMusicXmlRenderer renderer = new AuditorMusicXmlRenderer();
+//            MusicStringParser parser = new MusicStringParser();
+//            parser.addParserListener(renderer);
+//
+//            Pattern pattern = new Pattern(musicString);
+//            parser.parse(pattern);
+//
+//            Serializer serializer = new Serializer(file, "UTF-8");
+//            serializer.setIndent(4);
+//            serializer.write(renderer.getMusicXMLDoc());
+//
+//            file.flush();
+//            file.close();
+//        }
+//        catch (FileNotFoundException e) {
+//            Log.e(LOG_TAG, "file not found");
+//        }
+//        catch (UnsupportedEncodingException e) {
+//            Log.e(LOG_TAG, "unsupported encoding exception");
+//        }
+//        catch (IOException e) {
+//            Log.e(LOG_TAG, "io exception");
+//        }
+
+        Log.d(LOG_TAG, musicString);
+        Log.i(LOG_TAG, "Pitch detect successfully!");
+    }
+
+    private String processIntoMusicString() {
+        String keySignature = "KCmaj ";
+        String tempo = "T" + beatsPerMinute + " ";
+        String musicString = keySignature + tempo;
+
+        for(NoteResult n: noteResults) {
+            ArrayList<Pair<String, Integer>> noteTimArr = n.getNoteTimeArr();
+            String jfugueNotation = n.getNoteName();
+
+            if(n.getNoteName().length() > 2) {
+                jfugueNotation = n.getNoteName().substring(0, 3);
+
+                if(jfugueNotation.equals("Pau")) { // "Pau"use -> "R"est
+                    jfugueNotation = "R";
+                }
+                else { // sharp or flat
+                    if(jfugueNotation.endsWith("s")) {
+                        jfugueNotation = jfugueNotation.substring(0, 1) + "#" + jfugueNotation.substring(1, 2);
+                    }
+                    else if(jfugueNotation.endsWith("f")) {
+                        jfugueNotation = jfugueNotation.substring(0, 1) + "b" + jfugueNotation.substring(1, 2);
+                    }
+                }
+            }
+
+            for(int i = 0; i < noteTimArr.size(); i++) {
+                musicString += jfugueNotation;
+                Pair p = noteTimArr.get(i);
+
+                if (i != 0 && !jfugueNotation.equals("R"))
+                    musicString += "-";
+
+                switch(p.first.toString()) {
+                    case "wholeNote":
+                        musicString += "w";
+                        break;
+                    case "halfNote":
+                        musicString += "h";
+                        break;
+                    case "quarterNote":
+                        musicString += "q";
+                        break;
+                    case "eighthNote":
+                        musicString += "i";
+                        break;
+                    case "sixteenthNote":
+                        musicString += "s";
+                        break;
+                    case "thirtySecondNote":
+                        musicString += "t";
+                        break;
+                    case "sixtyFourthNote":
+                        musicString += "x";
+                        break;
+                }
+
+                if (i != noteTimArr.size() -1 && !jfugueNotation.equals("R"))
+                    musicString += "-";
+
+                musicString += " ";
+            }
+            musicString += "| ";
+        }
+
+        return musicString;
+    }
+
+    private void processNoteAndTimeList() {
+        // concat notes, handle vibration and overtone
         for(int i = 0; i < noteAndTimeList.size(); i++) {
             Pair<String, Float> p = noteAndTimeList.get(i);
 
@@ -168,121 +331,6 @@ public class SongConverter{
             }
         }
 
-        // process time to note duration
-        for(Pair p: noteAndTimeResultList) {
-            NoteResult noteResult = timeToNotes(p.first.toString(), (float) p.second);
-            if(noteResult != null)
-                noteResults.add(noteResult);
-        }
-
-        // delete pause at the beginning
-        for(int i = 0; i < noteResults.size(); i++) {
-            if (noteResults.get(i).getNoteName().equals("Pause"))
-                noteResults.remove(i);
-            else
-                break;
-        }
-
-        for(NoteResult n: noteResults) {
-            ArrayList<Pair<String, Integer>> noteTimArr = n.getNoteTimeArr();
-            String jfugueNotation = n.getNoteName();
-
-            if(n.getNoteName().length() > 2) {
-                jfugueNotation = n.getNoteName().substring(0, 3);
-
-                if(jfugueNotation.equals("Pau")) { // "Pau"use -> "R"est
-                    jfugueNotation = "R";
-                }
-                else { // sharp or flat
-                    if(jfugueNotation.endsWith("s")) {
-                        jfugueNotation = jfugueNotation.substring(0, 1) + "#" + jfugueNotation.substring(1, 2);
-                    }
-                    else if(jfugueNotation.endsWith("f")) {
-                        jfugueNotation = jfugueNotation.substring(0, 1) + "b" + jfugueNotation.substring(1, 2);
-                    }
-                }
-            }
-
-            for(int i = 0; i < noteTimArr.size(); i++) {
-                musicString += jfugueNotation;
-                Pair p = noteTimArr.get(i);
-
-                if (i != 0 && !jfugueNotation.equals("R"))
-                    musicString += "-";
-
-                switch(p.first.toString()) {
-                    case "wholeNote":
-                        musicString += "w";
-                        break;
-                    case "halfNote":
-                        musicString += "h";
-                        break;
-                    case "quarterNote":
-                        musicString += "q";
-                        break;
-                    case "eighthNote":
-                        musicString += "i";
-                        break;
-                    case "sixteenthNote":
-                        musicString += "s";
-                        break;
-                    case "thirtySecondNote":
-                        musicString += "t";
-                        break;
-                    case "sixtyFourthNote":
-                        musicString += "x";
-                        break;
-                }
-
-                if (i != noteTimArr.size() -1 && !jfugueNotation.equals("R"))
-                    musicString += "-";
-
-                musicString += " ";
-            }
-            musicString += "| ";
-        }
-
-        pattern = new Pattern(musicString);
-        try {
-            pattern.savePattern(new File(auditorDir + "pattern.txt"));
-        }
-        catch (IOException e)
-        {
-            Log.e(LOG_TAG, "IOE");
-        }
-
-//        try {
-//            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
-//            AuditorMusicXmlRenderer renderer = new AuditorMusicXmlRenderer();
-//            MusicStringParser parser = new MusicStringParser();
-//            parser.addParserListener(renderer);
-//
-//            Pattern pattern = new Pattern(musicString);
-//            parser.parse(pattern);
-//
-//            Serializer serializer = new Serializer(file, "UTF-8");
-//            serializer.setIndent(4);
-//            serializer.write(renderer.getMusicXMLDoc());
-//
-//            file.flush();
-//            file.close();
-//        }
-//        catch (FileNotFoundException e) {
-//            Log.e(LOG_TAG, "file not found");
-//        }
-//        catch (UnsupportedEncodingException e) {
-//            Log.e(LOG_TAG, "unsupported encoding exception");
-//        }
-//        catch (IOException e) {
-//            Log.e(LOG_TAG, "io exception");
-//        }
-
-        Log.d(LOG_TAG, musicString);
-
-        Log.i(LOG_TAG, "Pitch detect successfully!");
-
-        noteAndTimeList.clear();
-        noteAndTimeResultList.clear();
     }
 
     private String pitchToNotation(float pitch) {

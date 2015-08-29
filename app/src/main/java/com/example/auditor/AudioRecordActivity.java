@@ -102,12 +102,12 @@ public class AudioRecordActivity extends ActionBarActivity {
     /* change activity */
     public void goToAudioFile(View view) {
         // Do something in response to button
-        Intent intent = new Intent(this, AudioFileActivity.class);
+        Intent intent = new Intent(this, AudioFileListActivity.class);
         startActivity(intent);
     }
-    public void goSheetMusic(View view) {
+    public void goToScoreList(View view) {
         // Do something in response to button
-        Intent intent = new Intent(this, ShowSheetMusicActivity.class);
+        Intent intent = new Intent(this, ScoreListActivity.class);
         startActivity(intent);
     }
 
@@ -176,3 +176,5 @@ public class AudioRecordActivity extends ActionBarActivity {
         alertDialog.show();
     }
 }
+// TODO swipe tabs!!!
+// TODO https://www.youtube.com/watch?v=Xu2yoIqTsj4
