@@ -19,7 +19,7 @@ public class Part extends RelativeLayout{
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
     public static final int measureStartId = 101;
     private int noteViewGroupHeight;
-    private float tieStrokeWidth;
+    private int tieStrokeWidth;
     private Context context;
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
@@ -37,8 +37,8 @@ public class Part extends RelativeLayout{
         this.noteViewGroupHeight = noteViewGroupHeight;
         tieInfo = new ArrayList<>();
 
-        tieViewHeight = (int)(noteViewGroupHeight * 0.225f);
-        tieStrokeWidth = (int)(noteViewGroupHeight * 0.022f);
+        tieViewHeight = Math.round(noteViewGroupHeight * 0.225f);
+        tieStrokeWidth = Math.round(noteViewGroupHeight * 0.022f);
         barStrokeWidth = Math.round(noteViewGroupHeight * 0.03f);
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -60,7 +60,7 @@ public class Part extends RelativeLayout{
             BarView barView = new BarView(context);
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             lp.topMargin = tieViewHeight;
-            lp.leftMargin = (int) barStrokeWidth;
+            lp.leftMargin = barStrokeWidth;
             barView.setLayoutParams(lp);
             this.addView(barView);
         }
@@ -82,8 +82,8 @@ public class Part extends RelativeLayout{
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         lp.addRule(RIGHT_OF, measure.getId());
         lp.topMargin = tieViewHeight;
-        lp.leftMargin = (int) barStrokeWidth;
-        lp.rightMargin = (int) barStrokeWidth;
+        lp.leftMargin = barStrokeWidth;
+        lp.rightMargin = barStrokeWidth;
         barView.setLayoutParams(lp);
         this.addView(barView);
     }
@@ -117,7 +117,7 @@ public class Part extends RelativeLayout{
                                 RelativeLayout.LayoutParams.WRAP_CONTENT);
                 rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                 rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                rlp.leftMargin = rectStartX - (int)(tieStrokeWidth / 2);
+                rlp.leftMargin = rectStartX - tieStrokeWidth / 2;
 
                 tieView.setLayoutParams(rlp);
                 this.addView(tieView);

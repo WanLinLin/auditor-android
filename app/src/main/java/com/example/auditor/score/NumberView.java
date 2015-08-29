@@ -22,7 +22,6 @@ public class NumberView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        // env init
         mPaint.setTextSize(getMeasuredHeight());
         mPaint.setTextAlign(Paint.Align.CENTER);
         int x = canvas.getWidth() / 2;
@@ -52,6 +51,9 @@ public class NumberView extends View {
                 break;
             case "R":
                 canvas.drawText("0", x, y, mPaint);
+                break;
+            case "-":
+                canvas.drawText("-", x, y, mPaint);
                 break;
         }
     }

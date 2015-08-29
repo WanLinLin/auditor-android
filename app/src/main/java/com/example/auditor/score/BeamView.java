@@ -12,11 +12,10 @@ import android.view.View;
  * (and occasionally rests) in order to indicate rhythmic grouping.
  */
 public class BeamView extends View {
-    private static final String LOG_TAG = "BeamView";
     private Paint mPaint;
     private int beams;
-    private float beamStrokeWidth;
-    private float space;
+    private int beamStrokeWidth;
+    private int space;
 
     public BeamView(Context context) {
         super(context);
@@ -29,9 +28,9 @@ public class BeamView extends View {
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        beamStrokeWidth = viewHeight * 0.12f;
+        beamStrokeWidth = Math.round(viewHeight * 0.12f);
         mPaint.setStrokeWidth(beamStrokeWidth);
-        space = (viewHeight - beamStrokeWidth) / 3;
+        space = Math.round(viewHeight - beamStrokeWidth) / 3;
     }
 
     @Override
@@ -45,9 +44,7 @@ public class BeamView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         int left = getPaddingLeft();
-        int top = getPaddingTop();
         int right = getWidth() - getPaddingRight();
-        int bottom = getHeight() - getPaddingBottom();
 
         float y = beamStrokeWidth / 2;
 

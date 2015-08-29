@@ -30,10 +30,11 @@ public class SongConverter{
     private String musicDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music/";
 
     private static final float tooShortForHumanToSing = 0.02f; // 0.03 second can be ignore
-    private static final int secondsPerMinute = 60; // seconds per minutes
-    private static final int beatsPerMinute = 120; // bits per minute, speed
-    private static final int beatsPerBar = 4; // 4 beats per bar
-    private static final int beatUnit = 4; // quarter notes per bit
+    private int secondsPerMinute = 60; // seconds per minutes
+    private int beatsPerMinute = 120; // bits per minute, speed
+    private int beatsPerMeasure = 4; // 4 beats per bar
+    private int beatUnit = 4; // quarter notes per bit
+    private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
 
     private AudioDispatcher dispatcher;
 
@@ -92,6 +93,11 @@ public class SongConverter{
     }
 
     public void convert() {
+        String keySignature = "KCmaj ";
+        String tempo = "T" + beatsPerMinute + " ";
+        String musicString =  keySignature + tempo;
+        Pattern pattern;
+
         // convert byte file into float pitches, and store note names and time duration into
         dispatcher.run();
 
@@ -177,8 +183,6 @@ public class SongConverter{
                 break;
         }
 
-        String musicString = "";
-
         for(NoteResult n: noteResults) {
             ArrayList<Pair<String, Integer>> noteTimArr = n.getNoteTimeArr();
             String jfugueNotation = n.getNoteName();
@@ -238,7 +242,7 @@ public class SongConverter{
             musicString += "| ";
         }
 
-        Pattern pattern = new Pattern(musicString);
+        pattern = new Pattern(musicString);
         try {
             pattern.savePattern(new File(auditorDir + "pattern.txt"));
         }
@@ -288,7 +292,7 @@ public class SongConverter{
     private NoteResult timeToNotes(String noteName, float time) {
         ArrayList<Pair<String, Integer>> timeResults = new ArrayList<>();
         NotesLong[] notesLongs = NotesLong.values();
-        float remainder = time / (secondsPerMinute * beatsPerBar / beatsPerMinute);
+        float remainder = time / (secondsPerMinute * beatsPerMeasure / beatsPerMinute);
 
         for(NotesLong n: notesLongs) {
             int quotient = (int)(remainder / n.getTime());

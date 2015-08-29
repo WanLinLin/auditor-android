@@ -12,12 +12,11 @@ import android.view.View;
  * double its frequency.
  */
 public class OctaveView extends View {
-    private static final String LOG_TAG = "OctaView";
     private Paint mPaint;
     private int octave;
-    private float dotRadius;
-    private float space;
-    private float padding;
+    private int dotRadius;
+    private int space;
+    private int padding;
     private int dotCount;
 
     public OctaveView(Context context) {
@@ -32,9 +31,9 @@ public class OctaveView extends View {
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        padding = viewHeight * 0.1f;
-        dotRadius = viewHeight * 0.083f;
-        space = (viewHeight - 2 * dotRadius - padding) / 3;
+        padding = Math.round(viewHeight * 0.1f);
+        dotRadius = Math.round(viewHeight * 0.083f);
+        space = Math.round((viewHeight - 2 * dotRadius - padding) / 3);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class OctaveView extends View {
             center_y -= dotRadius;
         }
         else {
-            center_y = (int)(padding + dotRadius);
+            center_y = padding + dotRadius;
         }
 
         for(int i = 0; i < dotCount; i++) {

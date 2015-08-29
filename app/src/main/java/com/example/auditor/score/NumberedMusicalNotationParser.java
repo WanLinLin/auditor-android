@@ -15,8 +15,8 @@ public class NumberedMusicalNotationParser {
     private String musicString;
     private int noteViewGroupHeight;
     private int noteViewGroupWidth;
-    private Score score;
     private int curX; // relative to measure view, refresh every part
+    private Score score;
     private NoteContext noteContext;
 
     public NumberedMusicalNotationParser(Context context, int noteViewGroupHeight, String musicString) {
@@ -45,13 +45,18 @@ public class NumberedMusicalNotationParser {
         Measure measure = new Measure(context, noteViewGroupWidth, noteViewGroupHeight);
         part.printMeasure(measure, measureIndex);
         curX += Part.barStrokeWidth * 3;
-        Log.e(getClass().getName(), "barStrokeWidth: " + Part.barStrokeWidth * 3);
 
         measureIndex++;
 
-        for(String t : tokens) {
-            switch (t) {
-                case " ":
+        for(String token : tokens) {
+            String s = token.substring(0,1);
+            switch (s) {
+                case "K":
+                    Log.e(getClass().getName(), "key signature: " + token);
+                    break;
+
+                case "T":
+                    Log.e(getClass().getName(), "tempo: " + token);
                     break;
 
                 case "|":
@@ -65,11 +70,35 @@ public class NumberedMusicalNotationParser {
 
                 default:
                     // add a new note view group
-                    parseNoteContext(t);
+                    parseNoteContext(token);
                     addNote(measure.getId(), part.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
-                    noteContext = null;
                     break;
+            }
+
+            // handle w, h note duration
+            String durationNote;
+            if(noteContext.note.equals("R"))
+                durationNote = "R";
+            else
+                durationNote = "-";
+
+            if(token.contains("w")) {
+                noteContext = new NoteContext();
+                noteContext.note = durationNote;
+                noteContext.tieEnd = false;
+                for(int i = 0; i < 3; i++) {
+                    addNote(measure.getId(), part.getId(), noteViewGroupIndex);
+                    noteViewGroupIndex++;
+                }
+            }
+
+            if(token.contains("h")) {
+                noteContext = new NoteContext();
+                noteContext.note = durationNote;
+                noteContext.tieEnd = false;
+                addNote(measure.getId(), part.getId(), noteViewGroupIndex);
+                noteViewGroupIndex++;
             }
         }
 
@@ -126,13 +155,14 @@ public class NumberedMusicalNotationParser {
                     if(noteContext.tieEnd == null)
                         noteContext.tieEnd = false;
                     break;
+                // have beam view
                 case 'i':
                 case 's':
                 case 't':
                 case 'x':
+                    noteContext.duration = Character.toString(c);
                     if(noteContext.tieEnd == null)
                         noteContext.tieEnd = false;
-                    noteContext.duration = Character.toString(c);
                     break;
 
                 case '.':
@@ -150,7 +180,6 @@ public class NumberedMusicalNotationParser {
 
         /* calculate current x position */
         curX += measure.getCurNoteViewGroupWidth() / 2;
-        Log.e(getClass().getName(), "half width: " + measure.getCurNoteViewGroupWidth() / 2);
         if(noteContext.tieEnd)
             part.addTieInfo(new Pair<>(curX, "end"));
         if(noteContext.tieStart)

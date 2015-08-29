@@ -23,15 +23,12 @@ public class DottedView extends View{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         int left = getPaddingLeft();
-        int top = getPaddingTop();
         int right = getWidth() - getPaddingRight();
-        int bottom = getHeight() - getPaddingBottom();
         int widthWithoutPadding = right - left;
-        int heightWithoutPadding = bottom - top;
 
         // only draw one dot because Jfugue only support one dot duration
         if(dot.equals(".")) {
-            float dotRadius = widthWithoutPadding/8;
+            float dotRadius = Math.round(widthWithoutPadding / 8);
             canvas.drawCircle(left + dotRadius, getHeight()/2, dotRadius, mPaint);
         }
     }
