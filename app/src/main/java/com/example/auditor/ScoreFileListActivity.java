@@ -16,9 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.auditor.score.Score;
-import com.example.auditor.score.ScoreAdapter;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.text.DateFormat;

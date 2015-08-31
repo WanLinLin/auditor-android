@@ -1,4 +1,4 @@
-package com.example.auditor.song;
+package com.example.auditor;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,9 +13,6 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.example.auditor.AudioFileListActivity;
-import com.example.auditor.R;
 
 import java.util.ArrayList;
 
@@ -41,13 +38,11 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int arg0) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public long getItemId(int arg0) {
-        // TODO Auto-generated method stub
         return 0;
     }
 

@@ -1,4 +1,4 @@
-package com.example.auditor.song;
+package com.example.auditor;
 
 /**
  * Created by wanlin on 15/7/2.

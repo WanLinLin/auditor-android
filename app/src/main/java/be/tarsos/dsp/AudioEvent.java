@@ -222,7 +222,7 @@ public class AudioEvent {
     public void setConvertTime(float time) {
         convertTime = time;
     }
-
+	// added by Wan Lin
     public float getConvertTime() {
         return convertTime;
     }

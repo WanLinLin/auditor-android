@@ -301,7 +301,7 @@ public class AudioDispatcher implements Runnable {
 				audioEvent.setBytesProcessed(bytesProcessed);
 
                 /* added by Wan Lin */
-                convertTime = bytesRead / format.getFrameSize() / format.getFrameRate();
+                convertTime = (float)bytesRead / (float)format.getFrameSize() / format.getFrameRate();
                 audioEvent.setConvertTime(convertTime);
                 /* added by Wan Lin */
 
@@ -353,7 +353,7 @@ public class AudioDispatcher implements Runnable {
 		audioEvent.setBytesProcessed(bytesProcessed);
 		
 		// Read, convert and process the first full buffer.
-		//Always read a full byte buffer!
+		// Always read a full byte buffer!
 		int bytesRead = 0;
 		int currentBytesRead = 0;
 		while(bytesRead != -1 && currentBytesRead < audioByteBuffer.length){
@@ -366,7 +366,7 @@ public class AudioDispatcher implements Runnable {
 			converter.toFloatArray(audioByteBuffer, audioFloatBuffer);
 
             /* added by Wan Lin */
-            float convertTime = bytesRead / format.getFrameSize() / format.getFrameRate();
+            float convertTime = (float)bytesRead / (float)format.getFrameSize() / format.getFrameRate();
             audioEvent.setConvertTime(convertTime);
             /* added by Wan Lin */
 
@@ -376,7 +376,8 @@ public class AudioDispatcher implements Runnable {
 					break;
 				}
 			}
-			//Update the number of bytes processed;
+
+			//Update the number of bytes processed
 			bytesProcessed += bytesRead;
 			
 			// Read, convert and process consecutive overlapping buffers.
@@ -464,5 +465,3 @@ public class AudioDispatcher implements Runnable {
 		return bytesProcessed / (format.getSampleSizeInBits() / 8) / format.getSampleRate() / format.getChannels() ;
 	}
 }
-
-// TODO now can get every convert time precisely

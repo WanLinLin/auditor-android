@@ -1,4 +1,4 @@
-package com.example.auditor.score;
+package com.example.auditor;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,9 +10,6 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.example.auditor.R;
-import com.example.auditor.ScoreFileListActivity;
 
 import java.util.ArrayList;
 

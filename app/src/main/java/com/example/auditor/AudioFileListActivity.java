@@ -29,8 +29,6 @@ import android.widget.Toast;
 
 import com.example.auditor.convert.SongConverter;
 import com.example.auditor.song.MusicService;
-import com.example.auditor.song.Song;
-import com.example.auditor.song.SongAdapter;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -409,7 +407,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(auditorDir + "/" + song.getTitle());
+                                File fileToDelete = new File(auditorDir + "/" + song.getTitle() + ".wav");
                                 if (fileToDelete.delete())
                                     Toast.makeText(
                                             AudioFileListActivity.this,
@@ -442,16 +440,12 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
     }
 
     public boolean convertSong(final Song song) {
-        SongConverter songConverter = new SongConverter(song.getTitle());
+        SongConverter songConverter = new SongConverter();
 
-        if(!songConverter.setUp())
+        if(!songConverter.setUp(song.getTitle()))
             return false;
 
         songConverter.convert();
         return true;
     }
 }
-
-// TODO http://code.tutsplus.com/tutorials/create-a-music-player-on-android-project-setup--mobile-22764,
-// http://code.tutsplus.com/tutorials/create-a-music-player-on-android-song-playback--mobile-22778,
-// http://code.tutsplus.com/tutorials/create-a-music-player-on-android-user-controls--mobile-22787
