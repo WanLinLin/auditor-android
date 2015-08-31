@@ -52,8 +52,8 @@
         <service android:name=".song.MusicService" />
 
         <activity
-            android:name=".ScoreListActivity"
-            android:label="@string/title_activity_score_list"
+            android:name=".ScoreFileListActivity"
+            android:label="@string/title_activity_score_file_list"
             android:parentActivityName=".AudioRecordActivity" >
         </activity>
         <activity

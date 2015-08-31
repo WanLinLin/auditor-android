@@ -366,7 +366,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(auditorDir + "/" + song.getTitle());
+                                File from = new File(auditorDir + "/" + song.getTitle() + ".wav");
                                 File to = new File(
                                         auditorDir + "/" + userInput.getText() + ".wav");
                                 from.renameTo(to);

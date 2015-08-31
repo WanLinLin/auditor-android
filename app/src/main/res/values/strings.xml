@@ -7,7 +7,7 @@
     <string name="title_activity_audio_file">AudioFileActivity</string>
     <string name="audio_file_button">Audio File</string>
     <string name="sheet_music_button">Sheet Music</string>
-    <string name="title_activity_score_list">ScoreListActivity</string>
+    <string name="title_activity_score_file_list">ScoreFileListActivity</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="shuffle">Shuffle</string>

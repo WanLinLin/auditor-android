@@ -107,7 +107,7 @@ public class AudioRecordActivity extends ActionBarActivity {
     }
     public void goToScoreList(View view) {
         // Do something in response to button
-        Intent intent = new Intent(this, ScoreListActivity.class);
+        Intent intent = new Intent(this, ScoreFileListActivity.class);
         startActivity(intent);
     }
 

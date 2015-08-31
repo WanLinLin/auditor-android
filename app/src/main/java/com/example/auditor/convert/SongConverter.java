@@ -57,7 +57,7 @@ public class SongConverter{
     }
 
     public boolean setUp() {
-        File file = new File(auditorDir + songTitle);
+        File file = new File(auditorDir + songTitle + ".wav");
         InputStream inputStream;
 
         // open a file
@@ -158,7 +158,7 @@ public class SongConverter{
 
         pattern = new Pattern(musicString);
         try {
-            pattern.savePattern(new File(auditorDir + songTitle.substring(0, songTitle.length() - 4) + ".txt"));
+            pattern.savePattern(new File(auditorDir + songTitle + ".txt"));
         }
         catch (IOException e)
         {
