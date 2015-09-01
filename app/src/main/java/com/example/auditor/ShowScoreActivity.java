@@ -7,9 +7,13 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 
 import com.example.auditor.score.NumberedMusicalNotationParser;
+import com.example.auditor.score.ScoreViewGroup;
 
 import org.jfugue.Pattern;
 
@@ -21,20 +25,22 @@ public class ShowScoreActivity extends ActionBarActivity {
     private String scoreName;
 
     // width:height = 2:3
-    public int noteHeight = 130;
+    public int noteHeight = 300;
 //    public int noteWidth = noteHeight / 3 * 2;
 
+    private float mx, my;
+    private ScrollView vScroll;
+    private HorizontalScrollView hScroll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
-        // TODO add custom vertical and horizontal scroll view
-        // TODO http://stackoverflow.com/questions/2044775/scrollview-vertical-and-horizontal-in-android
+        vScroll = (ScrollView) findViewById(R.id.vScroll);
+        hScroll = (HorizontalScrollView) findViewById(R.id.hScroll);
+        RelativeLayout scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
 
-        // root view
-        RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_show_score);
         Pattern pattern;
 
         Intent intent = getIntent();
@@ -43,11 +49,12 @@ public class ShowScoreActivity extends ActionBarActivity {
         try {
             pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
 
-            NumberedMusicalNotationParser numberedMusicalNotationParser =
+            final NumberedMusicalNotationParser numberedMusicalNotationParser =
                     new NumberedMusicalNotationParser(this, noteHeight, pattern.getMusicString());
 
             numberedMusicalNotationParser.parse();
-            rl.addView(numberedMusicalNotationParser.getScoreViewGroup());
+            ScoreViewGroup scoreViewGroup = numberedMusicalNotationParser.getScoreViewGroup();
+            scoreContainer.addView(scoreViewGroup);
         }
         catch (IOException e) {
             Log.e(getClass().getName(), e.getMessage());
@@ -75,4 +82,36 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float curX, curY;
+
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                mx = event.getX();
+                my = event.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                curX = event.getX();
+                curY = event.getY();
+                vScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+                hScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+                mx = curX;
+                my = curY;
+                break;
+            case MotionEvent.ACTION_UP:
+                curX = event.getX();
+                curY = event.getY();
+                vScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+                hScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+                break;
+        }
+
+        return true;
+    }
+
+    // TODO convert view to bitmap on android
+    // http://stackoverflow.com/questions/5536066/convert-view-to-bitmap-on-android
 }

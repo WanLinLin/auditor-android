@@ -40,6 +40,7 @@ public class NumberedMusicalNotationParser {
         // add first part
         PartViewGroup partViewGroup = new PartViewGroup(context, noteViewGroupHeight);
         scoreViewGroup.printPart(partViewGroup, partIndex);
+//        scoreViewGroup.printInfo();
 
         // add first measure
         MeasureViewGroup measureViewGroup = new MeasureViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);

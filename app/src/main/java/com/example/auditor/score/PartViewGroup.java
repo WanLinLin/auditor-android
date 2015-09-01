@@ -46,12 +46,6 @@ public class PartViewGroup extends RelativeLayout{
         mPaint.setStyle(Paint.Style.FILL);
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(widthMeasureSpec, noteViewGroupHeight + tieViewHeight);
-    }
-
     public void printMeasure(MeasureViewGroup measureViewGroup, int i) {
         int measureViewGroupId = i + measureStartId;
 
