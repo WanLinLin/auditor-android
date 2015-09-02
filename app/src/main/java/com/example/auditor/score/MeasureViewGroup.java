@@ -3,46 +3,40 @@ package com.example.auditor.score;
 import android.content.Context;
 import android.widget.RelativeLayout;
 
+import com.example.auditor.ShowScoreActivity;
+
 /**
  * Created by Wan Lin on 15/8/26.
  * A measure contains numbers of note view groups.
  */
 public class MeasureViewGroup extends RelativeLayout {
     private Context context;
-    private int noteViewGroupWidth;
-    private int noteViewGroupHeight;
     private int curNoteViewGroupWidth;
 
     public static final int noteStartId = 1;
 
     public MeasureViewGroup(Context context) {
         super(context);
-    }
-
-    public MeasureViewGroup(Context context, int noteViewGroupWidth, int noteViewGroupHeight) {
-        super(context);
         this.context = context;
-        this.noteViewGroupWidth = Math.round(noteViewGroupWidth);
-        this.noteViewGroupHeight = noteViewGroupHeight;
     }
 
     public void printNote(String note, String accidental, String dot, String octave, String duration, int i) {
         int noteViewGroupId = i + noteStartId;
-        curNoteViewGroupWidth = noteViewGroupWidth;
+        curNoteViewGroupWidth = ShowScoreActivity.noteWidth;
         RelativeLayout.LayoutParams rlp;
         NoteViewGroup noteViewGroup;
 
         /* adjust note view group width */
         if (accidental.isEmpty())
-            curNoteViewGroupWidth -= noteViewGroupWidth * 0.25f;
+            curNoteViewGroupWidth -= ShowScoreActivity.noteWidth * 0.25f;
         if (dot.isEmpty())
-            curNoteViewGroupWidth -= noteViewGroupWidth * 0.25f;
+            curNoteViewGroupWidth -= ShowScoreActivity.noteWidth * 0.25f;
 
         /* mysterious bug: if curNoteViewGroupWidth is odd number, tie view would crash */
         if(curNoteViewGroupWidth % 2 != 0)
             curNoteViewGroupWidth += 1;
 
-        rlp = new RelativeLayout.LayoutParams(curNoteViewGroupWidth, noteViewGroupHeight);
+        rlp = new RelativeLayout.LayoutParams(curNoteViewGroupWidth, ShowScoreActivity.noteHeight);
 
         if (noteViewGroupId == noteStartId) { // is the first note, make it align left
             rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
@@ -52,7 +46,7 @@ public class MeasureViewGroup extends RelativeLayout {
                     this.findViewById(noteViewGroupId - 1).getId());
         }
 
-        noteViewGroup = new NoteViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);
+        noteViewGroup = new NoteViewGroup(context);
         noteViewGroup.setLayoutParams(rlp);
         noteViewGroup.setId(noteViewGroupId);
 

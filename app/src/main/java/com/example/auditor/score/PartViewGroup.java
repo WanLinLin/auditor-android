@@ -9,6 +9,8 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.example.auditor.ShowScoreActivity;
+
 import java.util.ArrayList;
 
 /**
@@ -17,29 +19,23 @@ import java.util.ArrayList;
  */
 public class PartViewGroup extends RelativeLayout{
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
-    public static final int measureStartId = 101;
-    private int noteViewGroupHeight;
-    private int tieStrokeWidth;
+    private static int tieStrokeWidth;
     private Context context;
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
 
+    public static final int measureStartId = 101;
     public static int barStrokeWidth;
     public static int tieViewHeight;
 
     public PartViewGroup(Context context) {
         super(context);
-    }
-
-    public PartViewGroup(Context context, int noteViewGroupHeight) {
-        super(context);
         this.context = context;
-        this.noteViewGroupHeight = noteViewGroupHeight;
         tieInfo = new ArrayList<>();
 
-        tieViewHeight = Math.round(noteViewGroupHeight * 0.225f);
-        tieStrokeWidth = Math.round(noteViewGroupHeight * 0.022f);
-        barStrokeWidth = Math.round(noteViewGroupHeight * 0.03f);
+        tieViewHeight = Math.round(ShowScoreActivity.noteHeight * 0.225f);
+        tieStrokeWidth = Math.round(ShowScoreActivity.noteHeight * 0.022f);
+        barStrokeWidth = Math.round(ShowScoreActivity.noteHeight * 0.03f);
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
@@ -100,7 +96,7 @@ public class PartViewGroup extends RelativeLayout{
             else if(tie.equals("end")) {
                 int rectWidth = x - rectStartX;
 
-                RectF rectF = new RectF(0 + tieStrokeWidth / 2, tieViewHeight / 2, rectWidth + tieStrokeWidth / 2, tieViewHeight * 3 / 2);
+                RectF rectF = new RectF(tieStrokeWidth / 2, tieViewHeight / 2, rectWidth + tieStrokeWidth / 2, tieViewHeight * 3 / 2);
                 TieView tieView = new TieView(context, rectF);
                 if(SHOW_TIE_VIEW_COLOR)
                     tieView.setBackgroundColor(Color.RED);
@@ -127,7 +123,7 @@ public class PartViewGroup extends RelativeLayout{
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            setMeasuredDimension(Math.round(barStrokeWidth), noteViewGroupHeight);
+            setMeasuredDimension(Math.round(barStrokeWidth), ShowScoreActivity.noteHeight);
         }
 
         @Override
@@ -135,7 +131,7 @@ public class PartViewGroup extends RelativeLayout{
             super.onDraw(canvas);
             mPaint.setColor(Color.BLACK);
             mPaint.setStrokeWidth(barStrokeWidth);
-            canvas.drawLine(barStrokeWidth/2, 0, barStrokeWidth/2, noteViewGroupHeight, mPaint);
+            canvas.drawLine(barStrokeWidth/2, 0, barStrokeWidth/2, ShowScoreActivity.noteHeight, mPaint);
         }
     }
 

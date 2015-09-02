@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
+import com.example.auditor.ShowScoreActivity;
+
 /**
  * Created by Wan Lin on 15/8/10.
  * A beam is a horizontal or diagonal line used to connect multiple consecutive notes
@@ -19,15 +21,12 @@ public class BeamView extends View {
 
     public BeamView(Context context) {
         super(context);
-    }
-
-    public BeamView(Context context, float viewHeight) {
-        super(context);
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
+        int viewHeight = Math.round(ShowScoreActivity.noteHeight * 0.15f);
         beamStrokeWidth = Math.round(viewHeight * 0.12f);
         mPaint.setStrokeWidth(beamStrokeWidth);
         space = Math.round(viewHeight - beamStrokeWidth) / 3;

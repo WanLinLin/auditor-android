@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
+import com.example.auditor.ShowScoreActivity;
+
 /**
  * Created by Wan Lin on 15/8/4.
  * An octave or perfect octave is the interval between one musical pitch and another with half or
@@ -21,11 +23,7 @@ public class OctaveView extends View {
 
     public OctaveView(Context context) {
         super(context);
-    }
-
-    public OctaveView(Context context, int noteViewGroupHeight) {
-        super(context);
-        float viewHeight = noteViewGroupHeight * 0.225f;
+        float viewHeight = ShowScoreActivity.noteHeight * 0.225f;
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);

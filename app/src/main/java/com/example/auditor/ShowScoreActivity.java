@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -25,12 +26,18 @@ public class ShowScoreActivity extends ActionBarActivity {
     private String scoreName;
 
     // width:height = 2:3
-    public int noteHeight = 300;
-//    public int noteWidth = noteHeight / 3 * 2;
+    public static int noteHeight = 300;
+    public static int noteWidth = noteHeight / 3 * 2;
 
+    // two dimension scroll view
     private float mx, my;
     private ScrollView vScroll;
     private HorizontalScrollView hScroll;
+
+    // pinch to zoom
+    private ScaleGestureDetector mScaleDetector;
+    private float mScaleFactor = 1.f;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +48,8 @@ public class ShowScoreActivity extends ActionBarActivity {
         hScroll = (HorizontalScrollView) findViewById(R.id.hScroll);
         RelativeLayout scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
 
+        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
+
         Pattern pattern;
 
         Intent intent = getIntent();
@@ -50,7 +59,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
 
             final NumberedMusicalNotationParser numberedMusicalNotationParser =
-                    new NumberedMusicalNotationParser(this, noteHeight, pattern.getMusicString());
+                    new NumberedMusicalNotationParser(this, pattern.getMusicString());
 
             numberedMusicalNotationParser.parse();
             ScoreViewGroup scoreViewGroup = numberedMusicalNotationParser.getScoreViewGroup();
@@ -109,7 +118,21 @@ public class ShowScoreActivity extends ActionBarActivity {
                 break;
         }
 
+        mScaleDetector.onTouchEvent(event);
         return true;
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+//            invalidate();
+            return true;
+        }
     }
 
     // TODO convert view to bitmap on android

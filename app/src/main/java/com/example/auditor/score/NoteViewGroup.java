@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.R;
+import com.example.auditor.ShowScoreActivity;
 
 /**
  * Created by Wan Lin on 15/8/26.
@@ -13,18 +14,10 @@ import com.example.auditor.R;
 public class NoteViewGroup extends RelativeLayout {
     private final boolean SHOW_NOTE_VIEW_GROUP_COLOR = false;
     private Context context;
-    private int noteViewGroupWidth;
-    private int noteViewGroupHeight;
 
     public NoteViewGroup(Context context) {
         super(context);
-    }
-
-    public NoteViewGroup(Context context, int noteViewGroupWidth, int noteViewGroupHeight) {
-        super(context);
         this.context = context;
-        this.noteViewGroupWidth = noteViewGroupWidth;
-        this.noteViewGroupHeight = noteViewGroupHeight;
     }
 
     public void printNumberView(String note, boolean hasAccidentalView) {
@@ -32,8 +25,8 @@ public class NoteViewGroup extends RelativeLayout {
         NumberView n = new NumberView(context);
         n.setId(R.id.number_view);
         n.setNote(note);
-        RelativeLayout.LayoutParams nlp = new RelativeLayout.LayoutParams((int)(noteViewGroupWidth * 0.5), (int) (noteViewGroupHeight * 0.4));
-        nlp.topMargin = (int)(noteViewGroupHeight * 0.225);
+        RelativeLayout.LayoutParams nlp = new RelativeLayout.LayoutParams((int)(ShowScoreActivity.noteWidth * 0.5), (int) (ShowScoreActivity.noteHeight * 0.4));
+        nlp.topMargin = (int)(ShowScoreActivity.noteHeight * 0.225);
         nlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         if(hasAccidentalView)
             nlp.addRule(RelativeLayout.RIGHT_OF, R.id.accidental_view);
@@ -52,8 +45,8 @@ public class NoteViewGroup extends RelativeLayout {
         AccidentalView a = new AccidentalView(context);
         a.setId(R.id.accidental_view);
         a.setAccidental(accidental);
-        RelativeLayout.LayoutParams alp = new RelativeLayout.LayoutParams((int)(noteViewGroupWidth * 0.25), (int) (noteViewGroupHeight * 0.4));
-        alp.topMargin = (int)(noteViewGroupHeight * 0.225);
+        RelativeLayout.LayoutParams alp = new RelativeLayout.LayoutParams((int)(ShowScoreActivity.noteWidth * 0.25), (int) (ShowScoreActivity.noteHeight * 0.4));
+        alp.topMargin = (int)(ShowScoreActivity.noteHeight * 0.225);
         alp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         alp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 
@@ -69,8 +62,8 @@ public class NoteViewGroup extends RelativeLayout {
         DottedView d = new DottedView(context);
         d.setId(R.id.dotted_view);
         d.setLength(length);
-        RelativeLayout.LayoutParams dlp = new RelativeLayout.LayoutParams((int)(noteViewGroupWidth * 0.25), (int) (noteViewGroupHeight * 0.4));
-        dlp.topMargin = (int)(noteViewGroupHeight * 0.225);
+        RelativeLayout.LayoutParams dlp = new RelativeLayout.LayoutParams((int)(ShowScoreActivity.noteWidth * 0.25), (int) (ShowScoreActivity.noteHeight * 0.4));
+        dlp.topMargin = (int)(ShowScoreActivity.noteHeight * 0.225);
         dlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         dlp.addRule(RelativeLayout.RIGHT_OF, R.id.number_view);
 
@@ -83,7 +76,7 @@ public class NoteViewGroup extends RelativeLayout {
 
     public void printBeamView(String beams) {
         // Beam view
-        BeamView b = new BeamView(context, noteViewGroupHeight * 0.15f);
+        BeamView b = new BeamView(context);
         b.setId(R.id.beam_view);
         switch (beams) {
             case "i":
@@ -99,7 +92,7 @@ public class NoteViewGroup extends RelativeLayout {
                 b.setBeams(4);
                 break;
         }
-        RelativeLayout.LayoutParams blp = new RelativeLayout.LayoutParams(noteViewGroupWidth, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams blp = new RelativeLayout.LayoutParams(ShowScoreActivity.noteWidth, RelativeLayout.LayoutParams.WRAP_CONTENT);
         blp.addRule(RelativeLayout.BELOW, R.id.number_view);
         blp.addRule(RelativeLayout.CENTER_HORIZONTAL);
 
@@ -112,15 +105,15 @@ public class NoteViewGroup extends RelativeLayout {
 
     public void printOctaveView(String oct, boolean hasBeamView, boolean hasAccidentalView) {
         // Octave view
-        OctaveView o = new OctaveView(context, noteViewGroupHeight);
+        OctaveView o = new OctaveView(context);
         int octave = Integer.parseInt(oct);
         o.setOctave(octave);
         o.setId(R.id.octave_view);
         RelativeLayout.LayoutParams olp;
-        olp = new RelativeLayout.LayoutParams((int)(noteViewGroupWidth * 0.5), RelativeLayout.LayoutParams.WRAP_CONTENT);
+        olp = new RelativeLayout.LayoutParams((int)(ShowScoreActivity.noteWidth * 0.5), RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         if(octave > 4) {
-            olp.topMargin = (int)(noteViewGroupHeight * 0.225f - o.getH());
+            olp.topMargin = (int)(ShowScoreActivity.noteHeight * 0.225f - o.getH());
             olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }
         else if(octave < 4 && hasBeamView) {
@@ -131,7 +124,7 @@ public class NoteViewGroup extends RelativeLayout {
         }
 
         if(hasAccidentalView)
-            olp.leftMargin = (int)(noteViewGroupWidth * 0.25);
+            olp.leftMargin = (int)(ShowScoreActivity.noteWidth * 0.25);
         olp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 
         o.setLayoutParams(olp);

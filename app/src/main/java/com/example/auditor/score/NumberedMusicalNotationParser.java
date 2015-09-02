@@ -13,17 +13,13 @@ import org.jfugue.Pattern;
 public class NumberedMusicalNotationParser {
     private Context context;
     private String musicString;
-    private int noteViewGroupHeight;
-    private int noteViewGroupWidth;
     private int curX; // relative to measure view, refresh every part
     private ScoreViewGroup scoreViewGroup;
     private NoteContext noteContext;
 
-    public NumberedMusicalNotationParser(Context context, int noteViewGroupHeight, String musicString) {
+    public NumberedMusicalNotationParser(Context context, String musicString) {
         this.context = context;
         this.musicString = musicString;
-        this.noteViewGroupHeight = noteViewGroupHeight;
-        this.noteViewGroupWidth = noteViewGroupHeight / 3 * 2;
         noteContext = new NoteContext();
         curX = 0;
         scoreViewGroup = new ScoreViewGroup(context);
@@ -38,12 +34,12 @@ public class NumberedMusicalNotationParser {
         String[] tokens = pattern.getTokens();
 
         // add first part
-        PartViewGroup partViewGroup = new PartViewGroup(context, noteViewGroupHeight);
+        PartViewGroup partViewGroup = new PartViewGroup(context);
         scoreViewGroup.printPart(partViewGroup, partIndex);
 //        scoreViewGroup.printInfo();
 
         // add first measure
-        MeasureViewGroup measureViewGroup = new MeasureViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);
+        MeasureViewGroup measureViewGroup = new MeasureViewGroup(context);
         partViewGroup.printMeasure(measureViewGroup, measureIndex);
         curX += PartViewGroup.barStrokeWidth * 3;
 
@@ -62,7 +58,7 @@ public class NumberedMusicalNotationParser {
 
                 case "|":
                     // add a new measure
-                    measureViewGroup = new MeasureViewGroup(context, noteViewGroupWidth, noteViewGroupHeight);
+                    measureViewGroup = new MeasureViewGroup(context);
                     partViewGroup.printMeasure(measureViewGroup, measureIndex);
                     curX += PartViewGroup.barStrokeWidth * 3;
                     measureIndex++;
