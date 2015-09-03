@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
+import com.example.auditor.ShowScoreActivity;
+
 /**
  * Created by Wan Lin on 15/8/4.
  * Draw the number note
@@ -22,10 +24,11 @@ public class NumberView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        mPaint.setTextSize(getMeasuredHeight());
+
+        mPaint.setTextSize((int) (ShowScoreActivity.noteHeight * 0.4));
         mPaint.setTextAlign(Paint.Align.CENTER);
-        int x = canvas.getWidth() / 2;
-        int y = (int) ((canvas.getHeight() / 2) - ((mPaint.descent() + mPaint.ascent()) / 2));
+        int x = getWidth() / 2;
+        int y = (int) ((getHeight() / 2) - ((mPaint.descent() + mPaint.ascent()) / 2));
 
         switch(note) {
             case "C":

@@ -21,7 +21,6 @@ public class NumberedMusicalNotationParser {
         this.context = context;
         this.musicString = musicString;
         noteContext = new NoteContext();
-        curX = 0;
         scoreViewGroup = new ScoreViewGroup(context);
     }
 
@@ -29,6 +28,7 @@ public class NumberedMusicalNotationParser {
         int partIndex = 0;
         int measureIndex = 0;
         int noteViewGroupIndex = 0;
+        curX = 0;
 
         Pattern pattern = new Pattern(musicString);
         String[] tokens = pattern.getTokens();
@@ -49,11 +49,11 @@ public class NumberedMusicalNotationParser {
             String s = token.substring(0,1);
             switch (s) {
                 case "K":
-                    Log.e(getClass().getName(), "key signature: " + token);
+//                    Log.e(getClass().getName(), "key signature: " + token);
                     break;
 
                 case "T":
-                    Log.e(getClass().getName(), "tempo: " + token);
+//                    Log.e(getClass().getName(), "tempo: " + token);
                     break;
 
                 case "|":

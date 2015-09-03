@@ -32,10 +32,10 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 public class SongConverter {
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
-    private static final float tooShortForHumanToSing = 0.02f; // 0.03 second can be ignore
+    private static final float tooShortForHumanToSing = 0.02f; // can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
 
-    private int beatsPerMinute = 120; // bits per minute, speed
+    private int beatsPerMinute = 90; // bits per minute, speed
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
     private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
@@ -155,6 +155,9 @@ public class SongConverter {
             if(noteResult != null)
                 noteResults.add(noteResult);
         }
+
+        for(Pair<String, Float> p : noteAndTimeResultList)
+            Log.e(getClass().getName(), "notation: " + p.first + ", duration: " + p.second);
 
         deleteBeginAndEndRests();
 
@@ -286,7 +289,7 @@ public class SongConverter {
                     if(p.first.equals(last.first)) { // same note, but split by a garbage, so concat
                         noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                     }
-                    else { // maybe pause or a different notation and time, so add
+                    else { // pause or a different notation and time, so add
                         noteAndTimeResultList.add(p);
                     }
                 }
@@ -303,7 +306,7 @@ public class SongConverter {
                         noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                     }
                 }
-                else {
+                else { // garbage note
                     /* handle vibration, overtone */
 
                     // case 1:
@@ -314,6 +317,23 @@ public class SongConverter {
                         try {
                             if (last.first.contains(p.first.substring(0, 1)) || last.first.contains(p.first.substring(6, 7))) {
                                 // add the similar note time to the last nation and time result
+                                noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                                continue;
+                            }
+
+                            if (last.first.contains("B") && p.first.contains("C")) {
+                                noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                                continue;
+                            }
+                            else if (last.first.contains("C") && p.first.contains("B")) {
+                                noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                                continue;
+                            }
+                            else if (last.first.contains("E") && p.first.contains("F")) {
+                                noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
+                                continue;
+                            }
+                            else if (last.first.contains("F") && p.first.contains("E")) {
                                 noteAndTimeResultList.set(noteAndTimeResultList.size() - 1, new Pair<>(last.first, last.second + p.second));
                                 continue;
                             }
