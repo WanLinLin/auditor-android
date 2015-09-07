@@ -16,19 +16,34 @@ public class NumberView extends View {
     private String note;
     private Paint mPaint;
 
+    private int width;
+    private int height;
+
     public NumberView(Context context) {
         super(context);
         init();
+
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
+        setMeasuredDimension(width, height);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        mPaint.setTextSize((int) (ShowScoreActivity.noteHeight * 0.4));
+        mPaint.setTextSize(height);
         mPaint.setTextAlign(Paint.Align.CENTER);
-        int x = getWidth() / 2;
-        int y = (int) ((getHeight() / 2) - ((mPaint.descent() + mPaint.ascent()) / 2));
+        int x = width / 2;
+        int y = (int) ((height / 2) - ((mPaint.descent() + mPaint.ascent()) / 2));
 
         switch(note) {
             case "C":

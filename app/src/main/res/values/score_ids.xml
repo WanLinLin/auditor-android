@@ -5,4 +5,7 @@
     <item name="octave_view" type="id" />
     <item name="dotted_view" type="id" />
     <item name="beam_view" type="id" />
+    <item name="blank_view" type="id" />
+    <item name="bar_width_view" type="id" />
+    <item name="tie_view_layout" type="id" />
 </resources>

@@ -16,34 +16,47 @@ import com.example.auditor.ShowScoreActivity;
 public class OctaveView extends View {
     private Paint mPaint;
     private int octave;
+    private int dotCount;
     private int dotRadius;
     private int space;
     private int padding;
-    private int dotCount;
+
+    private int width;
+    private int height;
 
     public OctaveView(Context context) {
         super(context);
-        float viewHeight = ShowScoreActivity.noteHeight * 0.225f;
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        padding = Math.round(viewHeight * 0.1f);
-        dotRadius = Math.round(viewHeight * 0.083f);
-        space = Math.round((viewHeight - 2 * dotRadius - padding) / 3);
+        width = ShowScoreActivity.NoteChildViewDimension.OCTAVE_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.OCTAVE_VIEW_HEIGHT;
+
+        padding = Math.round(height * 0.1f);
+        dotRadius = Math.round(height * 0.083f);
+        space = Math.round((height - 2 * dotRadius - padding) / 3);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int height = Math.round(2 * dotRadius + (dotCount - 1) * space + padding);
-        setMeasuredDimension(widthMeasureSpec, height);
+
+        width = ShowScoreActivity.NoteChildViewDimension.OCTAVE_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.OCTAVE_VIEW_HEIGHT;
+
+        padding = Math.round(height * 0.1f);
+        dotRadius = Math.round(height * 0.083f);
+        space = Math.round((height - 2 * dotRadius - padding) / 3);
+
+        setMeasuredDimension(width, height);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
         int center_x = getWidth() / 2;
         int center_y = getHeight();
         float tab = space;
@@ -65,9 +78,5 @@ public class OctaveView extends View {
     public void setOctave(int octave) {
         this.octave = octave;
         dotCount = Math.abs(octave - 4);
-    }
-
-    public int getH() {
-        return Math.round(2 * dotRadius + (dotCount - 1) * space + padding);
     }
 }

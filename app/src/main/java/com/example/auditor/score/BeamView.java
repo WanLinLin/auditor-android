@@ -19,6 +19,12 @@ public class BeamView extends View {
     private int beamStrokeWidth;
     private int space;
 
+    private boolean hasAccidentalView;
+    private boolean hasDottedView;
+
+    private int width;
+    private int height;
+
     public BeamView(Context context) {
         super(context);
 
@@ -26,34 +32,59 @@ public class BeamView extends View {
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        int viewHeight = Math.round(ShowScoreActivity.noteHeight * 0.15f);
-        beamStrokeWidth = Math.round(viewHeight * 0.12f);
+        beamStrokeWidth = Math.round(height * 0.12f);
         mPaint.setStrokeWidth(beamStrokeWidth);
-        space = Math.round(viewHeight - beamStrokeWidth) / 3;
+        space = Math.round(height - beamStrokeWidth) / 3;
+        height = Math.round(beamStrokeWidth + (beams - 1) * space);
+
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        if(hasAccidentalView)
+            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        if(hasDottedView)
+            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int height = Math.round(beamStrokeWidth + (beams - 1) * space);
-        setMeasuredDimension(widthMeasureSpec, height);
+
+        height = ShowScoreActivity.NoteChildViewDimension.BEAM_VIEW_HEIGHT;
+
+        beamStrokeWidth = Math.round(height * 0.12f);
+        mPaint.setStrokeWidth(beamStrokeWidth);
+        space = Math.round(height - beamStrokeWidth) / 3;
+        height = Math.round(beamStrokeWidth + (beams - 1) * space);
+
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        if(hasAccidentalView)
+            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        if(hasDottedView)
+            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+        setMeasuredDimension(width, height);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int left = getPaddingLeft();
-        int right = getWidth() - getPaddingRight();
 
         float y = beamStrokeWidth / 2;
 
         for(int i = 0; i < beams; i++) {
-            canvas.drawLine(left, y, right, y, mPaint);
+            canvas.drawLine(0, y, getWidth(), y, mPaint);
             y += space;
         }
     }
 
     public void setBeams(int beams) {
         this.beams = beams;
+    }
+
+    public void setHasAccidentalView(boolean hasAccidentalView) {
+        this.hasAccidentalView = hasAccidentalView;
+    }
+
+    public void setHasDottedView(boolean hasDottedView) {
+        this.hasDottedView = hasDottedView;
     }
 }

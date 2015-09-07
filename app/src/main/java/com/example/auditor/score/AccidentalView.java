@@ -7,6 +7,8 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.view.View;
 
+import com.example.auditor.ShowScoreActivity;
+
 /**
  * Created by Wan Lin on 15/8/4.
  * An accidental is a note whose pitch (or pitch class) is not a member of the scale or mode
@@ -19,32 +21,47 @@ public class AccidentalView extends View {
     private Paint mPaint2;
     private String accidental;
     private RectF rect;
+    private int width;
+    private int height;
 
     public AccidentalView(Context context) {
         super(context);
         init();
         rect = new RectF();
+
+        width = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        width = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT;
+        setMeasuredDimension(width, height);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int incline = getHeight() / 15;
+
+        int incline = height / 15;
 
         int left = 0;
-        int top = getHeight() / 8;
-        int right = getWidth();
-        int bottom = getHeight() - getHeight() / 8;
+        int top = height / 8;
+        int right = width;
+        int bottom = height - height / 8;
         int ratioHeight = bottom - top;
 
         switch (accidental) {
             case "#":
-                left = getWidth() / 6;
-                right = getWidth();
+                left = width / 6;
+                right = width;
                 int ratioWidth = right - left;
 
-                mPaint.setStrokeWidth(getHeight() / 11); // draw horizontal line
-                mPaint2.setStrokeWidth(getHeight() / 17); // draw vertical line
+                mPaint.setStrokeWidth(height / 11); // draw horizontal line
+                mPaint2.setStrokeWidth(height / 17); // draw vertical line
                 float[] pos = {
                         // horizontal line
                         left, top + ratioHeight / 3 + incline, right, top + ratioHeight / 3 - incline,
@@ -59,7 +76,7 @@ public class AccidentalView extends View {
                 break;
             case "b":
                 float sweepAngle = 180f;
-                float arcStrokeRatioWidth = getHeight() / 11;
+                float arcStrokeRatioWidth = height / 11;
 
                 // slightly move up
                 bottom = bottom - ratioHeight / 10;
@@ -70,7 +87,7 @@ public class AccidentalView extends View {
                 canvas.drawArc(rect, 270, sweepAngle, false, mPaint);
 
                 // draw the vertical line
-                mPaint.setStrokeWidth(getHeight() / 15);
+                mPaint.setStrokeWidth(height / 15);
                 canvas.drawLine((left + right) / 2, top, (left + right) / 2, bottom + arcStrokeRatioWidth / 2, mPaint);
                 break;
         }

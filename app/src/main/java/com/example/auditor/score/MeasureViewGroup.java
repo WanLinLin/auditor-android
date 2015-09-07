@@ -3,6 +3,7 @@ package com.example.auditor.score;
 import android.content.Context;
 import android.widget.RelativeLayout;
 
+import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 
 /**
@@ -12,46 +13,75 @@ import com.example.auditor.ShowScoreActivity;
 public class MeasureViewGroup extends RelativeLayout {
     private Context context;
     private int curNoteViewGroupWidth;
-
-    public static final int noteStartId = 1;
+    private int width = 0;
 
     public MeasureViewGroup(Context context) {
         super(context);
         this.context = context;
     }
 
+    @Override
+    public void requestLayout() {
+        super.requestLayout();
+
+        for(int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).requestLayout();
+        }
+    }
+
+    public void printBarWidthView() {
+        BarWidthView barWidthView = new BarWidthView(context);
+        barWidthView.setId(R.id.bar_width_view);
+        RelativeLayout.LayoutParams bwv =
+                new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT
+                );
+        bwv.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        bwv.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        barWidthView.setLayoutParams(bwv);
+        this.addView(barWidthView);
+        this.width+=ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+    }
+
     public void printNote(String note, String accidental, String dot, String octave, String duration, int i) {
-        int noteViewGroupId = i + noteStartId;
+        int noteViewGroupId = i + ShowScoreActivity.noteStartId;
         curNoteViewGroupWidth = ShowScoreActivity.noteWidth;
         RelativeLayout.LayoutParams rlp;
-        NoteViewGroup noteViewGroup;
 
         /* adjust note view group width */
         if (accidental.isEmpty())
             curNoteViewGroupWidth -= ShowScoreActivity.noteWidth * 0.25f;
+
         if (dot.isEmpty())
             curNoteViewGroupWidth -= ShowScoreActivity.noteWidth * 0.25f;
+
+        NoteViewGroup noteViewGroup = new NoteViewGroup(context, !accidental.isEmpty(), !duration.isEmpty(), !dot.isEmpty());
 
         /* mysterious bug: if curNoteViewGroupWidth is odd number, tie view would crash */
         if(curNoteViewGroupWidth % 2 != 0)
             curNoteViewGroupWidth += 1;
 
-        rlp = new RelativeLayout.LayoutParams(curNoteViewGroupWidth, ShowScoreActivity.noteHeight);
+        rlp = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-        if (noteViewGroupId == noteStartId) { // is the first note, make it align left
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        if (noteViewGroupId == ShowScoreActivity.noteStartId) { // is the first note, make it align left
+            rlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
         }
-        else if (noteViewGroupId > noteStartId) { // not the first note, make it right of the left one
+        else if (noteViewGroupId > ShowScoreActivity.noteStartId) { // not the first note, make it right of the left one
             rlp.addRule(RelativeLayout.RIGHT_OF,
                     this.findViewById(noteViewGroupId - 1).getId());
         }
 
-        noteViewGroup = new NoteViewGroup(context);
         noteViewGroup.setLayoutParams(rlp);
         noteViewGroup.setId(noteViewGroupId);
 
+        // add blank view
+        noteViewGroup.printBlankView();
+
         // add number view
-        noteViewGroup.printNumberView(note, !accidental.isEmpty());
+        noteViewGroup.printNumberView(note);
 
         // has accidental
         if(!accidental.isEmpty())
@@ -67,9 +97,10 @@ public class MeasureViewGroup extends RelativeLayout {
 
         // octave is 0 ~ 3, 5 ~ 8
         if(!octave.isEmpty())
-            noteViewGroup.printOctaveView(octave, !duration.isEmpty(), !accidental.isEmpty());
+            noteViewGroup.printOctaveView(octave);
 
         this.addView(noteViewGroup);
+        this.width+=noteViewGroup.getViewWidth();
     }
 
     public float getCurNoteViewGroupWidth() {

@@ -1,5 +1,6 @@
 package com.example.auditor;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -8,12 +9,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import com.example.auditor.score.NumberedMusicalNotationParser;
+import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.ScoreViewGroup;
 
 import org.jfugue.Pattern;
@@ -25,8 +27,11 @@ public class ShowScoreActivity extends ActionBarActivity {
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private String scoreName;
 
+    public static final int partStartId = 10001;
+    public static final int measureStartId = 101;
+    public static final int noteStartId = 1;
     // width:height = 2:3
-    private static int defaultNoteHeight = 300;
+    public static int defaultNoteHeight = 300;
 
     public static int noteHeight = defaultNoteHeight;
     public static int noteWidth = noteHeight / 3 * 2;
@@ -37,26 +42,25 @@ public class ShowScoreActivity extends ActionBarActivity {
     private HorizontalScrollView hScroll;
 
     // pinch to zoom
-    private ScaleGestureDetector mScaleDetector;
+//    private ScaleGestureDetector mScaleDetector;
     public static float mScaleFactor = 1.f;
 
     private ScoreViewGroup score;
     private RelativeLayout scoreContainer;
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
-//    private ZoomView zoomView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
-        noteHeight = defaultNoteHeight;
-        noteWidth = noteHeight / 3 * 2;
+        mScaleFactor = 1.f;
+        setDimensions();
 
         Intent intent = getIntent();
         scoreName  = intent.getStringExtra("score name");
-        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
+//        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
 
         vScroll = (ScrollView) findViewById(R.id.vScroll);
         hScroll = (HorizontalScrollView) findViewById(R.id.hScroll);
@@ -81,23 +85,22 @@ public class ShowScoreActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_musc_score, menu);
+        getMenuInflater().inflate(R.menu.menu_show_score, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_zoom_in:
+                zoom(true);
+                return true;
+            case R.id.action_zoom_out:
+                zoom(false);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -132,35 +135,126 @@ public class ShowScoreActivity extends ActionBarActivity {
                 break;
         }
 
-        mScaleDetector.onTouchEvent(event);
+//        mScaleDetector.onTouchEvent(event);
         return true;
     }
 
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
+//    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+//        @Override
+//        public boolean onScale(ScaleGestureDetector detector) {
+//            mScaleFactor *= detector.getScaleFactor();
+//
+//            // Don't let the object get too small or too large.
+//            mScaleFactor = Math.max(0.5f, Math.min(mScaleFactor, 3.0f));
+//
+//            if(mScaleFactor % 0.5 <= 0.03) {
+//                setDimensions();
+//
+//                for (int i = 0; i < 1; i++) {
+//                    PartViewGroup part = (PartViewGroup) score.findViewById(i + partStartId);
+//                    if (part == null)
+//                        break;
+//                    part.requestLayout();
+//                }
+//            }
+//
+//            return true;
+//        }
+//    }
 
-            // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+    private void setDimensions() {
+        noteHeight = (int) (defaultNoteHeight * mScaleFactor);
+        noteWidth = noteHeight / 3 * 2;
 
-            noteHeight = (int) (defaultNoteHeight * mScaleFactor);
-            noteWidth = noteHeight / 3 * 2;
+        NoteChildViewDimension.NUMBER_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.5);
+        NoteChildViewDimension.NUMBER_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
 
+        NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.25);
+        NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
 
-            numberedMusicalNotationParser.getScoreViewGroup().removeAllViews();
-            numberedMusicalNotationParser.parse();
-            scoreContainer.invalidate();
+        NoteChildViewDimension.BEAM_VIEW_HEIGHT = Math.round(ShowScoreActivity.noteHeight * 0.15f);
 
-            return true;
-        }
+        NoteChildViewDimension.BLANK_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.25);
+        NoteChildViewDimension.BLANK_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.225f);
+
+        NoteChildViewDimension.DOTTED_VIEW_WIDTH = (int)(ShowScoreActivity.noteWidth * 0.25);
+        NoteChildViewDimension.DOTTED_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
+
+        NoteChildViewDimension.OCTAVE_VIEW_WIDTH = (int)(ShowScoreActivity.noteWidth * 0.5);
+        NoteChildViewDimension.OCTAVE_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.225f);
+
+        NoteChildViewDimension.BAR_STROKE_WIDTH = Math.round(noteHeight * 0.03f);
+        NoteChildViewDimension.BAR_VIEW_HEIGHT = noteHeight;
+
+        NoteChildViewDimension.TIE_STROKE_WIDTH = Math.round(noteHeight * 0.022f);
+        NoteChildViewDimension.TIE_VIEW_HEIGHT = Math.round(noteHeight * 0.225f);
     }
 
-    // TODO pinch zoom
-    // http://stackoverflow.com/questions/5216658/pinch-zoom-for-custom-view
+    public static class NoteChildViewDimension {
+        public static int NUMBER_VIEW_WIDTH = (int) (noteWidth * 0.5);
+        public static int NUMBER_VIEW_HEIGHT = (int) (noteHeight * 0.4);
 
-    // TODO redraw all child view
-    // http://stackoverflow.com/questions/5991968/how-to-force-an-entire-layout-view-refresh
+        public static int ACCIDENTAL_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        public static int ACCIDENTAL_VIEW_HEIGHT = (int) (noteHeight * 0.4);
+
+        public static int BEAM_VIEW_HEIGHT = Math.round(noteHeight * 0.15f);
+
+        public static int BLANK_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        public static int BLANK_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
+
+        public static int DOTTED_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        public static int DOTTED_VIEW_HEIGHT = (int) (noteHeight * 0.4);
+
+        public static int OCTAVE_VIEW_WIDTH = (int) (noteWidth * 0.5);
+        public static int OCTAVE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
+
+        public static int BAR_STROKE_WIDTH = Math.round(noteHeight * 0.03f);
+        public static int BAR_VIEW_HEIGHT = noteHeight;
+
+        public static int TIE_STROKE_WIDTH = Math.round(noteHeight * 0.022f);
+        public static int TIE_VIEW_HEIGHT = Math.round(noteHeight * 0.225f);
+    }
+
+    public void zoom(boolean b) {
+        ProgressDialog progress;
+
+        if(b)
+            mScaleFactor += 0.5;
+        else
+            mScaleFactor -= 0.5;
+
+        if(mScaleFactor > 3) {
+            mScaleFactor = 3;
+            Toast.makeText(
+                    ShowScoreActivity.this,
+                    "最大!",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+        else if(mScaleFactor < 0.5) {
+            mScaleFactor = 0.5f;
+            Toast.makeText(
+                    ShowScoreActivity.this,
+                    "最小!",
+                    Toast.LENGTH_SHORT
+                    ).show();
+        }
+        else {
+            Runnable zoom = new Runnable() {
+                @Override
+                public void run() {
+                    setDimensions();
+                    for (int i = 0; i < 1; i++) {
+                        PartViewGroup part = (PartViewGroup) score.findViewById(i + partStartId);
+                        if (part == null)
+                            break;
+                        part.requestLayout();
+                    }
+                }
+            };
+            runOnUiThread(zoom);
+        }
+    }
 
     // TODO convert view to bitmap on android
     // http://stackoverflow.com/questions/5536066/convert-view-to-bitmap-on-android

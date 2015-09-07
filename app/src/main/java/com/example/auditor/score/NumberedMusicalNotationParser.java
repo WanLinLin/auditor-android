@@ -42,7 +42,6 @@ public class NumberedMusicalNotationParser {
         MeasureViewGroup measureViewGroup = new MeasureViewGroup(context);
         partViewGroup.printMeasure(measureViewGroup, measureIndex);
         curX += PartViewGroup.barStrokeWidth * 3;
-
         measureIndex++;
 
         for(String token : tokens) {
@@ -99,7 +98,7 @@ public class NumberedMusicalNotationParser {
             }
         }
 
-        partViewGroup.addTieView();
+//        partViewGroup.addTieView();
     }
 
     private void parseNoteContext(String t) {
@@ -173,6 +172,8 @@ public class NumberedMusicalNotationParser {
     private void addNote(int measureId, int partId, int noteViewGroupIndex) {
         PartViewGroup partViewGroup = (PartViewGroup) scoreViewGroup.findViewById(partId);
         MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
+        if(noteViewGroupIndex == 0)
+            measureViewGroup.printBarWidthView();
         measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteViewGroupIndex);
 
         /* calculate current x position */

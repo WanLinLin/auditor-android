@@ -9,6 +9,7 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ public class PartViewGroup extends RelativeLayout{
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
 
-    public static final int measureStartId = 101;
     public static int barStrokeWidth;
     public static int tieViewHeight;
 
@@ -33,33 +33,55 @@ public class PartViewGroup extends RelativeLayout{
         this.context = context;
         tieInfo = new ArrayList<>();
 
-        tieViewHeight = Math.round(ShowScoreActivity.noteHeight * 0.225f);
-        tieStrokeWidth = Math.round(ShowScoreActivity.noteHeight * 0.022f);
-        barStrokeWidth = Math.round(ShowScoreActivity.noteHeight * 0.03f);
+        tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
+
+        RelativeLayout tieViewLayout = new RelativeLayout(context);
+        tieViewLayout.setId(R.id.tie_view_layout);
+
+        // add tie view layout
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                tieViewHeight);
+        tieViewLayout.setLayoutParams(lp);
+        this.addView(tieViewLayout);
+    }
+
+    @Override
+    public void requestLayout() {
+        super.requestLayout();
+
+        for(int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).requestLayout();
+        }
     }
 
     public void printMeasure(MeasureViewGroup measureViewGroup, int i) {
-        int measureViewGroupId = i + measureStartId;
+        int measureViewGroupId = i + ShowScoreActivity.measureStartId;
 
         // add first bar
-        if(measureViewGroupId == measureStartId) {
+        if(measureViewGroupId == ShowScoreActivity.measureStartId) {
             BarView barView = new BarView(context);
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            lp.topMargin = tieViewHeight;
-            lp.leftMargin = barStrokeWidth;
+            RelativeLayout.LayoutParams lp =
+                    new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.WRAP_CONTENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT);
+            lp.addRule(RelativeLayout.BELOW, R.id.tie_view_layout);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             barView.setLayoutParams(lp);
             this.addView(barView);
         }
 
         // add this measure
-        RelativeLayout.LayoutParams rlp = new LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = tieViewHeight;
-        rlp.leftMargin = Math.round(3 * barStrokeWidth);
-        if(measureViewGroupId > measureStartId)
+        RelativeLayout.LayoutParams rlp =
+                new LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+        rlp.addRule(RelativeLayout.BELOW, R.id.tie_view_layout);
+        if(measureViewGroupId > ShowScoreActivity.measureStartId)
             rlp.addRule(RIGHT_OF, measureViewGroupId - 1); // previous measure id
         else
             rlp.addRule(ALIGN_PARENT_LEFT);
@@ -69,11 +91,12 @@ public class PartViewGroup extends RelativeLayout{
 
         // add a new bar right of this measure
         BarView barView = new BarView(context);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams lp =
+                new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
         lp.addRule(RIGHT_OF, measureViewGroup.getId());
-        lp.topMargin = tieViewHeight;
-        lp.leftMargin = barStrokeWidth;
-        lp.rightMargin = barStrokeWidth;
+        lp.addRule(RelativeLayout.BELOW, R.id.tie_view_layout);
         barView.setLayoutParams(lp);
         this.addView(barView);
     }
@@ -96,7 +119,7 @@ public class PartViewGroup extends RelativeLayout{
             else if(tie.equals("end")) {
                 int rectWidth = x - rectStartX;
 
-                RectF rectF = new RectF(tieStrokeWidth / 2, tieViewHeight / 2, rectWidth + tieStrokeWidth / 2, tieViewHeight * 3 / 2);
+                RectF rectF = new RectF(tieStrokeWidth/2, tieViewHeight/2, rectWidth + tieStrokeWidth/2, tieViewHeight*3/2);
                 TieView tieView = new TieView(context, rectF);
                 if(SHOW_TIE_VIEW_COLOR)
                     tieView.setBackgroundColor(Color.RED);
@@ -107,7 +130,7 @@ public class PartViewGroup extends RelativeLayout{
                                 RelativeLayout.LayoutParams.WRAP_CONTENT);
                 rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                 rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                rlp.leftMargin = rectStartX - tieStrokeWidth / 2;
+                rlp.leftMargin = rectStartX - tieStrokeWidth/2;
 
                 tieView.setLayoutParams(rlp);
                 this.addView(tieView);
@@ -116,14 +139,25 @@ public class PartViewGroup extends RelativeLayout{
     }
 
     private class BarView extends View {
+        private int width;
+        private int height;
+
         public BarView(Context context) {
             super(context);
+
+            barStrokeWidth = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH;
+            width = barStrokeWidth * 3;
+            height = ShowScoreActivity.noteHeight;
         }
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            setMeasuredDimension(Math.round(barStrokeWidth), ShowScoreActivity.noteHeight);
+
+            barStrokeWidth = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH;
+            width = barStrokeWidth * 3;
+            height = ShowScoreActivity.noteHeight;
+            setMeasuredDimension(width, height);
         }
 
         @Override
@@ -131,7 +165,7 @@ public class PartViewGroup extends RelativeLayout{
             super.onDraw(canvas);
             mPaint.setColor(Color.BLACK);
             mPaint.setStrokeWidth(barStrokeWidth);
-            canvas.drawLine(barStrokeWidth/2, 0, barStrokeWidth/2, ShowScoreActivity.noteHeight, mPaint);
+            canvas.drawLine(width/2, 0, width/2, height, mPaint);
         }
     }
 
@@ -141,11 +175,18 @@ public class PartViewGroup extends RelativeLayout{
         public TieView(Context context, RectF rectF) {
             super(context);
             this.rectF = rectF;
+
+            tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
+            tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
         }
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+            tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
+            tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
+
             setMeasuredDimension(Math.round(rectF.width() + tieStrokeWidth), tieViewHeight);
         }
 

@@ -10,7 +10,6 @@ import com.example.auditor.ShowScoreActivity;
  * Keep Part
  */
 public class ScoreViewGroup extends RelativeLayout {
-    private static final int partStartId = 10001;
     private ShowScoreActivity showScoreActivity;
 
     public ScoreViewGroup(Context context) {
@@ -25,8 +24,17 @@ public class ScoreViewGroup extends RelativeLayout {
         this.setLayoutParams(slp);
     }
 
+    @Override
+    public void requestLayout() {
+        super.requestLayout();
+
+        for(int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).requestLayout();
+        }
+    }
+
     public void printPart(PartViewGroup partViewGroup, int i) {
-        int partViewGroupId = i + partStartId;
+        int partViewGroupId = i + ShowScoreActivity.partStartId;
         RelativeLayout.LayoutParams plp =
                 new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -34,10 +42,10 @@ public class ScoreViewGroup extends RelativeLayout {
 
         partViewGroup.setId(partViewGroupId);
 
-        if(partViewGroupId == partStartId) {
+        if(partViewGroupId == ShowScoreActivity.partStartId) {
             plp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }
-        else if(partViewGroupId > partStartId) {
+        else if(partViewGroupId > ShowScoreActivity.partStartId) {
             plp.addRule(RelativeLayout.BELOW, partViewGroup.getId() - 1);
         }
         partViewGroup.setLayoutParams(plp);
