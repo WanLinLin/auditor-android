@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -76,6 +77,30 @@ public class BeamView extends View {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                switch(beams) {
+                    case 1:
+                        beams = 2;
+                        break;
+                    case 2:
+                        beams = 3;
+                        break;
+                    case 3:
+                        beams = 4;
+                        break;
+                    case 4:
+                        beams = 1;
+                        break;
+                }
+                break;
+        }
+        this.requestLayout();
+        return super.onTouchEvent(event);
+    }
+
     public void setBeams(int beams) {
         this.beams = beams;
     }
@@ -86,5 +111,19 @@ public class BeamView extends View {
 
     public void setHasDottedView(boolean hasDottedView) {
         this.hasDottedView = hasDottedView;
+    }
+
+    public String getBeams() {
+        switch (beams) {
+            case 1:
+                return "i";
+            case 2:
+                return "s";
+            case 3:
+                return "t";
+            case 4:
+                return "x";
+        }
+        return null;
     }
 }

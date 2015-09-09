@@ -43,9 +43,7 @@ public class MainActivity extends ActionBarActivity {
 
         RelativeLayout root = (RelativeLayout)findViewById(R.id.activity_main);
 
-        nvg = new NoteViewGroup(this, true, true, true);
-        nvg.setHasAccidentalView(true);
-        nvg.setHasDottedView(true);
+        nvg = new NoteViewGroup(this, true, true, true, false, false);
         nvg.setBackgroundColor(Color.LTGRAY);
         RelativeLayout.LayoutParams nvglp =
                 new RelativeLayout.LayoutParams(
@@ -59,7 +57,7 @@ public class MainActivity extends ActionBarActivity {
         blkv.setId(R.id.blank_view);
 
         // top octave
-        ov = new OctaveView(this);
+        ov = new OctaveView(this, true, true);
         ov.setOctave(2);
         ov.setId(R.id.octave_view);
         RelativeLayout.LayoutParams ovlp =

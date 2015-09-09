@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -17,6 +18,7 @@ import com.example.auditor.ShowScoreActivity;
  * 5 dots at most(we support no shorter than sixty-forth note).
  */
 public class AccidentalView extends View {
+    private static final String LOG_TAG = AccidentalView.class.getName();
     private Paint mPaint;
     private Paint mPaint2;
     private String accidental;
@@ -93,6 +95,22 @@ public class AccidentalView extends View {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if(accidental.equals("#")) {
+                    accidental = "b";
+                }
+                else {
+                    accidental = "#";
+                }
+                break;
+        }
+        this.invalidate();
+        return super.onTouchEvent(event);
+    }
+
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
@@ -105,5 +123,9 @@ public class AccidentalView extends View {
 
     public void setAccidental(String accidental) {
         this.accidental = accidental;
+    }
+
+    public String getAccidental() {
+        return accidental;
     }
 }

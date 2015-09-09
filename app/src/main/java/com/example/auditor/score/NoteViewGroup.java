@@ -12,32 +12,48 @@ import com.example.auditor.ShowScoreActivity;
  * A note view group contains number view, accidental view, dotted view, octave view, and beam view.
  */
 public class NoteViewGroup extends RelativeLayout {
+    private static final String LOG_TAG = NoteViewGroup.class.getName();
     private final boolean SHOW_NOTE_VIEW_GROUP_COLOR = false;
     private Context context;
     private boolean hasAccidentalView;
     private boolean hasDottedView;
     private boolean hasBeamView;
+    private boolean tieStart;
+    private boolean tieEnd;
 
-    private int height;
     private int width;
 
     public NoteViewGroup(Context context) {
         super(context);
     }
 
-    public NoteViewGroup(Context context, boolean hasAccidentalView, boolean hasBeamView, boolean hasDottedView) {
+    public NoteViewGroup(Context context, boolean hasAccidentalView, boolean hasBeamView, boolean hasDottedView, boolean tieStart, boolean tieEnd) {
         super(context);
         this.context = context;
         this.hasAccidentalView = hasAccidentalView;
         this.hasBeamView = hasBeamView;
         this.hasDottedView = hasDottedView;
+        this.tieStart = tieStart;
+        this.tieEnd = tieEnd;
 
-        height = ShowScoreActivity.noteHeight;
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         if(hasAccidentalView)
             width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
         if(hasDottedView)
             width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        if(hasAccidentalView)
+            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        if(hasDottedView)
+            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+        setMeasuredDimension(width, ShowScoreActivity.noteHeight);
     }
 
     @Override
@@ -165,7 +181,7 @@ public class NoteViewGroup extends RelativeLayout {
 
     public void printOctaveView(String oct) {
         // Octave view
-        OctaveView o = new OctaveView(context);
+        OctaveView o = new OctaveView(context, hasBeamView, hasAccidentalView);
         int octave = Integer.parseInt(oct);
         o.setOctave(octave);
         o.setId(R.id.octave_view);
@@ -189,6 +205,7 @@ public class NoteViewGroup extends RelativeLayout {
             olp.addRule(RelativeLayout.RIGHT_OF, R.id.blank_view);
         else
             olp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+
         o.setLayoutParams(olp);
 
         if(SHOW_NOTE_VIEW_GROUP_COLOR)
@@ -197,19 +214,23 @@ public class NoteViewGroup extends RelativeLayout {
         this.addView(o);
     }
 
-    public void setHasAccidentalView(boolean hasAccidentalView) {
-        this.hasAccidentalView = hasAccidentalView;
-    }
-
-    public void setHasDottedView(boolean hasDottedView) {
-        this.hasDottedView = hasDottedView;
-    }
-
-    public void setHasBeamView(boolean hasBeamView) {
-        this.hasBeamView = hasBeamView;
-    }
-
     public int getViewWidth() {
         return width;
+    }
+
+    public boolean isTieEnd() {
+        return tieEnd;
+    }
+
+    public boolean isTieStart() {
+        return tieStart;
+    }
+
+    public boolean hasAccidentalView() {
+        return hasAccidentalView;
+    }
+
+    public boolean hasDottedView() {
+        return hasDottedView;
     }
 }

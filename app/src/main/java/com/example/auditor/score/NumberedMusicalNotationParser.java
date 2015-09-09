@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
 
+import com.example.auditor.ShowScoreActivity;
+
 import org.jfugue.Pattern;
 
 /**
@@ -11,6 +13,7 @@ import org.jfugue.Pattern;
  * Parse music string and render it to a score object;
  */
 public class NumberedMusicalNotationParser {
+    private static final String LOG_TAG = NumberedMusicalNotationParser.class.getName();
     private Context context;
     private String musicString;
     private int curX; // relative to measure view, refresh every part
@@ -41,7 +44,7 @@ public class NumberedMusicalNotationParser {
         // add first measure
         MeasureViewGroup measureViewGroup = new MeasureViewGroup(context);
         partViewGroup.printMeasure(measureViewGroup, measureIndex);
-        curX += PartViewGroup.barStrokeWidth * 3;
+        curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
         measureIndex++;
 
         for(String token : tokens) {
@@ -59,7 +62,7 @@ public class NumberedMusicalNotationParser {
                     // add a new measure
                     measureViewGroup = new MeasureViewGroup(context);
                     partViewGroup.printMeasure(measureViewGroup, measureIndex);
-                    curX += PartViewGroup.barStrokeWidth * 3;
+                    curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
                     measureIndex++;
                     noteViewGroupIndex = 0;
                     break;
@@ -98,7 +101,7 @@ public class NumberedMusicalNotationParser {
             }
         }
 
-//        partViewGroup.addTieView();
+        partViewGroup.printTieView();
     }
 
     private void parseNoteContext(String t) {
@@ -174,15 +177,16 @@ public class NumberedMusicalNotationParser {
         MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
         if(noteViewGroupIndex == 0)
             measureViewGroup.printBarWidthView();
-        measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteViewGroupIndex);
+        measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteContext.tieStart, noteContext.tieEnd, noteViewGroupIndex);
 
-        /* calculate current x position */
-        curX += measureViewGroup.getCurNoteViewGroupWidth() / 2;
-        if(noteContext.tieEnd)
-            partViewGroup.addTieInfo(new Pair<>(curX, "end"));
-        if(noteContext.tieStart)
-            partViewGroup.addTieInfo(new Pair<>(curX, "start"));
-        curX += measureViewGroup.getCurNoteViewGroupWidth() / 2;
+        if(noteContext.tieEnd) {
+            partViewGroup.addTieInfo(new Pair<>((int)(curX + measureViewGroup.getCurNoteViewGroupWidth()/2), "end"));
+        }
+        if(noteContext.tieStart) {
+            partViewGroup.addTieInfo(new Pair<>((int)(curX + measureViewGroup.getCurNoteViewGroupWidth()/2), "start"));
+        }
+
+        curX += measureViewGroup.getCurNoteViewGroupWidth();
     }
 
     public ScoreViewGroup getScoreViewGroup() {

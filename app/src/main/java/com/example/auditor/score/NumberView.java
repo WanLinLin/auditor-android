@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -13,6 +14,7 @@ import com.example.auditor.ShowScoreActivity;
  * Draw the number note
  */
 public class NumberView extends View {
+    private static final String LOG_TAG = NumberView.class.getName();
     private String note;
     private Paint mPaint;
 
@@ -25,6 +27,42 @@ public class NumberView extends View {
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                switch (note) {
+                    case "C":
+                        note = "D";
+                        break;
+                    case "D":
+                        note = "E";
+                        break;
+                    case "E":
+                        note = "F";
+                        break;
+                    case "F":
+                        note = "G";
+                        break;
+                    case "G":
+                        note = "A";
+                        break;
+                    case "A":
+                        note = "B";
+                        break;
+                    case "B":
+                        note = "R";
+                        break;
+                    case "R":
+                        note = "C";
+                        break;
+                }
+                break;
+        }
+        this.invalidate();
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -83,5 +121,9 @@ public class NumberView extends View {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getNote() {
+        return note;
     }
 }

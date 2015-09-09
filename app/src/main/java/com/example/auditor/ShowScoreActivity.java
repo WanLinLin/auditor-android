@@ -1,11 +1,11 @@
 package com.example.auditor;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -14,6 +14,8 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.example.auditor.score.MeasureViewGroup;
+import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberedMusicalNotationParser;
 import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.ScoreViewGroup;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class ShowScoreActivity extends ActionBarActivity {
+    private static final String LOG_TAG = ShowScoreActivity.class.getName();
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private String scoreName;
 
@@ -55,6 +58,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
+        // reset parameters
         mScaleFactor = 1.f;
         setDimensions();
 
@@ -93,10 +97,32 @@ public class ShowScoreActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_zoom_in:
-                zoom(true);
+                if(mScaleFactor < 3) {
+                    mScaleFactor += 0.5;
+                    zoom();
+
+                    if(mScaleFactor == 3) {
+                        Toast.makeText(
+                                ShowScoreActivity.this,
+                                "最大!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
                 return true;
             case R.id.action_zoom_out:
-                zoom(false);
+                if (mScaleFactor > 0.5) {
+                    mScaleFactor -= 0.5;
+                    zoom();
+
+                    if(mScaleFactor == 0.5) {
+                        Toast.makeText(
+                                ShowScoreActivity.this,
+                                "最小!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -134,8 +160,6 @@ public class ShowScoreActivity extends ActionBarActivity {
                 //This event fires when the second finger is off the screen, but the first finger
                 break;
         }
-
-//        mScaleDetector.onTouchEvent(event);
         return true;
     }
 
@@ -208,51 +232,51 @@ public class ShowScoreActivity extends ActionBarActivity {
         public static int OCTAVE_VIEW_WIDTH = (int) (noteWidth * 0.5);
         public static int OCTAVE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
 
-        public static int BAR_STROKE_WIDTH = Math.round(noteHeight * 0.03f);
+        public static int BAR_STROKE_WIDTH = (int) (noteHeight * 0.03f);
         public static int BAR_VIEW_HEIGHT = noteHeight;
 
-        public static int TIE_STROKE_WIDTH = Math.round(noteHeight * 0.022f);
-        public static int TIE_VIEW_HEIGHT = Math.round(noteHeight * 0.225f);
+        public static int TIE_STROKE_WIDTH = (int) (noteHeight * 0.022f);
+        public static int TIE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
     }
 
-    public void zoom(boolean b) {
-        ProgressDialog progress;
+    public void zoom() {
+        setDimensions();
 
-        if(b)
-            mScaleFactor += 0.5;
-        else
-            mScaleFactor -= 0.5;
+        for (int i = 0; i < 1; i++) {
+            PartViewGroup part = (PartViewGroup)score.findViewById(i + partStartId);
+            if (part == null) break;
 
-        if(mScaleFactor > 3) {
-            mScaleFactor = 3;
-            Toast.makeText(
-                    ShowScoreActivity.this,
-                    "最大!",
-                    Toast.LENGTH_SHORT
-            ).show();
-        }
-        else if(mScaleFactor < 0.5) {
-            mScaleFactor = 0.5f;
-            Toast.makeText(
-                    ShowScoreActivity.this,
-                    "最小!",
-                    Toast.LENGTH_SHORT
-                    ).show();
-        }
-        else {
-            Runnable zoom = new Runnable() {
-                @Override
-                public void run() {
-                    setDimensions();
-                    for (int i = 0; i < 1; i++) {
-                        PartViewGroup part = (PartViewGroup) score.findViewById(i + partStartId);
-                        if (part == null)
-                            break;
-                        part.requestLayout();
+            int curX = 0;
+            part.clearTieInfo();
+            part.getTieViewLayout().removeAllViews();
+
+            for(int j = 0; j < partStartId - measureStartId; j++) {
+                MeasureViewGroup measure = (MeasureViewGroup)part.findViewById(j + measureStartId);
+                if (measure == null) break;
+
+                curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+
+                for(int k = 0; k < measureStartId - noteStartId; k++) {
+                    NoteViewGroup note = (NoteViewGroup)measure.findViewById(k + noteStartId);
+                    if (note == null) break;
+
+                    int noteViewWidth = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+                    if(note.hasAccidentalView())
+                        noteViewWidth += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+                    if(note.hasDottedView())
+                        noteViewWidth += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+                    if(note.isTieEnd()) {
+                        part.addTieInfo(new Pair<>((curX + noteViewWidth/2), "end"));
                     }
+                    if(note.isTieStart()) {
+                        part.addTieInfo(new Pair<>((curX + noteViewWidth/2), "start"));
+                    }
+                    curX += noteViewWidth;
                 }
-            };
-            runOnUiThread(zoom);
+            }
+            part.printTieView();
+            part.requestLayout();
         }
     }
 

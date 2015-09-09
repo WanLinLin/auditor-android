@@ -18,12 +18,14 @@ import java.util.ArrayList;
  * Created by Wan Lin on 15/8/20.
  * A part contains numbers of measures.
  */
-public class PartViewGroup extends RelativeLayout{
+public class PartViewGroup extends RelativeLayout {
+    private static final String LOG_TAG = PartViewGroup.class.getName();
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
     private static int tieStrokeWidth;
     private Context context;
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
+    private TieViewGroup tieViewLayout;
 
     public static int barStrokeWidth;
     public static int tieViewHeight;
@@ -34,12 +36,13 @@ public class PartViewGroup extends RelativeLayout{
         tieInfo = new ArrayList<>();
 
         tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
+        tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        RelativeLayout tieViewLayout = new RelativeLayout(context);
+        tieViewLayout = new TieViewGroup(context);
         tieViewLayout.setId(R.id.tie_view_layout);
 
         // add tie view layout
@@ -105,7 +108,7 @@ public class PartViewGroup extends RelativeLayout{
         this.tieInfo.add(tieInfo);
     }
 
-    public void addTieView() {
+    public void printTieView() {
         int rectStartX = 0;
 
         for(Pair<Integer, String> p: tieInfo) {
@@ -118,6 +121,9 @@ public class PartViewGroup extends RelativeLayout{
             }
             else if(tie.equals("end")) {
                 int rectWidth = x - rectStartX;
+
+                tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
+                tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
 
                 RectF rectF = new RectF(tieStrokeWidth/2, tieViewHeight/2, rectWidth + tieStrokeWidth/2, tieViewHeight*3/2);
                 TieView tieView = new TieView(context, rectF);
@@ -133,9 +139,13 @@ public class PartViewGroup extends RelativeLayout{
                 rlp.leftMargin = rectStartX - tieStrokeWidth/2;
 
                 tieView.setLayoutParams(rlp);
-                this.addView(tieView);
+                tieViewLayout.addView(tieView);
             }
         }
+    }
+
+    public void clearTieInfo() {
+        this.tieInfo.clear();
     }
 
     private class BarView extends View {
@@ -198,5 +208,13 @@ public class PartViewGroup extends RelativeLayout{
             mPaint.setStrokeWidth(tieStrokeWidth);
             canvas.drawArc(rectF, 180, 180, false, mPaint);
         }
+    }
+
+    public ArrayList<Pair<Integer, String>> getTieInfo() {
+        return tieInfo;
+    }
+
+    public TieViewGroup getTieViewLayout() {
+        return tieViewLayout;
     }
 }

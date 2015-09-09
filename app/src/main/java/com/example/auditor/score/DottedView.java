@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -47,6 +48,22 @@ public class DottedView extends View{
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if(dot.equals(".")) {
+                    dot = "";
+                }
+                else {
+                    dot = ".";
+                }
+                break;
+        }
+        this.invalidate();
+        return super.onTouchEvent(event);
+    }
+
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
@@ -55,5 +72,9 @@ public class DottedView extends View{
 
     public void setLength(String dot) {
         this.dot = dot;
+    }
+
+    public String getDot() {
+        return dot;
     }
 }
