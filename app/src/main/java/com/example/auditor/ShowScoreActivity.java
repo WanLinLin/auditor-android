@@ -30,28 +30,29 @@ public class ShowScoreActivity extends ActionBarActivity {
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private String scoreName;
 
-    public static final int partStartId = 10001;
-    public static final int measureStartId = 101;
-    public static final int noteStartId = 1;
-    // width:height = 2:3
-    public static int defaultNoteHeight = 300;
-
-    public static int noteHeight = defaultNoteHeight;
-    public static int noteWidth = noteHeight / 3 * 2;
-
     // two dimension scroll view
-    private float mx, my;
-    private ScrollView vScroll;
-    private HorizontalScrollView hScroll;
-
-    // pinch to zoom
-//    private ScaleGestureDetector mScaleDetector;
-    public static float mScaleFactor = 1.f;
-
     private ScoreViewGroup score;
     private RelativeLayout scoreContainer;
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
+
+    private float mx, my;
+    private ScrollView vScroll;
+
+    private HorizontalScrollView hScroll;
+    public static final int partStartId = 10001;
+
+    public static final int measureStartId = 101;
+    public static final int noteStartId = 1;
+    public static int defaultNoteHeight = 300;
+
+    public static int noteHeight = defaultNoteHeight;
+
+    public static int noteWidth = noteHeight / 3 * 2;
+
+    // pinch to zoom
+//    private ScaleGestureDetector mScaleDetector;
+    public static float mScaleFactor = 1.f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,53 +191,57 @@ public class ShowScoreActivity extends ActionBarActivity {
         noteHeight = (int) (defaultNoteHeight * mScaleFactor);
         noteWidth = noteHeight / 3 * 2;
 
-        NoteChildViewDimension.NUMBER_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.5);
-        NoteChildViewDimension.NUMBER_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
+        NoteChildViewDimension.NUMBER_VIEW_WIDTH = (int) (noteWidth * 0.5);
+        NoteChildViewDimension.NUMBER_VIEW_HEIGHT = (int) (noteHeight * 0.4);
 
-        NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.25);
-        NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
+        NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT = (int) (noteHeight * 0.4);
 
-        NoteChildViewDimension.BEAM_VIEW_HEIGHT = Math.round(ShowScoreActivity.noteHeight * 0.15f);
+        NoteChildViewDimension.BEAM_VIEW_HEIGHT = Math.round(noteHeight * 0.15f);
 
-        NoteChildViewDimension.BLANK_VIEW_WIDTH = (int) (ShowScoreActivity.noteWidth * 0.25);
-        NoteChildViewDimension.BLANK_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.225f);
+        NoteChildViewDimension.BLANK_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        NoteChildViewDimension.BLANK_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
 
-        NoteChildViewDimension.DOTTED_VIEW_WIDTH = (int)(ShowScoreActivity.noteWidth * 0.25);
-        NoteChildViewDimension.DOTTED_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.4);
+        NoteChildViewDimension.DOTTED_VIEW_WIDTH = (int) (noteWidth * 0.25);
+        NoteChildViewDimension.DOTTED_VIEW_HEIGHT = (int) (noteHeight * 0.4);
 
-        NoteChildViewDimension.OCTAVE_VIEW_WIDTH = (int)(ShowScoreActivity.noteWidth * 0.5);
-        NoteChildViewDimension.OCTAVE_VIEW_HEIGHT = (int) (ShowScoreActivity.noteHeight * 0.225f);
+        NoteChildViewDimension.OCTAVE_VIEW_WIDTH = (int) (noteWidth * 0.5);
+        NoteChildViewDimension.OCTAVE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
 
         NoteChildViewDimension.BAR_STROKE_WIDTH = Math.round(noteHeight * 0.03f);
         NoteChildViewDimension.BAR_VIEW_HEIGHT = noteHeight;
 
         NoteChildViewDimension.TIE_STROKE_WIDTH = Math.round(noteHeight * 0.022f);
         NoteChildViewDimension.TIE_VIEW_HEIGHT = Math.round(noteHeight * 0.225f);
+
+        NoteChildViewDimension.WORD_VIEW_HEIGHT = (int) (noteHeight * 0.3f);
     }
 
     public static class NoteChildViewDimension {
-        public static int NUMBER_VIEW_WIDTH = (int) (noteWidth * 0.5);
-        public static int NUMBER_VIEW_HEIGHT = (int) (noteHeight * 0.4);
+        public static int NUMBER_VIEW_WIDTH;
+        public static int NUMBER_VIEW_HEIGHT;
 
-        public static int ACCIDENTAL_VIEW_WIDTH = (int) (noteWidth * 0.25);
-        public static int ACCIDENTAL_VIEW_HEIGHT = (int) (noteHeight * 0.4);
+        public static int ACCIDENTAL_VIEW_WIDTH;
+        public static int ACCIDENTAL_VIEW_HEIGHT;
 
-        public static int BEAM_VIEW_HEIGHT = Math.round(noteHeight * 0.15f);
+        public static int BEAM_VIEW_HEIGHT;
 
-        public static int BLANK_VIEW_WIDTH = (int) (noteWidth * 0.25);
-        public static int BLANK_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
+        public static int BLANK_VIEW_WIDTH;
+        public static int BLANK_VIEW_HEIGHT;
 
-        public static int DOTTED_VIEW_WIDTH = (int) (noteWidth * 0.25);
-        public static int DOTTED_VIEW_HEIGHT = (int) (noteHeight * 0.4);
+        public static int DOTTED_VIEW_WIDTH;
+        public static int DOTTED_VIEW_HEIGHT;
 
-        public static int OCTAVE_VIEW_WIDTH = (int) (noteWidth * 0.5);
-        public static int OCTAVE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
+        public static int OCTAVE_VIEW_WIDTH;
+        public static int OCTAVE_VIEW_HEIGHT;
 
-        public static int BAR_STROKE_WIDTH = (int) (noteHeight * 0.03f);
-        public static int BAR_VIEW_HEIGHT = noteHeight;
+        public static int BAR_STROKE_WIDTH;
+        public static int BAR_VIEW_HEIGHT;
 
-        public static int TIE_STROKE_WIDTH = (int) (noteHeight * 0.022f);
-        public static int TIE_VIEW_HEIGHT = (int) (noteHeight * 0.225f);
+        public static int TIE_STROKE_WIDTH;
+        public static int TIE_VIEW_HEIGHT;
+
+        public static int WORD_VIEW_HEIGHT;
     }
 
     public void zoom() {
@@ -248,7 +253,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
             int curX = 0;
             part.clearTieInfo();
-            part.getTieViewLayout().removeAllViews();
+            part.getTieViewGroup().removeAllViews();
 
             for(int j = 0; j < partStartId - measureStartId; j++) {
                 MeasureViewGroup measure = (MeasureViewGroup)part.findViewById(j + measureStartId);
@@ -279,6 +284,8 @@ public class ShowScoreActivity extends ActionBarActivity {
             part.requestLayout();
         }
     }
+
+    // TODO add lyric view, each word will align to a single note
 
     // TODO convert view to bitmap on android
     // http://stackoverflow.com/questions/5536066/convert-view-to-bitmap-on-android

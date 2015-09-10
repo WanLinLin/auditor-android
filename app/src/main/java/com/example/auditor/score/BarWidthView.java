@@ -9,7 +9,8 @@ import android.view.View;
 import com.example.auditor.ShowScoreActivity;
 
 /**
- * Created by wanlin on 15/9/3.
+ * Created by Wan Lin on 15/9/3.
+ * A bar width view adds at the begin of a measure.
  */
 public class BarWidthView extends View {
     private Paint mPaint;

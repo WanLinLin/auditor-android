@@ -11,9 +11,12 @@ import com.example.auditor.ShowScoreActivity;
  */
 public class ScoreViewGroup extends RelativeLayout {
     private ShowScoreActivity showScoreActivity;
+    private Context context;
 
     public ScoreViewGroup(Context context) {
         super(context);
+        this.context = context;
+
         this.showScoreActivity = (ShowScoreActivity)context;
 
         LayoutParams slp = new LayoutParams(
@@ -33,8 +36,10 @@ public class ScoreViewGroup extends RelativeLayout {
         }
     }
 
-    public void printPart(PartViewGroup partViewGroup, int i) {
+    public void printPart(int i) {
         int partViewGroupId = i + ShowScoreActivity.partStartId;
+        PartViewGroup partViewGroup = new PartViewGroup(context);
+
         RelativeLayout.LayoutParams plp =
                 new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,

@@ -52,6 +52,7 @@ public class MeasureViewGroup extends RelativeLayout {
                     RelativeLayout.LayoutParams.WRAP_CONTENT,
                     RelativeLayout.LayoutParams.WRAP_CONTENT);
 
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         if (noteViewGroupId == ShowScoreActivity.noteStartId) { // is the first note, make it align left
             rlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
         }
@@ -88,6 +89,30 @@ public class MeasureViewGroup extends RelativeLayout {
         this.addView(noteViewGroup);
         this.width+=noteViewGroup.getViewWidth();
         curNoteViewGroupWidth = noteViewGroup.getViewWidth();
+    }
+
+    public void printWord(String word, int i) {
+        int noteViewGroupId = i + ShowScoreActivity.noteStartId;
+
+        WordView wordView = new WordView(context, curNoteViewGroupWidth);
+        wordView.setWord(word);
+
+        RelativeLayout.LayoutParams rlp =
+                new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        rlp.addRule(RelativeLayout.BELOW, R.id.bar_width_view);
+        if (noteViewGroupId == ShowScoreActivity.noteStartId) { // is the first word, make it align left
+            rlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
+        }
+        else if (noteViewGroupId > ShowScoreActivity.noteStartId) { // not the first word, make it right of the left one
+            rlp.addRule(RelativeLayout.RIGHT_OF,
+                    noteViewGroupId - 1);
+        }
+
+        wordView.setLayoutParams(rlp);
+        this.addView(wordView);
     }
 
     public float getCurNoteViewGroupWidth() {

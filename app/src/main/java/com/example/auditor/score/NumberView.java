@@ -23,7 +23,9 @@ public class NumberView extends View {
 
     public NumberView(Context context) {
         super(context);
-        init();
+
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(Color.BLACK);
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
@@ -112,11 +114,6 @@ public class NumberView extends View {
                 canvas.drawText("-", x, y, mPaint);
                 break;
         }
-    }
-
-    private void init() {
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(Color.BLACK);
     }
 
     public void setNote(String note) {
