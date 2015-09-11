@@ -244,6 +244,18 @@ public class ShowScoreActivity extends ActionBarActivity {
         public static int WORD_VIEW_HEIGHT;
     }
 
+    private void saveScore() {
+        String musicString = "C4你";
+
+        pattern = new Pattern(musicString);
+        try {
+            pattern.savePattern(new File(auditorDir + "test" + ".txt"));
+        }
+        catch (IOException e) {
+            Log.e(getClass().getName(), "IOE");
+        }
+    }
+
     public void zoom() {
         setDimensions();
 

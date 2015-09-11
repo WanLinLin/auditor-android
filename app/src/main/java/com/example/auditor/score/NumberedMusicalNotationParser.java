@@ -16,7 +16,7 @@ public class NumberedMusicalNotationParser {
     private static final String LOG_TAG = NumberedMusicalNotationParser.class.getName();
     private Context context;
     private String musicString;
-    private int curX; // relative to measure view, refresh every part
+    private int curX; // to calculate tie position, relative to part view, refresh every part
     private ScoreViewGroup scoreViewGroup;
     private NoteContext noteContext;
 
@@ -75,6 +75,7 @@ public class NumberedMusicalNotationParser {
                     // add a new note view group
                     parseNoteContext(token);
                     addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
+                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
                     noteViewGroupIndex++;
                     break;
             }
@@ -171,6 +172,12 @@ public class NumberedMusicalNotationParser {
                 case '.':
                     noteContext.dot = Character.toString(c);
                     break;
+
+                default:
+                    if(Character.UnicodeBlock.of(c) == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
+                        noteContext.word = Character.toString(c);
+                    }
+                    break;
             }
             searchPos++;
         }
@@ -183,9 +190,7 @@ public class NumberedMusicalNotationParser {
             measureViewGroup.printBarWidthView();
         measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteContext.tieStart, noteContext.tieEnd, noteViewGroupIndex);
 
-        // TODO parse word and print it
-        measureViewGroup.printWord("叡", noteViewGroupIndex);
-
+        // store tie information
         if(noteContext.tieEnd) {
             partViewGroup.addTieInfo(new Pair<>((int)(curX + measureViewGroup.getCurNoteViewGroupWidth()/2), "end"));
         }
@@ -208,6 +213,7 @@ public class NumberedMusicalNotationParser {
         String duration = ""; // i, s, ,t ,x
         Boolean tieStart = false;
         String dot = "";
+        String word = "";
 
         void printNoteContext() {
             Log.e(getClass().getName(), "note: " + note);
