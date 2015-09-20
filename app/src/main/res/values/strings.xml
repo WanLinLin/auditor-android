@@ -18,4 +18,5 @@
     <string name="title_activity_show_score">ShowScoreActivity</string>
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
+    <string name="save">Save</string>
 </resources>

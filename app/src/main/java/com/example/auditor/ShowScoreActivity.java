@@ -1,6 +1,12 @@
 package com.example.auditor;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -9,6 +15,10 @@ import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -20,10 +30,27 @@ import com.example.auditor.score.NumberedMusicalNotationParser;
 import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.ScoreViewGroup;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.jfugue.Pattern;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
@@ -38,17 +65,22 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     private float mx, my;
     private ScrollView vScroll;
-
     private HorizontalScrollView hScroll;
+
     public static final int partStartId = 10001;
-
-    public static final int measureStartId = 101;
+    public static final int measureStartId = 201;
+    public static final int wordStartId = 101;
     public static final int noteStartId = 1;
+
     public static int defaultNoteHeight = 300;
-
     public static int noteHeight = defaultNoteHeight;
-
     public static int noteWidth = noteHeight / 3 * 2;
+
+    public static boolean noteEditMode = false;
+    public static boolean lyricEditMode = false;
+
+    private EditText et;
+    private ProgressDialog dialog;
 
     // pinch to zoom
 //    private ScaleGestureDetector mScaleDetector;
@@ -58,6 +90,9 @@ public class ShowScoreActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
+
+        File scoreDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/score");
+        scoreDir.mkdirs();
 
         // reset parameters
         mScaleFactor = 1.f;
@@ -70,7 +105,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         vScroll = (ScrollView) findViewById(R.id.vScroll);
         hScroll = (HorizontalScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
-
 
         try {
             pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
@@ -85,6 +119,30 @@ public class ShowScoreActivity extends ActionBarActivity {
         catch (IOException e) {
             Log.e(getClass().getName(), e.getMessage());
         }
+
+        RelativeLayout root = (RelativeLayout)findViewById(R.id.activity_show_score);
+        Button bt = new Button(this);
+        bt.setText("Request");
+        bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecommendTask recommendTask = new RecommendTask();
+                recommendTask.execute(et.getText().toString());
+            }
+        });
+
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        bt.setLayoutParams(lp);
+        root.addView(bt);
+
+        et = new EditText(this);
+        RelativeLayout.LayoutParams elp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        elp.bottomMargin = 120;
+        elp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        et.setLayoutParams(elp);
+        root.addView(et);
     }
 
     @Override
@@ -125,6 +183,41 @@ public class ShowScoreActivity extends ActionBarActivity {
                     }
                 }
                 return true;
+            case R.id.action_save:
+                dialog = ProgressDialog.show(ShowScoreActivity.this,
+                        "儲存中", "請稍後...",true);
+
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try{
+                            FileOutputStream out = null;
+                            try {
+                                out = new FileOutputStream(auditorDir + "score/" + scoreName + ".png");
+                                getBitmapFromView(scoreContainer).compress(Bitmap.CompressFormat.PNG, 100, out);
+                                // PNG is a lossless format, the compression factor (100) is ignored
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                try {
+                                    if (out != null) {
+                                        out.close();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
+                        finally {
+                            dialog.dismiss();
+                        }
+                    }
+                }).start();
+
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -148,20 +241,9 @@ public class ShowScoreActivity extends ActionBarActivity {
                 mx = curX;
                 my = curY;
                 break;
-            case MotionEvent.ACTION_UP:
-                curX = event.getX();
-                curY = event.getY();
-                vScroll.scrollBy((int) (mx - curX), (int) (my - curY));
-                hScroll.scrollBy((int) (mx - curX), (int) (my - curY));
-                break;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                //This event fires when a second finger is pressed onto the screen
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
-                //This event fires when the second finger is off the screen, but the first finger
-                break;
         }
-        return true;
+
+        return false;
     }
 
 //    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -210,6 +292,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         NoteChildViewDimension.BAR_STROKE_WIDTH = Math.round(noteHeight * 0.03f);
         NoteChildViewDimension.BAR_VIEW_HEIGHT = noteHeight;
+        NoteChildViewDimension.BAR_VIEW_WIDTH = NoteChildViewDimension.BAR_STROKE_WIDTH * 7;
 
         NoteChildViewDimension.TIE_STROKE_WIDTH = Math.round(noteHeight * 0.022f);
         NoteChildViewDimension.TIE_VIEW_HEIGHT = Math.round(noteHeight * 0.225f);
@@ -237,23 +320,12 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         public static int BAR_STROKE_WIDTH;
         public static int BAR_VIEW_HEIGHT;
+        public static int BAR_VIEW_WIDTH;
 
         public static int TIE_STROKE_WIDTH;
         public static int TIE_VIEW_HEIGHT;
 
         public static int WORD_VIEW_HEIGHT;
-    }
-
-    private void saveScore() {
-        String musicString = "C4你";
-
-        pattern = new Pattern(musicString);
-        try {
-            pattern.savePattern(new File(auditorDir + "test" + ".txt"));
-        }
-        catch (IOException e) {
-            Log.e(getClass().getName(), "IOE");
-        }
     }
 
     public void zoom() {
@@ -271,17 +343,17 @@ public class ShowScoreActivity extends ActionBarActivity {
                 MeasureViewGroup measure = (MeasureViewGroup)part.findViewById(j + measureStartId);
                 if (measure == null) break;
 
-                curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+                curX += NoteChildViewDimension.BAR_VIEW_WIDTH;
 
                 for(int k = 0; k < measureStartId - noteStartId; k++) {
                     NoteViewGroup note = (NoteViewGroup)measure.findViewById(k + noteStartId);
                     if (note == null) break;
 
-                    int noteViewWidth = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+                    int noteViewWidth = NoteChildViewDimension.NUMBER_VIEW_WIDTH;
                     if(note.hasAccidentalView())
-                        noteViewWidth += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+                        noteViewWidth += NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
                     if(note.hasDottedView())
-                        noteViewWidth += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+                        noteViewWidth += NoteChildViewDimension.DOTTED_VIEW_WIDTH;
 
                     if(note.isTieEnd()) {
                         part.addTieInfo(new Pair<>((curX + noteViewWidth/2), "end"));
@@ -296,6 +368,124 @@ public class ShowScoreActivity extends ActionBarActivity {
             part.requestLayout();
         }
     }
+
+    private void saveScore() {
+        String musicString = "C4你";
+
+        pattern = new Pattern(musicString);
+        try {
+            pattern.savePattern(new File(auditorDir + "test" + ".txt"));
+        }
+        catch (IOException e) {
+            Log.e(getClass().getName(), "IOE");
+        }
+    }
+
+    public static Bitmap getBitmapFromView(View view) {
+        //Define a bitmap with the same size as the view
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+
+        //Bind a canvas to it
+        Canvas canvas = new Canvas(returnedBitmap);
+
+        //Get the view's background
+        Drawable bgDrawable = view.getBackground();
+        if (bgDrawable != null)
+            //has background drawable, then draw it on the canvas
+            bgDrawable.draw(canvas);
+        else
+            //does not have background drawable, then draw white background on the canvas
+            canvas.drawColor(Color.WHITE);
+
+        // draw the view on the canvas
+        view.draw(canvas);
+
+        return returnedBitmap;
+    }
+
+    private class RecommendTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... sentences) {
+
+//            Log.e(LOG_TAG, sentences[0]);
+
+//            JiebaSegmenter segmenter = new JiebaSegmenter(ShowScoreActivity.this);
+//            String sentence = sentences[0];
+//
+//            List<SegToken> list = segmenter.process(sentence, JiebaSegmenter.SegMode.SEARCH);
+//
+//            for(SegToken s : list) {
+//                Log.e(LOG_TAG, s.word);
+//            }
+
+
+            String result = "";
+            String url = "http://140.117.71.221/auditor/tags.php";
+
+            String rhyme = "ㄧ";
+            String sentence = sentences[0];
+
+            //the year data to send
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+            nameValuePairs.add(new BasicNameValuePair("rhyme", rhyme));
+            nameValuePairs.add(new BasicNameValuePair("sentence", sentence));
+
+            InputStream is = null;
+
+            //http post
+            try{
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(url);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
+                HttpResponse response = httpclient.execute(httppost);
+                HttpEntity entity = response.getEntity();
+                is = entity.getContent();
+            }
+            catch(Exception e){
+                Log.e(LOG_TAG, "Error in http connection " + e.toString());
+            }
+
+            //convert response to string
+            try{
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
+                StringBuilder sb = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                is.close();
+
+                result = sb.toString();
+                Log.e(LOG_TAG, result);
+            }
+            catch(Exception e){
+                Log.e(LOG_TAG, "Error converting result " + e.toString());
+            }
+
+            //parse json data
+            try{
+                JSONArray jArray = new JSONArray(result);
+                int count = 0;
+
+//                for(int i = 0; i < jArray.length(); i++) {
+//                    JSONObject json_data = jArray.getJSONObject(i);
+//                    Log.i(LOG_TAG, "number: " + json_data.getInt("number") + ", tag: " + json_data.getString("tag"));
+//                }
+
+                for(int i = 0; i < jArray.length(); i++) {
+                    JSONObject json_data = jArray.getJSONObject(i);
+                    Log.i(LOG_TAG, "id: " + json_data.getInt("id") + ", tag: " + json_data.getString("tag"));
+                }
+            }
+            catch(JSONException e){
+                Log.e(LOG_TAG, "Error parsing data " + e.toString());
+            }
+
+            return null;
+        }
+    }
+
+
 
     // TODO add lyric view, each word will align to a single note
 

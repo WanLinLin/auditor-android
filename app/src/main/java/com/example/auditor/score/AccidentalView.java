@@ -97,6 +97,8 @@ public class AccidentalView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(!ShowScoreActivity.noteEditMode)
+            return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 if(accidental.equals("#")) {

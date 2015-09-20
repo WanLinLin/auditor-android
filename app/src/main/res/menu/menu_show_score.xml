@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.auditor.ShowScoreActivity">
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    <!--<item android:id="@+id/action_settings"-->
+        <!--android:title="@string/action_settings"-->
+        <!--android:orderInCategory="100"-->
+        <!--app:showAsAction="never" />-->
 
     <item android:id="@+id/action_zoom_in"
         android:title="@string/zoom_in"
@@ -16,5 +16,10 @@
     <item android:id="@+id/action_zoom_out"
         android:icon="@drawable/zoom_out"
         android:title="@string/zoom_out"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/action_save"
+        android:title="@string/save"
+        android:icon="@drawable/save"
         app:showAsAction="ifRoom"/>
 </menu>

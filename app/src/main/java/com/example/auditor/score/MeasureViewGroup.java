@@ -11,6 +11,7 @@ import com.example.auditor.ShowScoreActivity;
  * A measure contains numbers of note view groups.
  */
 public class MeasureViewGroup extends RelativeLayout {
+    private static final String LOG_TAG = MeasureViewGroup.class.getName();
     private Context context;
     private int curNoteViewGroupWidth;
     private int width = 0;
@@ -41,7 +42,7 @@ public class MeasureViewGroup extends RelativeLayout {
         bwv.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         barWidthView.setLayoutParams(bwv);
         this.addView(barWidthView);
-        this.width+=ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+        this.width+=ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
     }
 
     public void printNote(String note, String accidental, String dot, String octave, String duration, boolean tieStart, boolean tieEnd, int i) {
@@ -95,6 +96,7 @@ public class MeasureViewGroup extends RelativeLayout {
         int noteViewGroupId = i + ShowScoreActivity.noteStartId;
 
         WordView wordView = new WordView(context, curNoteViewGroupWidth);
+        wordView.setId(i + ShowScoreActivity.wordStartId);
         wordView.setWord(word);
 
         RelativeLayout.LayoutParams rlp =

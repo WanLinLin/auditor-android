@@ -23,7 +23,7 @@ public class BarWidthView extends View {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(Color.TRANSPARENT);
 
-        width = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+        width = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
         height = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT;
     }
 
@@ -31,7 +31,7 @@ public class BarWidthView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        width = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+        width = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
         height = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT;
         setMeasuredDimension(width, height);
     }

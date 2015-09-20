@@ -11,11 +11,11 @@ import com.example.auditor.ShowScoreActivity;
 /**
  * Created by wanlin on 15/9/10.
  */
-public class WordView extends View{
+public class WordView extends View {
     private int noteViewGroupWidth;
     private int width;
     private int height;
-    private Paint mPaint;
+    private Paint textPaint;
     private String word;
 
     public WordView(Context context, int width) {
@@ -23,8 +23,8 @@ public class WordView extends View{
         this.noteViewGroupWidth = width;
         this.height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
 
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(Color.BLACK);
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.BLACK);
     }
 
     @Override
@@ -40,16 +40,20 @@ public class WordView extends View{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        mPaint.setTextSize((int) (height * 0.5));
-        mPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTextSize((int) (height * 0.5));
+        textPaint.setTextAlign(Paint.Align.CENTER);
 
         int x = width / 2;
-        int y = (int) ((height / 2) - ((mPaint.descent() + mPaint.ascent()) / 2));
+        int y = (int) ((height / 2) - ((textPaint.descent() + textPaint.ascent()) / 2));
 
-        canvas.drawText(word, x, y, mPaint);
+        canvas.drawText(word, x, y, textPaint);
     }
 
     public void setWord(String word) {
         this.word = word;
+    }
+
+    public String getWord() {
+        return word;
     }
 }

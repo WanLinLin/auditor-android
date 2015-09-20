@@ -45,7 +45,7 @@ public class NumberedMusicalNotationParser {
 
         // print first bar
         curParsePart.printBarView(-1); // print first bar
-        curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+        curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
 
         for(String token : tokens) {
             String s = token.substring(0,1);
@@ -62,7 +62,7 @@ public class NumberedMusicalNotationParser {
                     // print bar view
                     curParsePart.printBarView(curParseMeasure.getId());
                     noteViewGroupIndex = 0;
-                    curX += ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH * 3;
+                    curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
                     break;
 
                 default:

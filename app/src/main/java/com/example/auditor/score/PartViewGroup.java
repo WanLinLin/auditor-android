@@ -5,9 +5,18 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.text.InputType;
+import android.util.Log;
 import android.util.Pair;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
@@ -26,6 +35,10 @@ public class PartViewGroup extends RelativeLayout {
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
     private TieViewGroup tieViewGroup;
+    private String originalLyrics = "";
+    private MeasureViewGroup editMeasure;
+    private boolean editing;
+    private static GestureDetector gestureDetector;
 
     public static int barStrokeWidth;
     public static int tieViewHeight;
@@ -34,6 +47,7 @@ public class PartViewGroup extends RelativeLayout {
         super(context);
         this.context = context;
         tieInfo = new ArrayList<>();
+        gestureDetector = new GestureDetector(context, new GestureListener());
 
         tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
         tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
@@ -61,6 +75,32 @@ public class PartViewGroup extends RelativeLayout {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
+        return gestureDetector.onTouchEvent(event);
+    }
+
+    public void saveWordsIntoWordView() {
+        int i = 0;
+
+        EditText et = (EditText)editMeasure.findViewById(R.id.input_text_view);
+
+        for (int w = 0; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
+            WordView wordView = (WordView) editMeasure.findViewById(w + ShowScoreActivity.wordStartId);
+            if (wordView == null)
+                break;
+
+            if(i < et.getText().length()) {
+                wordView.setWord(et.getText().toString().substring(i, i + 1));
+                i++;
+            }
+        }
+
+        editMeasure.removeView(et);
+        editMeasure = null;
+    }
+
     public void printBarView(int measureViewGroupId) {
         BarView barView = new BarView(context);
         RelativeLayout.LayoutParams lp =
@@ -80,14 +120,13 @@ public class PartViewGroup extends RelativeLayout {
         int measureViewGroupId = i + ShowScoreActivity.measureStartId;
         MeasureViewGroup measureViewGroup = new MeasureViewGroup(context);
 
-        // add this measure
         RelativeLayout.LayoutParams rlp =
                 new LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
         rlp.addRule(RelativeLayout.BELOW, R.id.tie_view_group);
         if(measureViewGroupId > ShowScoreActivity.measureStartId)
-            rlp.addRule(RIGHT_OF, measureViewGroupId - 1); // previous measure id
+            rlp.addRule(RIGHT_OF, measureViewGroupId - 1);
         else
             rlp.addRule(ALIGN_PARENT_LEFT);
         measureViewGroup.setLayoutParams(rlp);
@@ -147,7 +186,7 @@ public class PartViewGroup extends RelativeLayout {
             super(context);
 
             barStrokeWidth = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH;
-            width = barStrokeWidth * 3;
+            width = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
             height = ShowScoreActivity.noteHeight;
         }
 
@@ -156,7 +195,7 @@ public class PartViewGroup extends RelativeLayout {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             barStrokeWidth = ShowScoreActivity.NoteChildViewDimension.BAR_STROKE_WIDTH;
-            width = barStrokeWidth * 3;
+            width = ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
             height = ShowScoreActivity.noteHeight;
             setMeasuredDimension(width, height);
         }
@@ -198,6 +237,117 @@ public class PartViewGroup extends RelativeLayout {
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(tieStrokeWidth);
             canvas.drawArc(rectF, 180, 180, false, mPaint);
+        }
+    }
+
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            float x = e.getX();
+            float y = e.getY();
+
+            // single touch down on note area
+            if (y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
+                if(ShowScoreActivity.lyricEditMode) {
+                    if (editing) {
+                        saveWordsIntoWordView();
+                        editing = false;
+                    }
+
+                    editing = true;
+
+                    /* i=0: tieViewGroup, i=odd: barView, i=even: measureViewGroup */
+                    for (int i = 2; i < getChildCount(); i += 2) {
+                        if (x > getChildAt(i).getLeft() && x < getChildAt(i).getRight()) {
+                            originalLyrics = "";
+                            editMeasure = (MeasureViewGroup) findViewById((i / 2 - 1) + ShowScoreActivity.measureStartId);
+
+                            /* find words */
+                            for (int w = 0; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
+                                WordView wordView = (WordView) editMeasure.findViewById(w + ShowScoreActivity.wordStartId);
+                                if (wordView == null)
+                                    break;
+
+                                originalLyrics += wordView.getWord();
+                                wordView.setWord("");
+                            }
+
+                            EditText et = new EditText(getContext());
+                            et.setId(R.id.input_text_view);
+                            et.setInputType(InputType.TYPE_CLASS_TEXT);
+                            et.setText(originalLyrics);
+                            RelativeLayout.LayoutParams lp =
+                                    new RelativeLayout.LayoutParams(
+                                            editMeasure.getWidth() - ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH,
+                                            (int) (ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT * 1.4));
+                            lp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
+                            lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                            et.setLayoutParams(lp);
+                            et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                                @Override
+                                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                                        editing = false;
+                                        EditText et = (EditText) editMeasure.findViewById(R.id.input_text_view);
+                                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+
+                                        saveWordsIntoWordView();
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            });
+
+                            editMeasure.addView(et);
+                            et.requestFocus();
+                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    }
+                }
+                else {
+                    if (editMeasure != null) {
+                        editing = false;
+
+                        EditText et = (EditText) editMeasure.findViewById(R.id.input_text_view);
+                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+
+                        saveWordsIntoWordView();
+                    }
+                }
+            }
+
+            // single touch down on lyric area
+            else if(y < getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
+                if(ShowScoreActivity.noteEditMode) {
+
+                }
+                else {
+
+                }
+            }
+
+            return false;
+        }
+
+        // event when double tap occurs
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            float y = e.getY();
+
+            if(y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
+                ShowScoreActivity.lyricEditMode = !ShowScoreActivity.lyricEditMode;
+                Log.e(LOG_TAG, "lyric edit mode: " + ShowScoreActivity.lyricEditMode);
+            }
+            else {
+                ShowScoreActivity.noteEditMode = !ShowScoreActivity.noteEditMode;
+                Log.e(LOG_TAG, "note edit mode: " + ShowScoreActivity.noteEditMode);
+            }
+
+            return true;
         }
     }
 
