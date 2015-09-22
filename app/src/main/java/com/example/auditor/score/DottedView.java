@@ -50,20 +50,21 @@ public class DottedView extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!ShowScoreActivity.noteEditMode)
-            return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if(dot.equals(".")) {
-                    dot = "";
-                }
-                else {
-                    dot = ".";
-                }
-                break;
-        }
-        this.invalidate();
-        return super.onTouchEvent(event);
+//        if(ShowScoreActivity.noteEditMode) {
+//
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    if (dot.equals(".")) {
+//                        dot = "";
+//                    } else {
+//                        dot = ".";
+//                    }
+//                    break;
+//            }
+//            this.invalidate();
+//        }
+
+        return false;
     }
 
     private void init() {

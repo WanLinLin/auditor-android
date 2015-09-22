@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.Pair;
@@ -17,11 +18,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.example.auditor.score.MeasureViewGroup;
@@ -63,9 +63,12 @@ public class ShowScoreActivity extends ActionBarActivity {
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
 
-    private float mx, my;
-    private ScrollView vScroll;
-    private HorizontalScrollView hScroll;
+    private VScrollView vScroll;
+    private HScrollView hScroll;
+    public static float mx;
+    public static float my;
+
+    public static ActionBar actionBar;
 
     public static final int partStartId = 10001;
     public static final int measureStartId = 201;
@@ -76,11 +79,16 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static int noteHeight = defaultNoteHeight;
     public static int noteWidth = noteHeight / 3 * 2;
 
+    public static boolean partEditMode = false;
+    public static boolean measureEditMode = false;
     public static boolean noteEditMode = false;
     public static boolean lyricEditMode = false;
 
-    private EditText et;
     private ProgressDialog dialog;
+    private AutoCompleteTextView tv;
+    private ArrayList<String> suggestWords = new ArrayList<>();
+    private WordAdapter wordAdapter;
+    private String inputSentence;
 
     // pinch to zoom
 //    private ScaleGestureDetector mScaleDetector;
@@ -98,12 +106,14 @@ public class ShowScoreActivity extends ActionBarActivity {
         mScaleFactor = 1.f;
         setDimensions();
 
+        actionBar = getSupportActionBar();
+
         Intent intent = getIntent();
         scoreName  = intent.getStringExtra("score name");
 //        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
 
-        vScroll = (ScrollView) findViewById(R.id.vScroll);
-        hScroll = (HorizontalScrollView) findViewById(R.id.hScroll);
+        vScroll = (VScrollView) findViewById(R.id.vScroll);
+        hScroll = (HScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
 
         try {
@@ -127,7 +137,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 RecommendTask recommendTask = new RecommendTask();
-                recommendTask.execute(et.getText().toString());
+                recommendTask.execute(tv.getText().toString());
             }
         });
 
@@ -137,12 +147,23 @@ public class ShowScoreActivity extends ActionBarActivity {
         bt.setLayoutParams(lp);
         root.addView(bt);
 
-        et = new EditText(this);
+        tv = new AutoCompleteTextView(this);
         RelativeLayout.LayoutParams elp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         elp.bottomMargin = 120;
         elp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        et.setLayoutParams(elp);
-        root.addView(et);
+        tv.setLayoutParams(elp);
+        root.addView(tv);
+
+        suggestWords.add("fuck");
+        wordAdapter = new WordAdapter(this, android.R.layout.simple_list_item_1, suggestWords);
+        tv.setAdapter(wordAdapter);
+        tv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                tv.setText(inputSentence + wordAdapter.getItem(position));
+                tv.setSelection(tv.getText().length());
+            }
+        });
     }
 
     @Override
@@ -225,7 +246,8 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float curX, curY;
+        float curX;
+        float curY;
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
@@ -243,7 +265,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 break;
         }
 
-        return false;
+        return true;
     }
 
 //    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -383,7 +405,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     public static Bitmap getBitmapFromView(View view) {
         //Define a bitmap with the same size as the view
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ALPHA_8);
 
         //Bind a canvas to it
         Canvas canvas = new Canvas(returnedBitmap);
@@ -403,9 +425,9 @@ public class ShowScoreActivity extends ActionBarActivity {
         return returnedBitmap;
     }
 
-    private class RecommendTask extends AsyncTask<String, Void, Void> {
+    private class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
-        protected Void doInBackground(String... sentences) {
+        protected ArrayList<String> doInBackground(String... sentences) {
 
 //            Log.e(LOG_TAG, sentences[0]);
 
@@ -417,18 +439,21 @@ public class ShowScoreActivity extends ActionBarActivity {
 //            for(SegToken s : list) {
 //                Log.e(LOG_TAG, s.word);
 //            }
-
+            long startTime = System.currentTimeMillis();
 
             String result = "";
-            String url = "http://140.117.71.221/auditor/tags.php";
+            String url = "http://140.117.71.221/auditor/stest/client.php";
 
             String rhyme = "ㄧ";
-            String sentence = sentences[0];
+            inputSentence = sentences[0];
+
+
+            ArrayList<String> resultList = new ArrayList<>();;
 
             //the year data to send
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("rhyme", rhyme));
-            nameValuePairs.add(new BasicNameValuePair("sentence", sentence));
+            nameValuePairs.add(new BasicNameValuePair("sentence", inputSentence));
 
             InputStream is = null;
 
@@ -456,7 +481,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 is.close();
 
                 result = sb.toString();
-                Log.e(LOG_TAG, result);
+//                Log.e(LOG_TAG, result);
             }
             catch(Exception e){
                 Log.e(LOG_TAG, "Error converting result " + e.toString());
@@ -475,20 +500,27 @@ public class ShowScoreActivity extends ActionBarActivity {
                 for(int i = 0; i < jArray.length(); i++) {
                     JSONObject json_data = jArray.getJSONObject(i);
                     Log.i(LOG_TAG, "id: " + json_data.getInt("id") + ", tag: " + json_data.getString("tag"));
+                    resultList.add(json_data.getString("tag"));
                 }
             }
             catch(JSONException e){
                 Log.e(LOG_TAG, "Error parsing data " + e.toString());
             }
 
-            return null;
+            long finishTime = System.currentTimeMillis();
+            double duration = (finishTime - startTime) / 1000d;
+            Log.e(LOG_TAG, "total recommend time: " + duration + " seconds.");
+
+            return resultList;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> a) {
+            super.onPostExecute(a);
+            suggestWords.clear();
+            suggestWords.addAll(a);
+            wordAdapter.notifyDataSetChanged();
+            tv.showDropDown();
         }
     }
-
-
-
-    // TODO add lyric view, each word will align to a single note
-
-    // TODO convert view to bitmap on android
-    // http://stackoverflow.com/questions/5536066/convert-view-to-bitmap-on-android
 }

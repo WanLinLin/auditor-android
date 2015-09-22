@@ -33,40 +33,41 @@ public class NumberView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!ShowScoreActivity.noteEditMode)
-            return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                switch (note) {
-                    case "C":
-                        note = "D";
-                        break;
-                    case "D":
-                        note = "E";
-                        break;
-                    case "E":
-                        note = "F";
-                        break;
-                    case "F":
-                        note = "G";
-                        break;
-                    case "G":
-                        note = "A";
-                        break;
-                    case "A":
-                        note = "B";
-                        break;
-                    case "B":
-                        note = "R";
-                        break;
-                    case "R":
-                        note = "C";
-                        break;
-                }
-                break;
-        }
-        this.invalidate();
-        return super.onTouchEvent(event);
+//        if(ShowScoreActivity.noteEditMode) {
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    switch (note) {
+//                        case "C":
+//                            note = "D";
+//                            break;
+//                        case "D":
+//                            note = "E";
+//                            break;
+//                        case "E":
+//                            note = "F";
+//                            break;
+//                        case "F":
+//                            note = "G";
+//                            break;
+//                        case "G":
+//                            note = "A";
+//                            break;
+//                        case "A":
+//                            note = "B";
+//                            break;
+//                        case "B":
+//                            note = "R";
+//                            break;
+//                        case "R":
+//                            note = "C";
+//                            break;
+//                    }
+//                    break;
+//            }
+//            this.invalidate();
+//        }
+
+        return false;
     }
 
     @Override

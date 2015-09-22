@@ -79,28 +79,29 @@ public class BeamView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!ShowScoreActivity.noteEditMode)
-            return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                switch(beams) {
-                    case 1:
-                        beams = 2;
-                        break;
-                    case 2:
-                        beams = 3;
-                        break;
-                    case 3:
-                        beams = 4;
-                        break;
-                    case 4:
-                        beams = 1;
-                        break;
-                }
-                break;
-        }
-        this.requestLayout();
-        return super.onTouchEvent(event);
+//        if(ShowScoreActivity.noteEditMode) {
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    switch (beams) {
+//                        case 1:
+//                            beams = 2;
+//                            break;
+//                        case 2:
+//                            beams = 3;
+//                            break;
+//                        case 3:
+//                            beams = 4;
+//                            break;
+//                        case 4:
+//                            beams = 1;
+//                            break;
+//                    }
+//                    break;
+//            }
+//            this.requestLayout();
+//        }
+
+        return false;
     }
 
     public void setBeams(int beams) {

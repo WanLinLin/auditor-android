@@ -97,20 +97,20 @@ public class AccidentalView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!ShowScoreActivity.noteEditMode)
-            return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if(accidental.equals("#")) {
-                    accidental = "b";
-                }
-                else {
-                    accidental = "#";
-                }
-                break;
-        }
-        this.invalidate();
-        return super.onTouchEvent(event);
+//        if(ShowScoreActivity.noteEditMode) {
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    if (accidental.equals("#")) {
+//                        accidental = "b";
+//                    } else {
+//                        accidental = "#";
+//                    }
+//                    break;
+//            }
+//            this.invalidate();
+//        }
+
+        return false;
     }
 
     private void init() {

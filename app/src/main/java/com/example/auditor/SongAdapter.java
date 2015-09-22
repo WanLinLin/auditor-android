@@ -38,12 +38,12 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int arg0) {
-        return null;
+        return songs.get(arg0);
     }
 
     @Override
     public long getItemId(int arg0) {
-        return 0;
+        return songs.get(arg0).getID();
     }
 
     @Override

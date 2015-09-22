@@ -6,9 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.RelativeLayout;
 
-import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 
 /**
@@ -92,71 +90,68 @@ public class OctaveView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!ShowScoreActivity.noteEditMode)
-            return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                switch (octave) {
-                    case 0:
-                        octave = 1;
-                        break;
-                    case 1:
-                        octave = 2;
-                        break;
-                    case 2:
-                        octave = 3;
-                        break;
-                    case 3:
-                        octave = 5;
-                        break;
-//                    case 4:
-//                        octave = 5;
-//                        break;
-                    case 5:
-                        octave = 6;
-                        break;
-                    case 6:
-                        octave = 7;
-                        break;
-                    case 7:
-                        octave = 8;
-                        break;
-                    case 8:
-                        octave = 0;
-                        break;
-                }
-                break;
-        }
-        dotCount = Math.abs(octave - 4);
+//        if(ShowScoreActivity.noteEditMode) {
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    switch (octave) {
+//                        case 0:
+//                            octave = 1;
+//                            break;
+//                        case 1:
+//                            octave = 2;
+//                            break;
+//                        case 2:
+//                            octave = 3;
+//                            break;
+//                        case 3:
+//                            octave = 5;
+//                            break;
+////                    case 4:
+////                        octave = 5;
+////                        break;
+//                        case 5:
+//                            octave = 6;
+//                            break;
+//                        case 6:
+//                            octave = 7;
+//                            break;
+//                        case 7:
+//                            octave = 8;
+//                            break;
+//                        case 8:
+//                            octave = 0;
+//                            break;
+//                    }
+//                    break;
+//            }
+//            dotCount = Math.abs(octave - 4);
+//
+//            RelativeLayout.LayoutParams olp = new RelativeLayout.LayoutParams(
+//                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+//                    RelativeLayout.LayoutParams.WRAP_CONTENT
+//            );
+//
+//            if (octave > 4) {
+//                olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+//            } else if (octave < 4 && hasBeamView) {
+//                olp.addRule(RelativeLayout.BELOW, R.id.beam_view);
+//            } else if (octave < 4 && !hasBeamView) {
+//                olp.addRule(RelativeLayout.BELOW, R.id.number_view);
+//            }
+//
+//            if (hasAccidentalView) {
+//                olp.addRule(RelativeLayout.RIGHT_OF, R.id.blank_view);
+//            } else {
+//                olp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+//            }
+//            this.setLayoutParams(olp);
+//
+//            this.invalidate();
+//            if (octave == 5 || octave == 0)
+//                this.getParent().requestLayout();
+//        }
 
-        RelativeLayout.LayoutParams olp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-        );
-
-        if(octave > 4) {
-            olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        }
-        else if(octave < 4 && hasBeamView) {
-            olp.addRule(RelativeLayout.BELOW, R.id.beam_view);
-        }
-        else if(octave < 4 && !hasBeamView){
-            olp.addRule(RelativeLayout.BELOW, R.id.number_view);
-        }
-
-        if(hasAccidentalView) {
-            olp.addRule(RelativeLayout.RIGHT_OF, R.id.blank_view);
-        }
-        else {
-            olp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        }
-        this.setLayoutParams(olp);
-
-        this.invalidate();
-        if(octave == 5 || octave == 0)
-            this.getParent().requestLayout();
-
-        return super.onTouchEvent(event);
+        return false;
     }
 
     public void setOctave(int octave) {
