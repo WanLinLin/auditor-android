@@ -79,8 +79,8 @@ public class MeasureViewGroup extends RelativeLayout {
         if(!dot.isEmpty())
             noteViewGroup.printDottedView(dot);
 
-        // has duration shorter than quarter note
-        if("istx".contains(duration))
+        // duration to beam
+        if("whqistx".contains(duration))
             noteViewGroup.printBeamView(duration);
 
         // octave is 0 ~ 3, 5 ~ 8

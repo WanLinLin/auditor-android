@@ -250,10 +250,12 @@ public class PartViewGroup extends RelativeLayout {
                         lyricEditing = false;
 
                         EditText et = (EditText) editMeasure.findViewById(R.id.input_text_view);
-                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+                        if(et != null) {
+                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
 
-                        saveWordsIntoWordView();
+                            saveWordsIntoWordView();
+                        }
                     }
                 }
             }
@@ -305,7 +307,7 @@ public class PartViewGroup extends RelativeLayout {
             }
             else {
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
-                ShowScoreActivity.actionBar.setTitle("ShowScoreActivity");
+                ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
         }
     }

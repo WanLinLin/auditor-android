@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
         dv.setLayoutParams(dvlp);
 
         bv = new BeamView(this);
-        bv.setBeams(3);
+        bv.setDuration("t");
         bv.setId(R.id.beam_view);
         RelativeLayout.LayoutParams bvlp =
                 new RelativeLayout.LayoutParams(

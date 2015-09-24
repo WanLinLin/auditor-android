@@ -150,18 +150,17 @@ public class NoteViewGroup extends RelativeLayout {
         b.setHasAccidentalView(hasAccidentalView);
         b.setHasDottedView(hasDottedView);
         switch (beams) {
+            case "w":
+            case "h":
+            case "q":
+
             case "i":
-                b.setBeams(1);
-                break;
             case "s":
-                b.setBeams(2);
-                break;
             case "t":
-                b.setBeams(3);
-                break;
             case "x":
-                b.setBeams(4);
+                b.setDuration(beams);
                 break;
+
         }
         RelativeLayout.LayoutParams blp =
                 new RelativeLayout.LayoutParams(

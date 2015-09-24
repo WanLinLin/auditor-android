@@ -24,11 +24,16 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.auditor.score.AccidentalView;
+import com.example.auditor.score.BeamView;
 import com.example.auditor.score.MeasureViewGroup;
 import com.example.auditor.score.NoteViewGroup;
+import com.example.auditor.score.NumberView;
 import com.example.auditor.score.NumberedMusicalNotationParser;
+import com.example.auditor.score.OctaveView;
 import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.ScoreViewGroup;
+import com.example.auditor.score.WordView;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -46,7 +51,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,7 +59,6 @@ import java.util.ArrayList;
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
-    private String scoreName;
 
     // two dimension scroll view
     private ScoreViewGroup score;
@@ -69,7 +72,9 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static float my;
 
     public static ActionBar actionBar;
+    public static String scoreName;
 
+    public static final int partMaxNumber = 5000;
     public static final int partStartId = 10001;
     public static final int measureStartId = 201;
     public static final int wordStartId = 101;
@@ -89,6 +94,13 @@ public class ShowScoreActivity extends ActionBarActivity {
     private ArrayList<String> suggestWords = new ArrayList<>();
     private WordAdapter wordAdapter;
     private String inputSentence;
+    private RelativeLayout root;
+
+    private static final int secondsPerMinute = 60; // seconds per minutes
+    private int beatsPerMinute = 90; // bits per minute, speed
+    private int beatsPerMeasure = 4; // 4 beats per bar
+    private int beatUnit = 4; // quarter notes per bit
+    private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
 
     // pinch to zoom
 //    private ScaleGestureDetector mScaleDetector;
@@ -106,15 +118,14 @@ public class ShowScoreActivity extends ActionBarActivity {
         mScaleFactor = 1.f;
         setDimensions();
 
-        actionBar = getSupportActionBar();
-
-        Intent intent = getIntent();
-        scoreName  = intent.getStringExtra("score name");
 //        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
 
         vScroll = (VScrollView) findViewById(R.id.vScroll);
         hScroll = (HScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
+
+        Intent intent = getIntent();
+        scoreName = intent.getStringExtra("score name");
 
         try {
             pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
@@ -130,7 +141,10 @@ public class ShowScoreActivity extends ActionBarActivity {
             Log.e(getClass().getName(), e.getMessage());
         }
 
-        RelativeLayout root = (RelativeLayout)findViewById(R.id.activity_show_score);
+        actionBar = getSupportActionBar();
+        actionBar.setTitle(scoreName);
+
+        root = (RelativeLayout)findViewById(R.id.activity_show_score);
         Button bt = new Button(this);
         bt.setText("Request");
         bt.setOnClickListener(new View.OnClickListener() {
@@ -178,7 +192,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case R.id.action_zoom_in:
                 if(mScaleFactor < 3) {
-                    mScaleFactor += 0.5;
+                    mScaleFactor += 0.2;
                     zoom();
 
                     if(mScaleFactor == 3) {
@@ -191,11 +205,11 @@ public class ShowScoreActivity extends ActionBarActivity {
                 }
                 return true;
             case R.id.action_zoom_out:
-                if (mScaleFactor > 0.5) {
-                    mScaleFactor -= 0.5;
+                if (mScaleFactor > 0.6) {
+                    mScaleFactor -= 0.2;
                     zoom();
 
-                    if(mScaleFactor == 0.5) {
+                    if(mScaleFactor == 0.6) {
                         Toast.makeText(
                                 ShowScoreActivity.this,
                                 "最小!",
@@ -208,35 +222,43 @@ public class ShowScoreActivity extends ActionBarActivity {
                 dialog = ProgressDialog.show(ShowScoreActivity.this,
                         "儲存中", "請稍後...",true);
 
-                new Thread(new Runnable(){
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        try{
-                            FileOutputStream out = null;
-                            try {
-                                out = new FileOutputStream(auditorDir + "score/" + scoreName + ".png");
-                                getBitmapFromView(scoreContainer).compress(Bitmap.CompressFormat.PNG, 100, out);
-                                // PNG is a lossless format, the compression factor (100) is ignored
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                try {
-                                    if (out != null) {
-                                        out.close();
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        catch(Exception e){
-                            e.printStackTrace();
-                        }
-                        finally {
-                            dialog.dismiss();
-                        }
+                        try { saveScore(); }
+                        finally { dialog.dismiss(); }
                     }
                 }).start();
+
+//                new Thread(new Runnable(){
+//                    @Override
+//                    public void run() {
+//                        try{
+//                            FileOutputStream out = null;
+//                            try {
+//                                out = new FileOutputStream(auditorDir + "score/" + scoreName + ".png");
+//                                getBitmapFromView(scoreContainer).compress(Bitmap.CompressFormat.PNG, 100, out);
+//                                // PNG is a lossless format, the compression factor (100) is ignored
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            } finally {
+//                                try {
+//                                    if (out != null) {
+//                                        out.close();
+//                                    }
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }
+//                        catch(Exception e){
+//                            e.printStackTrace();
+//                        }
+//                        finally {
+//                            dialog.dismiss();
+//                        }
+//                    }
+//                }).start();
 
                 return true;
             default:
@@ -392,11 +414,57 @@ public class ShowScoreActivity extends ActionBarActivity {
     }
 
     private void saveScore() {
-        String musicString = "C4你";
+        String keySignature = "KCmaj ";
+        String tempo = "T" + beatsPerMinute + " ";
+        String musicString = keySignature + tempo;
+        String noteContext;
+
+        ScoreViewGroup score = (ScoreViewGroup)scoreContainer.findViewById(R.id.score_view_group);
+        for(int i = 0; i < partMaxNumber; i++) {
+            PartViewGroup part = (PartViewGroup)score.findViewById(i + partStartId);
+            if(part == null) break;
+
+            for(int j = 0; j < partStartId - measureStartId; j++) {
+                MeasureViewGroup measure = (MeasureViewGroup)part.findViewById(j + measureStartId);
+                if(measure == null) break;
+
+                for(int k = 0; k < measureStartId - noteStartId; k++) {
+                    noteContext = "";
+
+                    NoteViewGroup note = (NoteViewGroup)measure.findViewById(k + noteStartId);
+                    if(note == null) break;
+
+                    NumberView numberView = (NumberView)note.findViewById(R.id.number_view);
+                    if(numberView != null) noteContext += numberView.getNote();
+
+                    AccidentalView accidentalView = (AccidentalView)note.findViewById(R.id.accidental_view);
+                    if(accidentalView != null) noteContext += accidentalView.getAccidental();
+
+                    OctaveView octaveView = (OctaveView)note.findViewById(R.id.octave_view);
+                    if(octaveView != null) noteContext += octaveView.getOctave();
+
+                    if(note.isTieEnd()) noteContext += "-";
+
+                    BeamView beamView = (BeamView)note.findViewById(R.id.beam_view);
+                    if(beamView != null) noteContext += beamView.getDuration();
+
+                    if(note.isTieStart()) noteContext += "-";
+
+                    WordView wordView = (WordView)measure.findViewById(k + wordStartId);
+                    if(wordView != null) noteContext += wordView.getWord();
+
+                    noteContext += " ";
+                    musicString += noteContext;
+                }
+
+                musicString += "| ";
+            }
+        }
+
 
         pattern = new Pattern(musicString);
         try {
-            pattern.savePattern(new File(auditorDir + "test" + ".txt"));
+            pattern.savePattern(new File(auditorDir + scoreName + ".txt"));
         }
         catch (IOException e) {
             Log.e(getClass().getName(), "IOE");
@@ -428,33 +496,16 @@ public class ShowScoreActivity extends ActionBarActivity {
     private class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
         protected ArrayList<String> doInBackground(String... sentences) {
-
-//            Log.e(LOG_TAG, sentences[0]);
-
-//            JiebaSegmenter segmenter = new JiebaSegmenter(ShowScoreActivity.this);
-//            String sentence = sentences[0];
-//
-//            List<SegToken> list = segmenter.process(sentence, JiebaSegmenter.SegMode.SEARCH);
-//
-//            for(SegToken s : list) {
-//                Log.e(LOG_TAG, s.word);
-//            }
-            long startTime = System.currentTimeMillis();
-
-            String result = "";
-            String url = "http://140.117.71.221/auditor/stest/client.php";
-
-            String rhyme = "ㄧ";
             inputSentence = sentences[0];
+            long startTime = System.currentTimeMillis();
+            String result = ""; // web request result
+            String url = "http://140.117.71.221/auditor/stest/client.php";
+            String rhyme = "ㄧ";
+            ArrayList<String> resultList = new ArrayList<>();
 
-
-            ArrayList<String> resultList = new ArrayList<>();;
-
-            //the year data to send
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("rhyme", rhyme));
             nameValuePairs.add(new BasicNameValuePair("sentence", inputSentence));
-
             InputStream is = null;
 
             //http post

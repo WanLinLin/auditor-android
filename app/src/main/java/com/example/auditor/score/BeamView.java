@@ -16,7 +16,8 @@ import com.example.auditor.ShowScoreActivity;
  */
 public class BeamView extends View {
     private Paint mPaint;
-    private int beams;
+    private String duration;
+    private int lineCount = 0;
     private int beamStrokeWidth;
     private int space;
 
@@ -36,7 +37,7 @@ public class BeamView extends View {
         beamStrokeWidth = Math.round(height * 0.12f);
         mPaint.setStrokeWidth(beamStrokeWidth);
         space = Math.round(height - beamStrokeWidth) / 3;
-        height = Math.round(beamStrokeWidth + (beams - 1) * space);
+        height = Math.round(beamStrokeWidth + (lineCount - 1) * space);
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         if(hasAccidentalView)
@@ -54,7 +55,7 @@ public class BeamView extends View {
         beamStrokeWidth = Math.round(height * 0.12f);
         mPaint.setStrokeWidth(beamStrokeWidth);
         space = Math.round(height - beamStrokeWidth) / 3;
-        height = Math.round(beamStrokeWidth + (beams - 1) * space);
+        height = Math.round(beamStrokeWidth + (lineCount - 1) * space);
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         if(hasAccidentalView)
@@ -71,7 +72,7 @@ public class BeamView extends View {
 
         float y = beamStrokeWidth / 2;
 
-        for(int i = 0; i < beams; i++) {
+        for(int i = 0; i < lineCount; i++) {
             canvas.drawLine(0, y, getWidth(), y, mPaint);
             y += space;
         }
@@ -104,8 +105,23 @@ public class BeamView extends View {
         return false;
     }
 
-    public void setBeams(int beams) {
-        this.beams = beams;
+    public void setDuration(String duration) {
+        this.duration = duration;
+
+        switch(duration) {
+            case "i":
+                lineCount = 1;
+                break;
+            case "s":
+                lineCount = 2;
+                break;
+            case "t":
+                lineCount = 3;
+                break;
+            case "x":
+                lineCount = 4;
+                break;
+        }
     }
 
     public void setHasAccidentalView(boolean hasAccidentalView) {
@@ -116,17 +132,7 @@ public class BeamView extends View {
         this.hasDottedView = hasDottedView;
     }
 
-    public String getBeams() {
-        switch (beams) {
-            case 1:
-                return "i";
-            case 2:
-                return "s";
-            case 3:
-                return "t";
-            case 4:
-                return "x";
-        }
-        return null;
+    public String getDuration() {
+        return duration;
     }
 }

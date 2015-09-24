@@ -10,4 +10,5 @@
     <item name="tie_view_group" type="id" />
     <item name="lyric_view_group" type="id" />
     <item name="input_text_view" type="id" />
+    <item name="score_view_group" type="id" />
 </resources>

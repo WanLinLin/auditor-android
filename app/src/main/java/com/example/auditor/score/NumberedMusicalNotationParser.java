@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
 
+import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 
 import org.jfugue.Pattern;
@@ -25,6 +26,7 @@ public class NumberedMusicalNotationParser {
         this.musicString = musicString;
         noteContext = new NoteContext();
         scoreViewGroup = new ScoreViewGroup(context);
+        scoreViewGroup.setId(R.id.score_view_group);
     }
 
     public void parse() {
@@ -156,9 +158,7 @@ public class NumberedMusicalNotationParser {
                 case 'w':
                 case 'h':
                 case 'q':
-                    if(noteContext.tieEnd == null)
-                        noteContext.tieEnd = false;
-                    break;
+
                 // have beam view
                 case 'i':
                 case 's':
