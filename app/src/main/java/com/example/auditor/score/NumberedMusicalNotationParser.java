@@ -21,6 +21,8 @@ public class NumberedMusicalNotationParser {
     private ScoreViewGroup scoreViewGroup;
     private NoteContext noteContext;
 
+    public static final Character sentenceEndTag = '~';
+
     public NumberedMusicalNotationParser(Context context, String musicString) {
         this.context = context;
         this.musicString = musicString;
@@ -95,6 +97,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.tieEnd = false;
                 for(int i = 0; i < 3; i++) {
                     addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
+                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
                     noteViewGroupIndex++;
                 }
             }
@@ -104,6 +107,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.note = durationNote;
                 noteContext.tieEnd = false;
                 addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
+                curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
                 noteViewGroupIndex++;
             }
         }
@@ -175,7 +179,8 @@ public class NumberedMusicalNotationParser {
 
                 default:
                     if(Character.UnicodeBlock.of(c) == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
-                        noteContext.word = Character.toString(c);
+                        if(t.charAt(t.length()-1) == sentenceEndTag) noteContext.word = Character.toString(c) + sentenceEndTag;
+                        else noteContext.word = Character.toString(c);
                     }
                     break;
             }

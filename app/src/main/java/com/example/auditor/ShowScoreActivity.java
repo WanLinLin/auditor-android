@@ -1,31 +1,39 @@
 package com.example.auditor;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.auditor.score.AccidentalView;
 import com.example.auditor.score.BeamView;
+import com.example.auditor.score.BlackMask;
 import com.example.auditor.score.MeasureViewGroup;
 import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberView;
@@ -58,51 +66,64 @@ import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
-    private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
-    // two dimension scroll view
-    private ScoreViewGroup score;
+    public static ScoreViewGroup score;
     private RelativeLayout scoreContainer;
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
 
+    /* using for two dimension scroll */
     private VScrollView vScroll;
     private HScrollView hScroll;
     public static float mx;
     public static float my;
 
     public static ActionBar actionBar;
+    public static Menu menu;
     public static String scoreName;
 
+    /* View id index */
     public static final int partMaxNumber = 5000;
     public static final int partStartId = 10001;
     public static final int measureStartId = 201;
     public static final int wordStartId = 101;
     public static final int noteStartId = 1;
 
+    /* View size */
     public static int defaultNoteHeight = 300;
     public static int noteHeight = defaultNoteHeight;
     public static int noteWidth = noteHeight / 3 * 2;
 
-    public static boolean partEditMode = false;
-    public static boolean measureEditMode = false;
-    public static boolean noteEditMode = false;
-    public static boolean lyricEditMode = false;
+    /* Edit parameter */
+    public static boolean partEditMode;
+    public static boolean measureEditMode;
+    public static boolean noteEditMode;
+    public static boolean lyricEditMode;
+
+    /* lyric recommend views */
+    public static Button recommendButton;
+    public static Button completeButton;
+    public static AutoCompleteTextView lyricInputACTextView;
 
     private ProgressDialog dialog;
-    private AutoCompleteTextView tv;
     private ArrayList<String> suggestWords = new ArrayList<>();
     private WordAdapter wordAdapter;
-    private String inputSentence;
-    private RelativeLayout root;
+
+    private String inputSentence = "";
+    private String inputNumber = "2";
+    private String inputRhyme = "一";
 
     private static final int secondsPerMinute = 60; // seconds per minutes
     private int beatsPerMinute = 90; // bits per minute, speed
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
     private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
+    public static int screenWidth;
 
-    // pinch to zoom
+    public static RelativeLayout rootView;
+    public static int screenHeight;
+
 //    private ScaleGestureDetector mScaleDetector;
     public static float mScaleFactor = 1.f;
 
@@ -114,18 +135,26 @@ public class ShowScoreActivity extends ActionBarActivity {
         File scoreDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/score");
         scoreDir.mkdirs();
 
+        partEditMode = false;
+        measureEditMode = false;
+        noteEditMode = false;
+        lyricEditMode = false;
+
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        screenHeight = displaymetrics.heightPixels;
+        screenWidth = displaymetrics.widthPixels;
+
         // reset parameters
         mScaleFactor = 1.f;
         setDimensions();
 
-//        mScaleDetector = new ScaleGestureDetector(this, new ScaleListener());
-
         vScroll = (VScrollView) findViewById(R.id.vScroll);
         hScroll = (HScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
+        rootView = (RelativeLayout)findViewById(R.id.activity_show_score);
 
-        Intent intent = getIntent();
-        scoreName = intent.getStringExtra("score name");
+        scoreName = getIntent().getStringExtra("score name");
 
         try {
             pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
@@ -141,48 +170,18 @@ public class ShowScoreActivity extends ActionBarActivity {
             Log.e(getClass().getName(), e.getMessage());
         }
 
+        /* set action bar title */
         actionBar = getSupportActionBar();
         actionBar.setTitle(scoreName);
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
-        root = (RelativeLayout)findViewById(R.id.activity_show_score);
-        Button bt = new Button(this);
-        bt.setText("Request");
-        bt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecommendTask recommendTask = new RecommendTask();
-                recommendTask.execute(tv.getText().toString());
-            }
-        });
-
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        bt.setLayoutParams(lp);
-        root.addView(bt);
-
-        tv = new AutoCompleteTextView(this);
-        RelativeLayout.LayoutParams elp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        elp.bottomMargin = 120;
-        elp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        tv.setLayoutParams(elp);
-        root.addView(tv);
-
-        suggestWords.add("fuck");
-        wordAdapter = new WordAdapter(this, android.R.layout.simple_list_item_1, suggestWords);
-        tv.setAdapter(wordAdapter);
-        tv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                tv.setText(inputSentence + wordAdapter.getItem(position));
-                tv.setSelection(tv.getText().length());
-            }
-        });
+        setUpLyricRecommend();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        ShowScoreActivity.menu = menu;
         getMenuInflater().inflate(R.menu.menu_show_score, menu);
         return true;
     }
@@ -261,6 +260,37 @@ public class ShowScoreActivity extends ActionBarActivity {
 //                }).start();
 
                 return true;
+            case android.R.id.home:
+                if(measureEditMode || lyricEditMode) {
+                    lyricEditMode = false;
+                    measureEditMode = false;
+
+                    /* hide lyric input text view and recommend button */
+                    lyricInputACTextView.setVisibility(View.GONE);
+                    recommendButton.setVisibility(View.GONE);
+                    completeButton.setVisibility(View.GONE);
+
+                    /* close keyboard */
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+
+                    if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+
+                    BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
+                    if(b != null) ShowScoreActivity.rootView.removeView(b);
+
+                    actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+                    actionBar.setTitle(ShowScoreActivity.scoreName);
+                    ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
+                    ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
+                }
+                else {
+                    Intent intent = new Intent(this, ScoreFileListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -271,8 +301,11 @@ public class ShowScoreActivity extends ActionBarActivity {
         float curX;
         float curY;
 
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+//        if(event.getY() < scoreContainer.getBottom()) {
+//
+//        }
 
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 mx = event.getX();
                 my = event.getY();
@@ -289,29 +322,6 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         return true;
     }
-
-//    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-//        @Override
-//        public boolean onScale(ScaleGestureDetector detector) {
-//            mScaleFactor *= detector.getScaleFactor();
-//
-//            // Don't let the object get too small or too large.
-//            mScaleFactor = Math.max(0.5f, Math.min(mScaleFactor, 3.0f));
-//
-//            if(mScaleFactor % 0.5 <= 0.03) {
-//                setDimensions();
-//
-//                for (int i = 0; i < 1; i++) {
-//                    PartViewGroup part = (PartViewGroup) score.findViewById(i + partStartId);
-//                    if (part == null)
-//                        break;
-//                    part.requestLayout();
-//                }
-//            }
-//
-//            return true;
-//        }
-//    }
 
     private void setDimensions() {
         noteHeight = (int) (defaultNoteHeight * mScaleFactor);
@@ -372,10 +382,32 @@ public class ShowScoreActivity extends ActionBarActivity {
         public static int WORD_VIEW_HEIGHT;
     }
 
+    private static Bitmap getBitmapFromView(View view) {
+        //Define a bitmap with the same size as the view
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ALPHA_8);
+
+        //Bind a canvas to it
+        Canvas canvas = new Canvas(returnedBitmap);
+
+        //Get the view's background
+        Drawable bgDrawable = view.getBackground();
+        if (bgDrawable != null)
+            //has background drawable, then draw it on the canvas
+            bgDrawable.draw(canvas);
+        else
+            //does not have background drawable, then draw white background on the canvas
+            canvas.drawColor(Color.WHITE);
+
+        // draw the view on the canvas
+        view.draw(canvas);
+
+        return returnedBitmap;
+    }
+
     public void zoom() {
         setDimensions();
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < partMaxNumber; i++) {
             PartViewGroup part = (PartViewGroup)score.findViewById(i + partStartId);
             if (part == null) break;
 
@@ -461,51 +493,106 @@ public class ShowScoreActivity extends ActionBarActivity {
             }
         }
 
-
         pattern = new Pattern(musicString);
-        try {
-            pattern.savePattern(new File(auditorDir + scoreName + ".txt"));
-        }
-        catch (IOException e) {
-            Log.e(getClass().getName(), "IOE");
-        }
+        try { pattern.savePattern(new File(auditorDir + scoreName + ".txt")); }
+        catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
     }
 
-    public static Bitmap getBitmapFromView(View view) {
-        //Define a bitmap with the same size as the view
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ALPHA_8);
+    private void setUpLyricRecommend() {
+        recommendButton = new Button(this);
+        recommendButton.setVisibility(View.GONE);
+        recommendButton.setId(R.id.recommend_button);
+        recommendButton.setText("推薦歌詞");
+        recommendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(lyricInputACTextView.getText().length() == 0) return;
+                RecommendTask recommendTask = new RecommendTask();
+                String[] args = {lyricInputACTextView.getText().toString(), inputNumber, inputRhyme};
+                recommendTask.execute(args);
+            }
+        });
 
-        //Bind a canvas to it
-        Canvas canvas = new Canvas(returnedBitmap);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        recommendButton.setLayoutParams(lp);
+        rootView.addView(recommendButton);
 
-        //Get the view's background
-        Drawable bgDrawable = view.getBackground();
-        if (bgDrawable != null)
-            //has background drawable, then draw it on the canvas
-            bgDrawable.draw(canvas);
-        else
-            //does not have background drawable, then draw white background on the canvas
-            canvas.drawColor(Color.WHITE);
+        completeButton = new Button(this);
+        completeButton.setVisibility(View.GONE);
+        completeButton.setId(R.id.complete_button);
+        completeButton.setText("完成句子");
+        completeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+            }
+        });
 
-        // draw the view on the canvas
-        view.draw(canvas);
+        RelativeLayout.LayoutParams clp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        clp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        clp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        completeButton.setLayoutParams(clp);
+        rootView.addView(completeButton);
 
-        return returnedBitmap;
+
+        lyricInputACTextView = new AutoCompleteTextView(this);
+        lyricInputACTextView.setVisibility(View.GONE);
+        RelativeLayout.LayoutParams elp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        elp.bottomMargin = 120;
+        elp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lyricInputACTextView.setLayoutParams(elp);
+        lyricInputACTextView.setInputType(EditorInfo.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+        rootView.addView(lyricInputACTextView);
+
+        wordAdapter = new WordAdapter(this, android.R.layout.simple_list_item_1, suggestWords);
+        lyricInputACTextView.setAdapter(wordAdapter);
+        lyricInputACTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                lyricInputACTextView.setText(inputSentence + wordAdapter.getItem(position));
+                lyricInputACTextView.setSelection(lyricInputACTextView.getText().length());
+            }
+        });
+
+        lyricInputACTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+
+                    /* hide lyric input text view and recommend button */
+                    ShowScoreActivity.lyricInputACTextView.setVisibility(View.GONE);
+                    ShowScoreActivity.recommendButton.setVisibility(View.GONE);
+                    ShowScoreActivity.completeButton.setVisibility(View.GONE);
+
+                    /* close keyboard */
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
-    private class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
+    class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
-        protected ArrayList<String> doInBackground(String... sentences) {
-            inputSentence = sentences[0];
+        protected ArrayList<String> doInBackground(String... arg) {
+            inputSentence = arg[0];
+            inputNumber = arg[1];
+            inputRhyme = arg[2];
+
             long startTime = System.currentTimeMillis();
-            String result = ""; // web request result
             String url = "http://140.117.71.221/auditor/stest/client.php";
-            String rhyme = "ㄧ";
-            ArrayList<String> resultList = new ArrayList<>();
+            String webRequestResult = ""; // web request result
+            ArrayList<String> returnTagsList = new ArrayList<>();
 
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
-            nameValuePairs.add(new BasicNameValuePair("rhyme", rhyme));
             nameValuePairs.add(new BasicNameValuePair("sentence", inputSentence));
+            nameValuePairs.add(new BasicNameValuePair("number", inputNumber));
+            nameValuePairs.add(new BasicNameValuePair("rhyme", inputRhyme));
             InputStream is = null;
 
             //http post
@@ -531,28 +618,24 @@ public class ShowScoreActivity extends ActionBarActivity {
                 }
                 is.close();
 
-                result = sb.toString();
-//                Log.e(LOG_TAG, result);
+                webRequestResult = sb.toString();
+                Log.e(LOG_TAG, webRequestResult);
             }
             catch(Exception e){
                 Log.e(LOG_TAG, "Error converting result " + e.toString());
             }
 
+            double dbQueryTime;
             //parse json data
             try{
-                JSONArray jArray = new JSONArray(result);
-                int count = 0;
+                JSONArray jArray = new JSONArray(webRequestResult);
 
-//                for(int i = 0; i < jArray.length(); i++) {
-//                    JSONObject json_data = jArray.getJSONObject(i);
-//                    Log.i(LOG_TAG, "number: " + json_data.getInt("number") + ", tag: " + json_data.getString("tag"));
-//                }
-
-                for(int i = 0; i < jArray.length(); i++) {
+                for(int i = 0; i < jArray.length() - 1; i++) {
                     JSONObject json_data = jArray.getJSONObject(i);
                     Log.i(LOG_TAG, "id: " + json_data.getInt("id") + ", tag: " + json_data.getString("tag"));
-                    resultList.add(json_data.getString("tag"));
+                    returnTagsList.add(json_data.getString("tag"));
                 }
+                dbQueryTime = jArray.getJSONObject(jArray.length()).getDouble("db_query_time");
             }
             catch(JSONException e){
                 Log.e(LOG_TAG, "Error parsing data " + e.toString());
@@ -562,7 +645,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             double duration = (finishTime - startTime) / 1000d;
             Log.e(LOG_TAG, "total recommend time: " + duration + " seconds.");
 
-            return resultList;
+            return returnTagsList;
         }
 
         @Override
@@ -571,7 +654,9 @@ public class ShowScoreActivity extends ActionBarActivity {
             suggestWords.clear();
             suggestWords.addAll(a);
             wordAdapter.notifyDataSetChanged();
-            tv.showDropDown();
+            lyricInputACTextView.showDropDown();
         }
     }
+
+    // TODO move part view group gesture detector to show score activity
 }

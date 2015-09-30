@@ -64,15 +64,10 @@ public class ScoreAdapter extends BaseAdapter {
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getTitle().toString()) {
-                            case "Rename":
-                                scoreFileListActivity.renameScore(score);
-                                break;
-
-                            case "Delete":
-                                scoreFileListActivity.deleteScore(score);
-                                break;
-                        }
+                        if(item.getTitle().toString().equals(scoreFileListActivity.getString(R.string.rename)))
+                            scoreFileListActivity.renameScore(score);
+                        else if(item.getTitle().toString().equals(scoreFileListActivity.getString(R.string.delete)))
+                            scoreFileListActivity.deleteScore(score);
                         return true;
                     }
                 });

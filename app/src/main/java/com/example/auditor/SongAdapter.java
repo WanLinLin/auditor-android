@@ -68,19 +68,12 @@ public class SongAdapter extends BaseAdapter {
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getTitle().toString()) {
-                            case "Convert":
-                                new ConvertSongTask().execute(currSong);
-                                break;
-
-                            case "Rename":
-                                audioFileListActivity.renameSong(currSong);
-                                break;
-
-                            case "Delete":
-                                audioFileListActivity.deleteSong(currSong);
-                                break;
-                        }
+                        if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.convert)))
+                            new ConvertSongTask().execute(currSong);
+                        else if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.rename)))
+                            audioFileListActivity.renameSong(currSong);
+                        else if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.delete)))
+                            audioFileListActivity.deleteSong(currSong);
                         return true;
                     }
                 });

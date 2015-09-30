@@ -32,7 +32,7 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 public class SongConverter {
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
-    private static final float tooShortForHumanToSing = 0.02f; // can be ignore
+    private static final float tooShortForHumanToSing = 0.06f; // can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
 
     private int beatsPerMinute = 90; // bits per minute, speed

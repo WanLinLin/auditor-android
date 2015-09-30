@@ -11,4 +11,8 @@
     <item name="lyric_view_group" type="id" />
     <item name="input_text_view" type="id" />
     <item name="score_view_group" type="id" />
+    <item name="black_mask" type="id" />
+    <item name="recommend_button" type="id" />
+    <item name="complete_button" type="id" />
+    <item name="lyric_arrow" type="id" />
 </resources>

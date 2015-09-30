@@ -6,17 +6,15 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
-import android.text.InputType;
 import android.util.Pair;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
@@ -29,16 +27,23 @@ import java.util.ArrayList;
  */
 public class PartViewGroup extends RelativeLayout {
     private static final String LOG_TAG = PartViewGroup.class.getName();
+    private static final String LYRIC_EDIT_MODE = "歌詞編輯";
+    private static final String MEASURE_EDIT_MODE = "樂譜編輯";
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
     private static int tieStrokeWidth;
-    private static GestureDetector gestureDetector;
+    public static GestureDetector gestureDetector;
     private Context context;
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
     private TieViewGroup tieViewGroup;
-    private String originalLyrics = "";
-    private MeasureViewGroup editMeasure;
-    private boolean lyricEditing;
+
+    private MeasureViewGroup clickMeasure;
+    private WordView clickWord;
+    public static MeasureViewGroup lyricEditStartMeasure = null;
+    public static WordView lyricEditStartWord = null;
+    private static boolean lyricEditing;
+
+    private static ImageView arrow;
 
     public static int barStrokeWidth;
     public static int tieViewHeight;
@@ -64,6 +69,8 @@ public class PartViewGroup extends RelativeLayout {
                 tieViewHeight);
         tieViewGroup.setLayoutParams(lp);
         this.addView(tieViewGroup);
+
+        lyricEditing = false;
     }
 
     @Override
@@ -78,26 +85,6 @@ public class PartViewGroup extends RelativeLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return gestureDetector.onTouchEvent(event);
-    }
-
-    public void saveWordsIntoWordView() {
-        int i = 0;
-
-        EditText et = (EditText)editMeasure.findViewById(R.id.input_text_view);
-
-        for (int w = 0; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
-            WordView wordView = (WordView) editMeasure.findViewById(w + ShowScoreActivity.wordStartId);
-            if (wordView == null)
-                break;
-
-            if(i < et.getText().length()) {
-                wordView.setWord(et.getText().toString().substring(i, i + 1));
-                i++;
-            }
-        }
-
-        editMeasure.removeView(et);
-        editMeasure = null;
     }
 
     public void printBarView(int measureViewGroupId) {
@@ -183,80 +170,60 @@ public class PartViewGroup extends RelativeLayout {
             float x = e.getX();
             float y = e.getY();
 
-            // single touch down on lyric area
+            /* single touch down on lyric area */
             if (y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
-                // lyric edit mode is on
                 if(ShowScoreActivity.lyricEditMode) {
-                    if (lyricEditing) {
-                        saveWordsIntoWordView();
-                        lyricEditing = false;
+                    if(lyricEditing) return true;
+
+                    searchClickWordView(x);
+
+                    /* if clicked word is empty, return */
+                    if(clickWord == null) return true; // click on not word view area
+                    NoteViewGroup note =
+                            (NoteViewGroup)clickMeasure.findViewById(clickWord.getId() - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
+                    NumberView numberView = (NumberView)note.findViewById(R.id.number_view);
+                    if(clickWord.getWord().equals("") && !note.isTieEnd() && !"R-".contains(numberView.getNote())) {
+                        ShowScoreActivity.lyricInputACTextView.requestFocus();
+                        lyricEditStartMeasure = clickMeasure;
+                        lyricEditStartWord = clickWord;
+                        addArrow();
+
+                        /* show keyboard */
+                        lyricEditing = true;
+                        ShowScoreActivity.lyricInputACTextView.setFocusableInTouchMode(true);
+                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
+
+                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
+                        return true;
+                    }
+                    else if(clickWord.getWord().equals("") && (note.isTieEnd() || "R-".contains(numberView.getNote())) ) {
+                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
+                        return true;
                     }
 
+                    findLyricEditStartPosition();
+
+                    String originalLyrics = collectWords();
+
+                    if(!originalLyrics.isEmpty() && originalLyrics.charAt(originalLyrics.length() - 1) == NumberedMusicalNotationParser.sentenceEndTag)
+                        originalLyrics = originalLyrics.substring(0, originalLyrics.length() - 1);
+
+                    ShowScoreActivity.lyricInputACTextView.setText(originalLyrics);
+                    ShowScoreActivity.lyricInputACTextView.setSelection(originalLyrics.length());
+                    ShowScoreActivity.lyricInputACTextView.requestFocus();
+
+                    /* show keyboard */
+                    addArrow();
                     lyricEditing = true;
-
-                    /* i=0: tieViewGroup, i=odd: barView, i=even: measureViewGroup */
-                    for (int i = 2; i < getChildCount(); i += 2) {
-                        if (x > getChildAt(i).getLeft() && x < getChildAt(i).getRight()) {
-                            originalLyrics = "";
-                            editMeasure = (MeasureViewGroup) findViewById((i / 2 - 1) + ShowScoreActivity.measureStartId);
-
-                            /* find words */
-                            for (int w = 0; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
-                                WordView wordView = (WordView) editMeasure.findViewById(w + ShowScoreActivity.wordStartId);
-                                if (wordView == null)
-                                    break;
-
-                                originalLyrics += wordView.getWord();
-                                wordView.setWord("");
-                            }
-
-                            EditText et = new EditText(getContext());
-                            et.setId(R.id.input_text_view);
-                            et.setInputType(InputType.TYPE_CLASS_TEXT);
-                            et.setText(originalLyrics);
-                            RelativeLayout.LayoutParams lp =
-                                    new RelativeLayout.LayoutParams(
-                                            editMeasure.getWidth() - ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH,
-                                            (int) (ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT * 1.4));
-                            lp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
-                            lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-                            et.setLayoutParams(lp);
-                            et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                                @Override
-                                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                                    if (actionId == EditorInfo.IME_ACTION_DONE) {
-                                        lyricEditing = false;
-                                        EditText et = (EditText) editMeasure.findViewById(R.id.input_text_view);
-                                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
-
-                                        saveWordsIntoWordView();
-                                        return true;
-                                    }
-                                    return false;
-                                }
-                            });
-
-                            editMeasure.addView(et);
-                            et.requestFocus();
-                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-                        }
-                    }
+                    ShowScoreActivity.lyricInputACTextView.setFocusableInTouchMode(true);
+                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
                 }
-                // lyric edit mode is off
-                else {
-                    if (editMeasure != null) {
-                        lyricEditing = false;
+                else { // lyric edit mode is off
 
-                        EditText et = (EditText) editMeasure.findViewById(R.id.input_text_view);
-                        if(et != null) {
-                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
-
-                            saveWordsIntoWordView();
-                        }
-                    }
                 }
             }
 
@@ -283,36 +250,262 @@ public class PartViewGroup extends RelativeLayout {
             // long press on lyric view
             if(y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
                 ShowScoreActivity.lyricEditMode = !ShowScoreActivity.lyricEditMode;
-                if(ShowScoreActivity.lyricEditMode) {
-                    for (int i = 2; i < getChildCount(); i += 2) {
-                        if (x > getChildAt(i).getLeft() && x < getChildAt(i).getRight()) {
-                            editMeasure = (MeasureViewGroup) findViewById((i / 2 - 1) + ShowScoreActivity.measureStartId);
-                            // TODO add a black mask on the whole score view, except the edit measure
-                        }
-                    }
-                }
+                if(ShowScoreActivity.measureEditMode) ShowScoreActivity.measureEditMode = false;
             }
             else { // long press on note view
                 ShowScoreActivity.measureEditMode = !ShowScoreActivity.measureEditMode;
+                if(ShowScoreActivity.lyricEditMode) ShowScoreActivity.lyricEditMode = false;
             }
 
             if(ShowScoreActivity.lyricEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.GRAY));
-                ShowScoreActivity.actionBar.setTitle("LyricEditMode");
+                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#64B5F6")));
+                ShowScoreActivity.actionBar.setTitle(LYRIC_EDIT_MODE);
+                ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+                ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
 
-            }
-            else if(ShowScoreActivity.measureEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.GRAY));
-                ShowScoreActivity.actionBar.setTitle("MeasureEditMode");
+                ShowScoreActivity.lyricInputACTextView.setVisibility(VISIBLE);
+                ShowScoreActivity.recommendButton.setVisibility(VISIBLE);
+                ShowScoreActivity.completeButton.setVisibility(VISIBLE);
+
+                addBlackMask(
+                        0,
+                        getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT,
+                        ShowScoreActivity.screenWidth,
+                        getBottom());
             }
             else {
+                /* hide lyric input text view and recommend button */
+                ShowScoreActivity.lyricInputACTextView.setVisibility(GONE);
+                ShowScoreActivity.recommendButton.setVisibility(GONE);
+                ShowScoreActivity.completeButton.setVisibility(GONE);
+
+                /* close keyboard */
+                InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+
+                if(lyricEditStartMeasure != null) saveWordsIntoWordView();
+            }
+
+            if(ShowScoreActivity.measureEditMode) {
+                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#64B5F6")));
+                ShowScoreActivity.actionBar.setTitle(MEASURE_EDIT_MODE);
+                ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+                ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+
+                addBlackMask(
+                        0,
+                        getTop(),
+                        ShowScoreActivity.screenWidth,
+                        getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT);
+            }
+
+            if(!ShowScoreActivity.measureEditMode && !ShowScoreActivity.lyricEditMode) {
+                BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
+                if(b != null) ShowScoreActivity.rootView.removeView(b);
+
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
                 ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
         }
     }
 
-    private class BarView extends View {
+    private String collectWords() {
+        /* collect word views' words into original lyrics */
+        String originalLyrics = "";
+        if(lyricEditStartMeasure == null) lyricEditStartMeasure = (MeasureViewGroup)findViewById(ShowScoreActivity.measureStartId);
+        if(lyricEditStartWord == null) lyricEditStartWord = (WordView)lyricEditStartMeasure.findViewById(ShowScoreActivity.wordStartId);
+        int measureCollectStartIndex = lyricEditStartMeasure.getId() - ShowScoreActivity.measureStartId;
+        int wordCollectStartIndex = lyricEditStartWord.getId() - ShowScoreActivity.wordStartId;
+
+        collectWords:
+        for(int i = measureCollectStartIndex; i < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; i++) {
+            MeasureViewGroup curCollectMeasure = (MeasureViewGroup)findViewById(i + ShowScoreActivity.measureStartId);
+            if(curCollectMeasure == null) break;
+            if(curCollectMeasure != lyricEditStartMeasure) wordCollectStartIndex = 0;
+
+            for (int j = wordCollectStartIndex; j < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; j++) {
+                WordView curCollectWord = (WordView) curCollectMeasure.findViewById(j + ShowScoreActivity.wordStartId);
+                if(curCollectWord == null) break;
+
+                if(curCollectWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString())) {
+                    originalLyrics += curCollectWord.getWord();
+                    curCollectWord.setWord("");
+                    curCollectWord.invalidate();
+                    break collectWords;
+                }
+                originalLyrics += curCollectWord.getWord();
+                curCollectWord.setWord("");
+                curCollectWord.invalidate();
+            }
+        }
+
+        return originalLyrics;
+    }
+
+    private void findLyricEditStartPosition() {
+        int wordSearchStartId = clickWord.getId();
+        MeasureViewGroup preMeasure = null;
+        WordView preWord = null;
+
+        findLyricEditStartPosition:
+        for(int m = clickMeasure.getId(); m >= ShowScoreActivity.measureStartId; m--) {
+            MeasureViewGroup curSearchMeasure = (MeasureViewGroup)findViewById(m);
+            if(curSearchMeasure != clickMeasure) wordSearchStartId = (curSearchMeasure.getChildCount() / 2 - 1) + ShowScoreActivity.wordStartId;
+
+            for(int w = wordSearchStartId; w >= ShowScoreActivity.wordStartId; w--) {
+                WordView curSearchWord = (WordView)curSearchMeasure.findViewById(w);
+                if(curSearchWord == clickWord) {
+                    preMeasure = curSearchMeasure;
+                    preWord = curSearchWord;
+                    continue;
+                }
+
+                NoteViewGroup curSearchNote = (NoteViewGroup)curSearchMeasure.findViewById(w - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
+                NumberView curSearchNumberView = (NumberView)curSearchNote.findViewById(R.id.number_view);
+
+                if(curSearchNumberView.getNote().equals("R") || curSearchNote.isTieEnd()) continue;
+
+                if(curSearchWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString()) || curSearchWord.getWord().equals("")) {
+                    if(preMeasure == null) lyricEditStartMeasure = curSearchMeasure;
+                    else lyricEditStartMeasure = preMeasure;
+
+                    if(preWord == null) lyricEditStartWord = curSearchWord;
+                    else lyricEditStartWord = preWord;
+
+                    break findLyricEditStartPosition;
+                }
+
+                preMeasure = curSearchMeasure;
+                preWord = curSearchWord;
+            }
+        }
+    }
+
+    private void searchClickWordView(float x) {
+        /* search click word view */
+        searchClickWordView:
+        for(int i = 0; i < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; i++) {
+            MeasureViewGroup curSearchMeasure = (MeasureViewGroup)findViewById(i + ShowScoreActivity.measureStartId);
+            if(curSearchMeasure == null) break;
+
+            if(x > curSearchMeasure.getLeft() && x < curSearchMeasure.getRight()) {
+                clickMeasure = curSearchMeasure;
+
+                for(int j = 0; j < ShowScoreActivity.measureStartId - ShowScoreActivity.wordStartId; j++) {
+                    WordView curSearchWord = (WordView)clickMeasure.findViewById(j + ShowScoreActivity.wordStartId);
+                    if(curSearchWord == null) break;
+
+                    if(x > curSearchWord.getLeft() + curSearchMeasure.getLeft() &&
+                            x < curSearchWord.getRight() + curSearchMeasure.getLeft()) {
+                        clickWord = curSearchWord;
+                        break searchClickWordView;
+                    }
+                }
+            }
+        }
+    }
+
+    private void addArrow(){
+        arrow = new ImageView(context);
+        arrow.setId(R.id.lyric_arrow);
+        arrow.setImageResource(R.drawable.lyric_arrow);
+        arrow.setEnabled(false);
+
+        RelativeLayout.LayoutParams lp =
+                new RelativeLayout.LayoutParams(
+                        lyricEditStartWord.getWidth(),
+                        lyricEditStartWord.getHeight());
+        lp.leftMargin = lyricEditStartWord.getLeft() + lyricEditStartMeasure.getLeft();
+        lp.topMargin = lyricEditStartWord.getTop() + lyricEditStartWord.getHeight();
+        arrow.setLayoutParams(lp);
+
+        Animation animation = AnimationUtils.loadAnimation(context, R.anim.floating);
+        arrow.startAnimation(animation);
+
+        this.addView(arrow);
+    }
+
+    public static boolean saveWordsIntoWordView() {
+        if(lyricEditStartMeasure == null || lyricEditStartWord == null) return false;
+
+        PartViewGroup part = (PartViewGroup)lyricEditStartMeasure.getParent();
+        String lyric = ShowScoreActivity.lyricInputACTextView.getText().toString();
+        if(lyric.length() == 0) {
+            lyricEditStartWord.setWord("");
+            lyricEditStartWord.invalidate();
+            arrow.setAnimation(null);
+            part.removeView(arrow);
+
+            ShowScoreActivity.lyricInputACTextView.setText("");
+            ShowScoreActivity.lyricInputACTextView.setFocusable(false);
+            lyricEditStartMeasure = null;
+            lyricEditStartWord = null;
+            lyricEditing = false;
+            return true;
+        }
+
+        int i = 0;
+        int wordStartIndex = lyricEditStartWord.getId() - ShowScoreActivity.wordStartId;
+        int measureStartIndex = lyricEditStartMeasure.getId() - ShowScoreActivity.measureStartId;
+
+        saveWords:
+        for (int m = measureStartIndex; m < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; m++) {
+            MeasureViewGroup curSearchMeasure = (MeasureViewGroup)part.findViewById(m + ShowScoreActivity.measureStartId);
+            if(curSearchMeasure == null) break;
+            if(curSearchMeasure != lyricEditStartMeasure) wordStartIndex = 0;
+
+            /* find word */
+            for (int w = wordStartIndex; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
+                WordView curSearchWord = (WordView)curSearchMeasure.findViewById(w + ShowScoreActivity.wordStartId);
+                if(curSearchWord == null) break;
+
+                NoteViewGroup noteViewGroup = (NoteViewGroup)curSearchMeasure.findViewById(w + ShowScoreActivity.noteStartId);
+                if(noteViewGroup == null) break;
+                if(noteViewGroup.isTieEnd()) continue; // skip tie end
+                NumberView numberView = (NumberView)noteViewGroup.findViewById(R.id.number_view);
+                if("R-".contains(numberView.getNote())) continue; // skip rest note
+
+
+                if(i == lyric.length() - 1) {
+                    curSearchWord.setWord(lyric.substring(i, i + 1) + NumberedMusicalNotationParser.sentenceEndTag);
+                    break saveWords;
+                }
+                else curSearchWord.setWord(lyric.substring(i, i + 1));
+                curSearchWord.invalidate();
+                i++;
+            }
+        }
+
+        arrow.setAnimation(null);
+        part.removeView(arrow);
+
+        ShowScoreActivity.lyricInputACTextView.setText("");
+        ShowScoreActivity.lyricInputACTextView.setFocusable(false);
+        lyricEditStartMeasure = null;
+        lyricEditStartWord = null;
+        lyricEditing = false;
+
+        return true;
+    }
+
+    private void addBlackMask(int left, int top, int right, int bottom) {
+        BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
+        if(b != null) ShowScoreActivity.rootView.removeView(b);
+
+        BlackMask blackMask = new BlackMask(getContext());
+        blackMask.setId(R.id.black_mask);
+        blackMask.setDimension(
+                left,
+                top,
+                right,
+                bottom,
+                ShowScoreActivity.screenWidth,
+                ShowScoreActivity.screenHeight);
+        ShowScoreActivity.rootView.addView(blackMask);
+        blackMask.invalidate();
+    }
+
+    class BarView extends View {
         private int width;
         private int height;
 
@@ -343,7 +536,7 @@ public class PartViewGroup extends RelativeLayout {
         }
     }
 
-    private class TieView extends View {
+    class TieView extends View {
         private RectF rectF;
 
         public TieView(Context context, RectF rectF) {
@@ -381,6 +574,4 @@ public class PartViewGroup extends RelativeLayout {
     public TieViewGroup getTieViewGroup() {
         return tieViewGroup;
     }
-
-    // TODO 推薦詞可選字數
 }
