@@ -10,12 +10,14 @@
         android:id="@+id/popupWindowTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="File Name: " />
+        android:textSize="18sp"
+        android:text="@string/file_name" />
 
     <EditText
         android:id="@+id/editTextDialogUserInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:inputType="textShortMessage">
 
         <requestFocus />
 

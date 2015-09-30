@@ -26,6 +26,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
     private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private ScoreAdapter scoreAdapter;
     private ArrayList<Score> scoreList;
+    private EditText userInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,13 +113,13 @@ public class ScoreFileListActivity extends ActionBarActivity {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(promptsView);
-        final EditText userInput = (EditText) promptsView
+        userInput = (EditText) promptsView
                 .findViewById(R.id.editTextDialogUserInput);
 
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("OK",
+                .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 File from = new File(auditorDir + "/" + score.getTitle() + ".txt");
@@ -130,7 +131,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
                                 scoreAdapter.notifyDataSetChanged();
                             }
                         })
-                .setNegativeButton("Cancel",
+                .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
@@ -158,7 +159,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("OK",
+                .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 File fileToDelete = new File(auditorDir + "/" + score.getTitle() + ".txt");
@@ -179,7 +180,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
                                 scoreAdapter.notifyDataSetChanged();
                             }
                         })
-                .setNegativeButton("Cancel",
+                .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();

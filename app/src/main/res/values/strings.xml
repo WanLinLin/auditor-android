@@ -10,7 +10,7 @@
     <string name="sheet_music_button">樂譜檔案</string>
     <string name="action_settings">設定</string>
     <string name="auditor">Auditor</string>
-    <string name="shuffle">Shuffle</string>
+    <string name="shuffle">隨機播放</string>
     <string name="end">End</string>
     <string name="convert">轉譜</string>
     <string name="rename">重新命名</string>
@@ -18,4 +18,11 @@
     <string name="zoom_in">放大</string>
     <string name="zoom_out">縮小</string>
     <string name="save">儲存</string>
+    <string name="yes">確定</string>
+    <string name="cancel">取消</string>
+    <string name="file_name">檔案名稱</string>
+    <string name="record">錄音</string>
+    <string name="stop">停止</string>
+    <string name="recommend_lyric">推薦歌詞</string>
+    <string name="complete_sentence">完成句子</string>
 </resources>

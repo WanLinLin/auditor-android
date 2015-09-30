@@ -50,6 +50,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
     private boolean paused = false;
     private boolean playbackPaused = false;
     private final Context context = this;
+    private EditText userInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -355,13 +356,13 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
         alertDialogBuilder.setView(promptsView);
-        final EditText userInput = (EditText) promptsView
+        userInput = (EditText) promptsView
                 .findViewById(R.id.editTextDialogUserInput);
 
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("OK",
+                .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 File from = new File(auditorDir + "/" + song.getTitle() + ".wav");
@@ -376,7 +377,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                                 songAdt.notifyDataSetChanged();
                             }
                         })
-                .setNegativeButton("Cancel",
+                .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
@@ -404,7 +405,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("OK",
+                .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 File fileToDelete = new File(auditorDir + "/" + song.getTitle() + ".wav");
@@ -428,7 +429,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                                 songAdt.notifyDataSetChanged();
                             }
                         })
-                .setNegativeButton("Cancel",
+                .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();

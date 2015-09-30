@@ -297,6 +297,38 @@ public class ShowScoreActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if(measureEditMode || lyricEditMode) {
+            measureEditMode = false;
+            lyricEditMode = false;
+
+                    /* hide lyric input text view and recommend button */
+            lyricInputACTextView.setVisibility(View.GONE);
+            recommendButton.setVisibility(View.GONE);
+            completeButton.setVisibility(View.GONE);
+
+                    /* close keyboard */
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+
+            if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+
+            BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
+            if(b != null) ShowScoreActivity.rootView.removeView(b);
+
+            actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+            actionBar.setTitle(ShowScoreActivity.scoreName);
+            ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
+            ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
+        }
+        else {
+            Intent intent = new Intent(this, ScoreFileListActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         float curX;
         float curY;
@@ -502,7 +534,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         recommendButton = new Button(this);
         recommendButton.setVisibility(View.GONE);
         recommendButton.setId(R.id.recommend_button);
-        recommendButton.setText("推薦歌詞");
+        recommendButton.setText(R.string.recommend_lyric);
         recommendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -522,7 +554,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         completeButton = new Button(this);
         completeButton.setVisibility(View.GONE);
         completeButton.setId(R.id.complete_button);
-        completeButton.setText("完成句子");
+        completeButton.setText(R.string.complete_sentence);
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

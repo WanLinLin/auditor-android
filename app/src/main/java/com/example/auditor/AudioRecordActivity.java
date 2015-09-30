@@ -29,6 +29,7 @@ public class AudioRecordActivity extends ActionBarActivity {
     private final Context context = this;
     private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
     public static final int bufferSize = 1024;
+    private EditText userInput;
 
     class RecordButton extends Button {
         boolean mStartRecording = true;
@@ -38,9 +39,9 @@ public class AudioRecordActivity extends ActionBarActivity {
             public void onClick(View v) {
                 onRecord(mStartRecording);
                 if (mStartRecording)
-                    setText("Stop recording");
+                    setText(R.string.stop);
                 else
-                    setText("Start recording");
+                    setText(R.string.record);
 
                 mStartRecording = !mStartRecording;
             }
@@ -48,7 +49,7 @@ public class AudioRecordActivity extends ActionBarActivity {
 
         public RecordButton(Context ctx) {
             super(ctx);
-            setText("Start recording");
+            setText(R.string.record);
             setOnClickListener(clicker);
         }
     }
@@ -146,11 +147,11 @@ public class AudioRecordActivity extends ActionBarActivity {
         // set audio_record_popup_window.xml to alert dialog builder
         alertDialogBuilder.setView(promptsView);
 
-        final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
+        userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
 
         // set dialog message
         alertDialogBuilder.setCancelable(false)
-                .setPositiveButton("Save",
+                .setPositiveButton(R.string.yes,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             File from = new File(mFileName);
@@ -165,12 +166,12 @@ public class AudioRecordActivity extends ActionBarActivity {
                             }
                         }
                     })
-                .setNegativeButton("Cancel",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
+                .setNegativeButton(R.string.cancel,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();

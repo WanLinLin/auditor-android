@@ -222,9 +222,6 @@ public class PartViewGroup extends RelativeLayout {
                     InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
                 }
-                else { // lyric edit mode is off
-
-                }
             }
 
             // single touch down on note area
@@ -252,7 +249,7 @@ public class PartViewGroup extends RelativeLayout {
                 ShowScoreActivity.lyricEditMode = !ShowScoreActivity.lyricEditMode;
                 if(ShowScoreActivity.measureEditMode) ShowScoreActivity.measureEditMode = false;
             }
-            else { // long press on note view
+            else if(y < ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT) { // long press on note view
                 ShowScoreActivity.measureEditMode = !ShowScoreActivity.measureEditMode;
                 if(ShowScoreActivity.lyricEditMode) ShowScoreActivity.lyricEditMode = false;
             }
@@ -267,11 +264,13 @@ public class PartViewGroup extends RelativeLayout {
                 ShowScoreActivity.recommendButton.setVisibility(VISIBLE);
                 ShowScoreActivity.completeButton.setVisibility(VISIBLE);
 
-                addBlackMask(
-                        0,
-                        getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT,
-                        ShowScoreActivity.screenWidth,
-                        getBottom());
+                if(ShowScoreActivity.rootView.findViewById(R.id.black_mask) == null) {
+                    addBlackMask(
+                            0,
+                            getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT,
+                            ShowScoreActivity.screenWidth,
+                            getBottom());
+                }
             }
             else {
                 /* hide lyric input text view and recommend button */
