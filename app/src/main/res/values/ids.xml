@@ -12,7 +12,21 @@
     <item name="input_text_view" type="id" />
     <item name="score_view_group" type="id" />
     <item name="black_mask" type="id" />
+
     <item name="recommend_button" type="id" />
     <item name="complete_button" type="id" />
     <item name="lyric_arrow" type="id" />
+    <item name="lyric_number_picker" type="id" />
+    <item name="lyric_input_text_view" type="id" />
+    <item name="lyric_recommend_group" type="id" />
+    <item name="lyric_rhyme_spinner" type="id" />
+
+    <item name="edit_accident_button" type="id" />
+    <item name="edit_number_button" type="id" />
+    <item name="edit_beam_button" type="id" />
+    <item name="edit_dot_button" type="id" />
+    <item name="edit_top_octave_button" type="id" />
+    <item name="edit_bottom_octave_button" type="id" />
+    <item name="edit_blank_view" type="id" />
+
 </resources>

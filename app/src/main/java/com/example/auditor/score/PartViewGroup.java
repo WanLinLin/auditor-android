@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
+import android.text.method.TextKeyListener;
 import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -183,7 +184,6 @@ public class PartViewGroup extends RelativeLayout {
                             (NoteViewGroup)clickMeasure.findViewById(clickWord.getId() - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
                     NumberView numberView = (NumberView)note.findViewById(R.id.number_view);
                     if(clickWord.getWord().equals("") && !note.isTieEnd() && !"R-".contains(numberView.getNote())) {
-                        ShowScoreActivity.lyricInputACTextView.requestFocus();
                         lyricEditStartMeasure = clickMeasure;
                         lyricEditStartWord = clickWord;
                         addArrow();
@@ -191,6 +191,8 @@ public class PartViewGroup extends RelativeLayout {
                         /* show keyboard */
                         lyricEditing = true;
                         ShowScoreActivity.lyricInputACTextView.setFocusableInTouchMode(true);
+                        ShowScoreActivity.lyricInputACTextView.requestFocus();
+                        ShowScoreActivity.setLyricRecommendGroupVisibility(true);
                         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
 
@@ -218,8 +220,10 @@ public class PartViewGroup extends RelativeLayout {
                     /* show keyboard */
                     addArrow();
                     lyricEditing = true;
+                    ShowScoreActivity.setLyricRecommendGroupVisibility(true);
                     ShowScoreActivity.lyricInputACTextView.setFocusableInTouchMode(true);
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    ShowScoreActivity.lyricInputACTextView.requestFocus();
+                    InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
                 }
             }
@@ -260,23 +264,11 @@ public class PartViewGroup extends RelativeLayout {
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
 
-                ShowScoreActivity.lyricInputACTextView.setVisibility(VISIBLE);
-                ShowScoreActivity.recommendButton.setVisibility(VISIBLE);
-                ShowScoreActivity.completeButton.setVisibility(VISIBLE);
-
-                if(ShowScoreActivity.rootView.findViewById(R.id.black_mask) == null) {
-                    addBlackMask(
-                            0,
-                            getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT,
-                            ShowScoreActivity.screenWidth,
-                            getBottom());
-                }
+                ShowScoreActivity.setLyricRecommendGroupVisibility(true);
             }
             else {
                 /* hide lyric input text view and recommend button */
-                ShowScoreActivity.lyricInputACTextView.setVisibility(GONE);
-                ShowScoreActivity.recommendButton.setVisibility(GONE);
-                ShowScoreActivity.completeButton.setVisibility(GONE);
+                ShowScoreActivity.setLyricRecommendGroupVisibility(false);
 
                 /* close keyboard */
                 InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -291,17 +283,19 @@ public class PartViewGroup extends RelativeLayout {
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
 
-                addBlackMask(
-                        0,
-                        getTop(),
-                        ShowScoreActivity.screenWidth,
-                        getTop() + ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT);
+                ShowScoreActivity.keyboard.setVisibility(VISIBLE);
+                Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
+                ShowScoreActivity.keyboard.setAnimation(animation);
+                ShowScoreActivity.keyboard.animate();
+            }
+            else if(!ShowScoreActivity.measureEditMode && ShowScoreActivity.keyboard.isShown()){
+                Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_out);
+                ShowScoreActivity.keyboard.setAnimation(animation);
+                ShowScoreActivity.keyboard.animate();
+                ShowScoreActivity.keyboard.setVisibility(GONE);
             }
 
             if(!ShowScoreActivity.measureEditMode && !ShowScoreActivity.lyricEditMode) {
-                BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
-                if(b != null) ShowScoreActivity.rootView.removeView(b);
-
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
                 ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
@@ -435,7 +429,8 @@ public class PartViewGroup extends RelativeLayout {
             arrow.setAnimation(null);
             part.removeView(arrow);
 
-            ShowScoreActivity.lyricInputACTextView.setText("");
+            if(ShowScoreActivity.lyricInputACTextView.getText().length() > 0)
+                TextKeyListener.clear(ShowScoreActivity.lyricInputACTextView.getText());
             ShowScoreActivity.lyricInputACTextView.setFocusable(false);
             lyricEditStartMeasure = null;
             lyricEditStartWord = null;
@@ -478,30 +473,14 @@ public class PartViewGroup extends RelativeLayout {
         arrow.setAnimation(null);
         part.removeView(arrow);
 
-        ShowScoreActivity.lyricInputACTextView.setText("");
+        if(ShowScoreActivity.lyricInputACTextView.getText().length() > 0)
+            TextKeyListener.clear(ShowScoreActivity.lyricInputACTextView.getText());
         ShowScoreActivity.lyricInputACTextView.setFocusable(false);
         lyricEditStartMeasure = null;
         lyricEditStartWord = null;
         lyricEditing = false;
 
         return true;
-    }
-
-    private void addBlackMask(int left, int top, int right, int bottom) {
-        BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
-        if(b != null) ShowScoreActivity.rootView.removeView(b);
-
-        BlackMask blackMask = new BlackMask(getContext());
-        blackMask.setId(R.id.black_mask);
-        blackMask.setDimension(
-                left,
-                top,
-                right,
-                bottom,
-                ShowScoreActivity.screenWidth,
-                ShowScoreActivity.screenHeight);
-        ShowScoreActivity.rootView.addView(blackMask);
-        blackMask.invalidate();
     }
 
     class BarView extends View {

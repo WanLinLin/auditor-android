@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="rhymes">
+        <item>ㄓ</item>
+        <item>ㄔ</item>
+        <item>ㄕ</item>
+        <item>ㄖ</item>
+        <item>ㄗ</item>
+        <item>ㄘ</item>
+        <item>ㄙ</item>
+        <item>ㄧ</item>
+        <item>ㄨ</item>
+        <item>ㄩ</item>
+        <item>ㄚ</item>
+        <item>ㄛ</item>
+        <item>ㄜ</item>
+        <item>ㄝ</item>
+        <item>ㄞ</item>
+        <item>ㄟ</item>
+        <item>ㄠ</item>
+        <item>ㄡ</item>
+        <item>ㄢ</item>
+        <item>ㄣ</item>
+        <item>ㄤ</item>
+        <item>ㄥ</item>
+        <item>ㄦ</item>
+    </string-array>
+</resources>

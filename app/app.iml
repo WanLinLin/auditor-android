@@ -89,10 +89,10 @@
     <orderEntry type="jdk" jdkName="Android API 21 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.3" level="project" />
-    <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />
+    <orderEntry type="library" exported="" name="xom-1.2.10" level="project" />
     <orderEntry type="library" exported="" name="jfugue-android-4.0.3" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
+    <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="midi-driver-0.1.1" level="project" />
-    <orderEntry type="library" exported="" name="xom-1.2.10" level="project" />
   </component>
 </module>

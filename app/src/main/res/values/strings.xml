@@ -25,4 +25,5 @@
     <string name="stop">停止</string>
     <string name="recommend_lyric">推薦歌詞</string>
     <string name="complete_sentence">完成句子</string>
+    <string name="rhyme_spinner">韻腳</string>
 </resources>

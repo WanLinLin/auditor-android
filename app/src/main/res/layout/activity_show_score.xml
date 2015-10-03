@@ -1,5 +1,4 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,22 +12,67 @@
     <com.example.auditor.VScrollView
         android:id="@+id/vScroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <com.example.auditor.HScrollView
             android:id="@+id/hScroll"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <RelativeLayout
                 android:id="@+id/score_container"
-                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
             </RelativeLayout>
         </com.example.auditor.HScrollView>
-
     </com.example.auditor.VScrollView>
 
+    <AutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@id/lyric_input_text_view"
+        android:layout_above="@id/lyric_recommend_group"
+        android:inputType="textShortMessage"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@id/lyric_recommend_group"
+        android:layout_alignParentBottom="true">
+
+        <NumberPicker
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@id/lyric_number_picker"
+            android:descendantFocusability="blocksDescendants">
+
+        </NumberPicker>
+
+        <Spinner
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rhyme_spinner"
+            android:id="@id/lyric_rhyme_spinner" />
+
+        <Button
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/recommend_lyric"
+            android:id="@id/recommend_button"
+            style="?android:attr/borderlessButtonStyle"/>
+
+        <Button
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/complete_sentence"
+            android:id="@id/complete_button"
+            style="?android:attr/borderlessButtonStyle"/>
+
+    </LinearLayout>
 </RelativeLayout>

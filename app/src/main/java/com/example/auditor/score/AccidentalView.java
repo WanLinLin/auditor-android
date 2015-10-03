@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -93,24 +92,6 @@ public class AccidentalView extends View {
                 canvas.drawLine((left + right) / 2, top, (left + right) / 2, bottom + arcStrokeRatioWidth / 2, mPaint);
                 break;
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-//        if(ShowScoreActivity.noteEditMode) {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    if (accidental.equals("#")) {
-//                        accidental = "b";
-//                    } else {
-//                        accidental = "#";
-//                    }
-//                    break;
-//            }
-//            this.invalidate();
-//        }
-
-        return false;
     }
 
     private void init() {

@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
@@ -22,18 +23,28 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.auditor.button.AccidentalButton;
+import com.example.auditor.button.BeamButton;
+import com.example.auditor.button.BlankView;
+import com.example.auditor.button.DottedButton;
+import com.example.auditor.button.NumberButton;
+import com.example.auditor.button.OctaveButton;
 import com.example.auditor.score.AccidentalView;
 import com.example.auditor.score.BeamView;
-import com.example.auditor.score.BlackMask;
 import com.example.auditor.score.MeasureViewGroup;
 import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberView;
@@ -91,9 +102,13 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static final int noteStartId = 1;
 
     /* View size */
-    public static int defaultNoteHeight = 300;
-    public static int noteHeight = defaultNoteHeight;
-    public static int noteWidth = noteHeight / 3 * 2;
+    public static int defaultNoteHeight;
+    public static int defaultNoteEditHeight;
+    public static int defaultNoteEditWidth;
+    public static int noteHeight;
+    public static int noteWidth;
+
+    private int screenHeight;
 
     /* Edit parameter */
     public static boolean partEditMode;
@@ -104,27 +119,23 @@ public class ShowScoreActivity extends ActionBarActivity {
     /* lyric recommend views */
     public static Button recommendButton;
     public static Button completeButton;
+    public static Spinner rhymeSpinner;
+    public static NumberPicker lyricNumberPicker;
+    public static RelativeLayout rootView;
     public static AutoCompleteTextView lyricInputACTextView;
+    public static RelativeLayout keyboard;
 
     private ProgressDialog dialog;
     private ArrayList<String> suggestWords = new ArrayList<>();
     private WordAdapter wordAdapter;
-
     private String inputSentence = "";
-    private String inputNumber = "2";
-    private String inputRhyme = "一";
 
     private static final int secondsPerMinute = 60; // seconds per minutes
     private int beatsPerMinute = 90; // bits per minute, speed
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
     private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;
-    public static int screenWidth;
 
-    public static RelativeLayout rootView;
-    public static int screenHeight;
-
-//    private ScaleGestureDetector mScaleDetector;
     public static float mScaleFactor = 1.f;
 
     @Override
@@ -132,7 +143,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
-        File scoreDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/score");
+        File scoreDir = new File(auditorDir + "score");
         scoreDir.mkdirs();
 
         partEditMode = false;
@@ -143,7 +154,9 @@ public class ShowScoreActivity extends ActionBarActivity {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
-        screenWidth = displaymetrics.widthPixels;
+        defaultNoteHeight = screenHeight / 6;
+        defaultNoteEditHeight = screenHeight / 3;
+        defaultNoteEditWidth = defaultNoteEditHeight / 3 * 2;
 
         // reset parameters
         mScaleFactor = 1.f;
@@ -175,7 +188,8 @@ public class ShowScoreActivity extends ActionBarActivity {
         actionBar.setTitle(scoreName);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        setUpLyricRecommend();
+        setUpLyricRecommendGroup();
+        setUpEditScoreKeyboard();
     }
 
     @Override
@@ -266,18 +280,19 @@ public class ShowScoreActivity extends ActionBarActivity {
                     measureEditMode = false;
 
                     /* hide lyric input text view and recommend button */
-                    lyricInputACTextView.setVisibility(View.GONE);
-                    recommendButton.setVisibility(View.GONE);
-                    completeButton.setVisibility(View.GONE);
-
+                    setLyricRecommendGroupVisibility(false);
                     /* close keyboard */
                     InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
-
                     if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
 
-                    BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
-                    if(b != null) ShowScoreActivity.rootView.removeView(b);
+                    // close edit score keyboard
+                    if(keyboard.isShown()) {
+                        Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
+                        keyboard.setAnimation(animation);
+                        keyboard.animate();
+                        keyboard.setVisibility(View.GONE);
+                    }
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
                     actionBar.setTitle(ShowScoreActivity.scoreName);
@@ -302,19 +317,19 @@ public class ShowScoreActivity extends ActionBarActivity {
             measureEditMode = false;
             lyricEditMode = false;
 
-                    /* hide lyric input text view and recommend button */
-            lyricInputACTextView.setVisibility(View.GONE);
-            recommendButton.setVisibility(View.GONE);
-            completeButton.setVisibility(View.GONE);
-
-                    /* close keyboard */
+            // close edit lyric group
+            setLyricRecommendGroupVisibility(false);
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
-
             if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
 
-            BlackMask b = (BlackMask)ShowScoreActivity.rootView.findViewById(R.id.black_mask);
-            if(b != null) ShowScoreActivity.rootView.removeView(b);
+            // close edit score keyboard
+            if(keyboard.isShown()) {
+                Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
+                keyboard.setAnimation(animation);
+                keyboard.animate();
+                keyboard.setVisibility(View.GONE);
+            }
 
             actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
             actionBar.setTitle(ShowScoreActivity.scoreName);
@@ -530,53 +545,51 @@ public class ShowScoreActivity extends ActionBarActivity {
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
     }
 
-    private void setUpLyricRecommend() {
-        recommendButton = new Button(this);
-        recommendButton.setVisibility(View.GONE);
-        recommendButton.setId(R.id.recommend_button);
-        recommendButton.setText(R.string.recommend_lyric);
+    private void setUpLyricRecommendGroup() {
+        /* LYRIC NUMBER PICKER */
+        lyricNumberPicker = (NumberPicker)findViewById(R.id.lyric_number_picker);
+        lyricNumberPicker.setMaxValue(5);
+        lyricNumberPicker.setMinValue(1);
+        lyricNumberPicker.setValue(2);
+
+        rhymeSpinner = (Spinner)findViewById(R.id.lyric_rhyme_spinner);
+        final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.rhymes, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        rhymeSpinner.setAdapter(adapter);
+
+        /* RECOMMEND BUTTON */
+        recommendButton = (Button)findViewById(R.id.recommend_button);
         recommendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(lyricInputACTextView.getText().length() == 0) return;
+                if (lyricInputACTextView.getText().length() == 0) return;
                 RecommendTask recommendTask = new RecommendTask();
-                String[] args = {lyricInputACTextView.getText().toString(), inputNumber, inputRhyme};
+                String[] args = {lyricInputACTextView.getText().toString(), Integer.toString(lyricNumberPicker.getValue()), rhymeSpinner.getSelectedItem().toString()};
                 recommendTask.execute(args);
             }
         });
 
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        recommendButton.setLayoutParams(lp);
-        rootView.addView(recommendButton);
-
-        completeButton = new Button(this);
-        completeButton.setVisibility(View.GONE);
-        completeButton.setId(R.id.complete_button);
-        completeButton.setText(R.string.complete_sentence);
+        /* COMPLETE BUTTON */
+        completeButton = (Button)findViewById(R.id.complete_button);
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+
+                /* hide lyric input text view and recommend button */
+                setLyricRecommendGroupVisibility(false);
+
+                /* close keyboard */
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+
             }
         });
 
-        RelativeLayout.LayoutParams clp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        clp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        clp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        completeButton.setLayoutParams(clp);
-        rootView.addView(completeButton);
-
-
-        lyricInputACTextView = new AutoCompleteTextView(this);
-        lyricInputACTextView.setVisibility(View.GONE);
-        RelativeLayout.LayoutParams elp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        elp.bottomMargin = 120;
-        elp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        lyricInputACTextView.setLayoutParams(elp);
-        lyricInputACTextView.setInputType(EditorInfo.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
-        rootView.addView(lyricInputACTextView);
+        /* LYRIC INPUT TEXT VIEW */
+        lyricInputACTextView = (AutoCompleteTextView)findViewById(R.id.lyric_input_text_view);
+        lyricInputACTextView.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
 
         wordAdapter = new WordAdapter(this, android.R.layout.simple_list_item_1, suggestWords);
         lyricInputACTextView.setAdapter(wordAdapter);
@@ -591,30 +604,131 @@ public class ShowScoreActivity extends ActionBarActivity {
         lyricInputACTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
                     if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
 
                     /* hide lyric input text view and recommend button */
-                    ShowScoreActivity.lyricInputACTextView.setVisibility(View.GONE);
-                    ShowScoreActivity.recommendButton.setVisibility(View.GONE);
-                    ShowScoreActivity.completeButton.setVisibility(View.GONE);
+                    setLyricRecommendGroupVisibility(false);
 
                     /* close keyboard */
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
                     return true;
                 }
                 return false;
             }
         });
+
+        setLyricRecommendGroupVisibility(false);
+    }
+
+    private void setUpEditScoreKeyboard() {
+        keyboard = new RelativeLayout(this);
+        RelativeLayout.LayoutParams kblp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (screenHeight * 0.4));
+        kblp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        keyboard.setBackgroundColor(Color.LTGRAY);
+        keyboard.setLayoutParams(kblp);
+        rootView.addView(keyboard);
+
+        BlankView bv = new BlankView(this);
+        bv.setId(R.id.edit_blank_view);
+        RelativeLayout.LayoutParams bvlp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.225));
+        bvlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        bvlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        bv.setLayoutParams(bvlp);
+
+        AccidentalButton ab = new AccidentalButton(this, null, android.R.attr.borderlessButtonStyle);
+        ab.setId(R.id.edit_accident_button);
+        RelativeLayout.LayoutParams ablp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
+        ablp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        ablp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
+        ab.setLayoutParams(ablp);
+        ab.setAccidental("b");
+
+        NumberButton nb = new NumberButton(this, null, android.R.attr.borderlessButtonStyle);
+        nb.setId(R.id.edit_number_button);
+        RelativeLayout.LayoutParams nblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.4));
+        nblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
+        nblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
+        nb.setLayoutParams(nblp);
+        nb.setNote("C");
+
+        BeamButton bb = new BeamButton(this, null, android.R.attr.borderlessButtonStyle);
+        bb.setId(R.id.edit_beam_button);
+        RelativeLayout.LayoutParams bblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.15));
+        bblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
+        bblp.addRule(RelativeLayout.BELOW, R.id.edit_number_button);
+        bb.setLayoutParams(bblp);
+        bb.setDuration("i");
+
+        DottedButton db = new DottedButton(this, null, android.R.attr.borderlessButtonStyle);
+        db.setId(R.id.edit_dot_button);
+        RelativeLayout.LayoutParams dblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
+        dblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_number_button);
+        dblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
+        db.setLayoutParams(dblp);
+        db.setDot(".");
+
+        OctaveButton tob = new OctaveButton(this, null, android.R.attr.borderlessButtonStyle);
+        tob.setId(R.id.edit_top_octave_button);
+        tob.setPosition(true);
+        RelativeLayout.LayoutParams toblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
+        toblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
+        toblp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        tob.setLayoutParams(toblp);
+        tob.setDotCount(2);
+
+        OctaveButton bob = new OctaveButton(this, null, android.R.attr.borderlessButtonStyle);
+        bob.setId(R.id.edit_bottom_octave_button);
+        bob.setPosition(false);
+        RelativeLayout.LayoutParams boblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
+        boblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
+        boblp.addRule(RelativeLayout.BELOW, R.id.edit_beam_button);
+        bob.setLayoutParams(boblp);
+        bob.setDotCount(2);
+
+        RelativeLayout editScoreGroup = new RelativeLayout(this);
+        RelativeLayout.LayoutParams esglp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        esglp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        esglp.addRule(RelativeLayout.CENTER_VERTICAL);
+        editScoreGroup.setLayoutParams(esglp);
+        keyboard.addView(editScoreGroup);
+
+        editScoreGroup.addView(bv);
+        editScoreGroup.addView(ab);
+        editScoreGroup.addView(nb);
+        editScoreGroup.addView(bb);
+        editScoreGroup.addView(db);
+        editScoreGroup.addView(tob);
+        editScoreGroup.addView(bob);
+
+        keyboard.setVisibility(View.GONE);
+    }
+
+    public static void setLyricRecommendGroupVisibility(boolean visible) {
+        if(visible) {
+            lyricNumberPicker.setVisibility(View.VISIBLE);
+            lyricInputACTextView.setVisibility(View.VISIBLE);
+            lyricInputACTextView.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+            recommendButton.setVisibility(View.VISIBLE);
+            completeButton.setVisibility(View.VISIBLE);
+            rhymeSpinner.setVisibility(View.VISIBLE);
+        }
+        else {
+            lyricNumberPicker.setVisibility(View.GONE);
+            lyricInputACTextView.setVisibility(View.GONE);
+            recommendButton.setVisibility(View.GONE);
+            completeButton.setVisibility(View.GONE);
+            rhymeSpinner.setVisibility(View.GONE);
+        }
     }
 
     class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
         protected ArrayList<String> doInBackground(String... arg) {
             inputSentence = arg[0];
-            inputNumber = arg[1];
-            inputRhyme = arg[2];
+            String inputNumber = arg[1];
+            String inputRhyme = arg[2];
 
             long startTime = System.currentTimeMillis();
             String url = "http://140.117.71.221/auditor/stest/client.php";
@@ -657,7 +771,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 Log.e(LOG_TAG, "Error converting result " + e.toString());
             }
 
-            double dbQueryTime;
+            double dbQueryTime = -1;
             //parse json data
             try{
                 JSONArray jArray = new JSONArray(webRequestResult);
@@ -675,6 +789,8 @@ public class ShowScoreActivity extends ActionBarActivity {
 
             long finishTime = System.currentTimeMillis();
             double duration = (finishTime - startTime) / 1000d;
+            Log.i(LOG_TAG, "number: " + inputNumber + ", rhyme: " + inputRhyme);
+            Log.i(LOG_TAG, "db query time: " + dbQueryTime);
             Log.e(LOG_TAG, "total recommend time: " + duration + " seconds.");
 
             return returnTagsList;
@@ -689,6 +805,4 @@ public class ShowScoreActivity extends ActionBarActivity {
             lyricInputACTextView.showDropDown();
         }
     }
-
-    // TODO move part view group gesture detector to show score activity
 }

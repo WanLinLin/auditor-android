@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -29,45 +28,6 @@ public class NumberView extends View {
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-//        if(ShowScoreActivity.noteEditMode) {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    switch (note) {
-//                        case "C":
-//                            note = "D";
-//                            break;
-//                        case "D":
-//                            note = "E";
-//                            break;
-//                        case "E":
-//                            note = "F";
-//                            break;
-//                        case "F":
-//                            note = "G";
-//                            break;
-//                        case "G":
-//                            note = "A";
-//                            break;
-//                        case "A":
-//                            note = "B";
-//                            break;
-//                        case "B":
-//                            note = "R";
-//                            break;
-//                        case "R":
-//                            note = "C";
-//                            break;
-//                    }
-//                    break;
-//            }
-//            this.invalidate();
-//        }
-
-        return false;
     }
 
     @Override
