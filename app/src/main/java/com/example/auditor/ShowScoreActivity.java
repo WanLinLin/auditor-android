@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -45,6 +46,7 @@ import com.example.auditor.button.NumberButton;
 import com.example.auditor.button.OctaveButton;
 import com.example.auditor.score.AccidentalView;
 import com.example.auditor.score.BeamView;
+import com.example.auditor.score.DottedView;
 import com.example.auditor.score.MeasureViewGroup;
 import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberView;
@@ -80,7 +82,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
     public static ScoreViewGroup score;
-    private RelativeLayout scoreContainer;
+    public static RelativeLayout scoreContainer;
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
 
@@ -111,9 +113,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     private int screenHeight;
 
     /* Edit parameter */
-    public static boolean partEditMode;
-    public static boolean measureEditMode;
-    public static boolean noteEditMode;
+    public static boolean scoreEditMode;
     public static boolean lyricEditMode;
 
     /* lyric recommend views */
@@ -124,6 +124,14 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static RelativeLayout rootView;
     public static AutoCompleteTextView lyricInputACTextView;
     public static RelativeLayout keyboard;
+
+    /* score edit buttons */
+    public static AccidentalButton accidentalButton;
+    public static NumberButton numberButton;
+    public static BeamButton beamButton;
+    public static DottedButton dottedButton;
+    public static OctaveButton topOctaveButton;
+    public static OctaveButton bottomOctaveButton;
 
     private ProgressDialog dialog;
     private ArrayList<String> suggestWords = new ArrayList<>();
@@ -143,12 +151,10 @@ public class ShowScoreActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
-        File scoreDir = new File(auditorDir + "score");
+        final File scoreDir = new File(auditorDir + "score");
         scoreDir.mkdirs();
 
-        partEditMode = false;
-        measureEditMode = false;
-        noteEditMode = false;
+        scoreEditMode = false;
         lyricEditMode = false;
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
@@ -165,31 +171,37 @@ public class ShowScoreActivity extends ActionBarActivity {
         vScroll = (VScrollView) findViewById(R.id.vScroll);
         hScroll = (HScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
+        scoreContainer.setVisibility(View.GONE);
         rootView = (RelativeLayout)findViewById(R.id.activity_show_score);
-
         scoreName = getIntent().getStringExtra("score name");
 
-        try {
-            pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
-
-            numberedMusicalNotationParser =
-                    new NumberedMusicalNotationParser(this, pattern.getMusicString());
-
-            numberedMusicalNotationParser.parse();
-            score = numberedMusicalNotationParser.getScoreViewGroup();
-            scoreContainer.addView(score);
-        }
-        catch (IOException e) {
-            Log.e(getClass().getName(), e.getMessage());
-        }
-
-        /* set action bar title */
+        // set action bar title
         actionBar = getSupportActionBar();
         actionBar.setTitle(scoreName);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         setUpLyricRecommendGroup();
         setUpEditScoreKeyboard();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if(hasFocus && scoreContainer.getWidth() == 0) {
+            try {
+                pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
+
+                numberedMusicalNotationParser =
+                        new NumberedMusicalNotationParser(ShowScoreActivity.this, pattern.getMusicString());
+
+                numberedMusicalNotationParser.parse();
+                score = numberedMusicalNotationParser.getScoreViewGroup();
+                scoreContainer.addView(score);
+            } catch (IOException e) {
+                Log.e(getClass().getName(), e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -275,9 +287,9 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 return true;
             case android.R.id.home:
-                if(measureEditMode || lyricEditMode) {
+                if(scoreEditMode || lyricEditMode) {
                     lyricEditMode = false;
-                    measureEditMode = false;
+                    scoreEditMode = false;
 
                     /* hide lyric input text view and recommend button */
                     setLyricRecommendGroupVisibility(false);
@@ -313,8 +325,8 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-        if(measureEditMode || lyricEditMode) {
-            measureEditMode = false;
+        if(scoreEditMode || lyricEditMode) {
+            scoreEditMode = false;
             lyricEditMode = false;
 
             // close edit lyric group
@@ -347,10 +359,6 @@ public class ShowScoreActivity extends ActionBarActivity {
     public boolean onTouchEvent(MotionEvent event) {
         float curX;
         float curY;
-
-//        if(event.getY() < scoreContainer.getBottom()) {
-//
-//        }
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
@@ -527,6 +535,9 @@ public class ShowScoreActivity extends ActionBarActivity {
                     BeamView beamView = (BeamView)note.findViewById(R.id.beam_view);
                     if(beamView != null) noteContext += beamView.getDuration();
 
+                    DottedView dottedView = (DottedView)note.findViewById(R.id.dotted_view);
+                    if(dottedView != null) noteContext += dottedView.getDot();
+
                     if(note.isTieStart()) noteContext += "-";
 
                     WordView wordView = (WordView)measure.findViewById(k + wordStartId);
@@ -623,6 +634,8 @@ public class ShowScoreActivity extends ActionBarActivity {
     }
 
     private void setUpEditScoreKeyboard() {
+        String buttonColor = "#F5F5F5";
+
         keyboard = new RelativeLayout(this);
         RelativeLayout.LayoutParams kblp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (screenHeight * 0.4));
         kblp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -637,55 +650,55 @@ public class ShowScoreActivity extends ActionBarActivity {
         bvlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         bv.setLayoutParams(bvlp);
 
-        AccidentalButton ab = new AccidentalButton(this, null, android.R.attr.borderlessButtonStyle);
-        ab.setId(R.id.edit_accident_button);
+        accidentalButton = new AccidentalButton(this);
+        accidentalButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
+        accidentalButton.setId(R.id.edit_accident_button);
         RelativeLayout.LayoutParams ablp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
         ablp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         ablp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        ab.setLayoutParams(ablp);
-        ab.setAccidental("b");
+        accidentalButton.setLayoutParams(ablp);
 
-        NumberButton nb = new NumberButton(this, null, android.R.attr.borderlessButtonStyle);
-        nb.setId(R.id.edit_number_button);
+        numberButton = new NumberButton(this);
+        numberButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
+        numberButton.setId(R.id.edit_number_button);
         RelativeLayout.LayoutParams nblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.4));
         nblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
         nblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        nb.setLayoutParams(nblp);
-        nb.setNote("C");
+        numberButton.setLayoutParams(nblp);
 
-        BeamButton bb = new BeamButton(this, null, android.R.attr.borderlessButtonStyle);
-        bb.setId(R.id.edit_beam_button);
+        beamButton = new BeamButton(this);
+        beamButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
+        beamButton.setId(R.id.edit_beam_button);
         RelativeLayout.LayoutParams bblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.15));
         bblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
         bblp.addRule(RelativeLayout.BELOW, R.id.edit_number_button);
-        bb.setLayoutParams(bblp);
-        bb.setDuration("i");
+        beamButton.setLayoutParams(bblp);
 
-        DottedButton db = new DottedButton(this, null, android.R.attr.borderlessButtonStyle);
-        db.setId(R.id.edit_dot_button);
+        dottedButton = new DottedButton(this);
+        dottedButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
+        dottedButton.setId(R.id.edit_dot_button);
         RelativeLayout.LayoutParams dblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
         dblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_number_button);
         dblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        db.setLayoutParams(dblp);
-        db.setDot(".");
+        dottedButton.setLayoutParams(dblp);
 
-        OctaveButton tob = new OctaveButton(this, null, android.R.attr.borderlessButtonStyle);
-        tob.setId(R.id.edit_top_octave_button);
-        tob.setPosition(true);
+        topOctaveButton = new OctaveButton(this);
+        topOctaveButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
+        topOctaveButton.setId(R.id.edit_top_octave_button);
+        topOctaveButton.setPosition(true);
         RelativeLayout.LayoutParams toblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
         toblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
         toblp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        tob.setLayoutParams(toblp);
-        tob.setDotCount(2);
+        topOctaveButton.setLayoutParams(toblp);
 
-        OctaveButton bob = new OctaveButton(this, null, android.R.attr.borderlessButtonStyle);
-        bob.setId(R.id.edit_bottom_octave_button);
-        bob.setPosition(false);
+        bottomOctaveButton = new OctaveButton(this);
+        bottomOctaveButton.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+        bottomOctaveButton.setId(R.id.edit_bottom_octave_button);
+        bottomOctaveButton.setPosition(false);
         RelativeLayout.LayoutParams boblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
         boblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
         boblp.addRule(RelativeLayout.BELOW, R.id.edit_beam_button);
-        bob.setLayoutParams(boblp);
-        bob.setDotCount(2);
+        bottomOctaveButton.setLayoutParams(boblp);
 
         RelativeLayout editScoreGroup = new RelativeLayout(this);
         RelativeLayout.LayoutParams esglp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -695,12 +708,12 @@ public class ShowScoreActivity extends ActionBarActivity {
         keyboard.addView(editScoreGroup);
 
         editScoreGroup.addView(bv);
-        editScoreGroup.addView(ab);
-        editScoreGroup.addView(nb);
-        editScoreGroup.addView(bb);
-        editScoreGroup.addView(db);
-        editScoreGroup.addView(tob);
-        editScoreGroup.addView(bob);
+        editScoreGroup.addView(accidentalButton);
+        editScoreGroup.addView(numberButton);
+        editScoreGroup.addView(beamButton);
+        editScoreGroup.addView(dottedButton);
+        editScoreGroup.addView(topOctaveButton);
+        editScoreGroup.addView(bottomOctaveButton);
 
         keyboard.setVisibility(View.GONE);
     }
@@ -790,7 +803,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             long finishTime = System.currentTimeMillis();
             double duration = (finishTime - startTime) / 1000d;
             Log.i(LOG_TAG, "number: " + inputNumber + ", rhyme: " + inputRhyme);
-            Log.i(LOG_TAG, "db query time: " + dbQueryTime);
+            Log.i(LOG_TAG, "database query time: " + dbQueryTime);
             Log.e(LOG_TAG, "total recommend time: " + duration + " seconds.");
 
             return returnTagsList;

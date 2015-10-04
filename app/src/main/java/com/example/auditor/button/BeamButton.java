@@ -8,7 +8,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
+import com.example.auditor.score.BeamView;
+import com.example.auditor.score.NoteViewGroup;
 
 /**
  * Created by wanlin on 2015/10/2.
@@ -41,7 +44,7 @@ public class BeamButton extends Button{
         this.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ShowScoreActivity.measureEditMode) {
+                if (ShowScoreActivity.scoreEditMode) {
                     switch (duration) {
                         case "i":
                             setDuration("s");
@@ -53,13 +56,17 @@ public class BeamButton extends Button{
                             setDuration("x");
                             break;
                         case "x":
-                            setDuration("");
+                            setDuration("q");
                             break;
-                        case "":
+                        case "q":
                             setDuration("i");
                             break;
                     }
                     BeamButton.this.invalidate();
+
+                    BeamView beamView = (BeamView) NoteViewGroup.curEditNote.findViewById(R.id.beam_view);
+                    beamView.setDuration(duration);
+                    beamView.requestLayout();
                 }
             }
         });
@@ -69,13 +76,14 @@ public class BeamButton extends Button{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int beamStrokeWidth = Math.round(getMeasuredHeight() * 0.12f);
-        int space = Math.round(getMeasuredHeight() - beamStrokeWidth) / 3;
-        float y = beamStrokeWidth / 2;
+        int beamStrokeWidth = (int) (getMeasuredHeight() * 0.075f);
+        int padding = (int) (getMeasuredHeight() * 0.25);
+        int space = (getMeasuredHeight() - 2 * padding - beamStrokeWidth) / 3;
+        int y = padding + beamStrokeWidth / 2;
 
         mPaint.setStrokeWidth(beamStrokeWidth);
         for(int i = 0; i < lineCount; i++) {
-            canvas.drawLine(getMeasuredWidth() / 6, y, getMeasuredWidth() - getMeasuredWidth() / 6, y, mPaint);
+            canvas.drawLine(getMeasuredWidth() / 8, y, getMeasuredWidth() - getMeasuredWidth() / 8, y, mPaint);
             y += space;
         }
     }
@@ -84,6 +92,15 @@ public class BeamButton extends Button{
         this.duration = duration;
 
         switch(duration) {
+            case "w":
+                lineCount = 0;
+                break;
+            case "h":
+                lineCount = 0;
+                break;
+            case "q":
+                lineCount = 0;
+                break;
             case "i":
                 lineCount = 1;
                 break;
@@ -95,9 +112,6 @@ public class BeamButton extends Button{
                 break;
             case "x":
                 lineCount = 4;
-                break;
-            case "":
-                lineCount = 0;
                 break;
         }
     }

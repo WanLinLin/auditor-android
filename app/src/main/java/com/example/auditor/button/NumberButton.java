@@ -8,7 +8,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
+import com.example.auditor.score.NoteViewGroup;
+import com.example.auditor.score.NumberView;
 
 /**
  * Created by wanlin on 2015/10/2.
@@ -39,7 +42,7 @@ public class NumberButton extends Button{
         this.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ShowScoreActivity.measureEditMode) {
+                if(ShowScoreActivity.scoreEditMode) {
                     switch (note) {
                         case "C":
                             note = "D";
@@ -67,6 +70,12 @@ public class NumberButton extends Button{
                             break;
                     }
                     NumberButton.this.invalidate();
+
+                    NumberView numberView = (NumberView) NoteViewGroup.curEditNote.findViewById(R.id.number_view);
+                    if(numberView != null) {
+                        numberView.setNote(note);
+                        numberView.invalidate();
+                    }
                 }
             }
         });

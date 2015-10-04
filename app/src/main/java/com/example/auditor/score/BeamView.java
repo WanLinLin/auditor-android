@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -21,9 +20,6 @@ public class BeamView extends View {
     private int beamStrokeWidth;
     private int space;
 
-    private boolean hasAccidentalView;
-    private boolean hasDottedView;
-
     private int width;
     private int height;
 
@@ -38,37 +34,37 @@ public class BeamView extends View {
         mPaint.setStrokeWidth(beamStrokeWidth);
         space = Math.round(height - beamStrokeWidth) / 3;
         height = Math.round(beamStrokeWidth + (lineCount - 1) * space);
-
-        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
-        if(hasAccidentalView)
-            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
-        if(hasDottedView)
-            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        height = ShowScoreActivity.NoteChildViewDimension.BEAM_VIEW_HEIGHT;
+        if(duration.equals("") || "whq".contains(duration)) setMeasuredDimension(0, 0);
+        else {
+            height = ShowScoreActivity.NoteChildViewDimension.BEAM_VIEW_HEIGHT;
 
-        beamStrokeWidth = Math.round(height * 0.12f);
-        mPaint.setStrokeWidth(beamStrokeWidth);
-        space = Math.round(height - beamStrokeWidth) / 3;
-        height = Math.round(beamStrokeWidth + (lineCount - 1) * space);
+            beamStrokeWidth = Math.round(height * 0.12f);
+            mPaint.setStrokeWidth(beamStrokeWidth);
+            space = Math.round(height - beamStrokeWidth) / 3;
+            height = Math.round(beamStrokeWidth + (lineCount - 1) * space);
 
-        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
-        if(hasAccidentalView)
-            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
-        if(hasDottedView)
-            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+            width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
 
-        setMeasuredDimension(width, height);
+            NoteViewGroup note = (NoteViewGroup)getParent();
+            if (note.hasAccidentalView())
+                width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+            if (note.hasDottedView())
+                width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+            setMeasuredDimension(width, height);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(duration.equals("") || "whq".contains(duration)) return;
 
         float y = beamStrokeWidth / 2;
 
@@ -76,33 +72,6 @@ public class BeamView extends View {
             canvas.drawLine(0, y, getWidth(), y, mPaint);
             y += space;
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-//        if(ShowScoreActivity.noteEditMode) {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    switch (beams) {
-//                        case 1:
-//                            beams = 2;
-//                            break;
-//                        case 2:
-//                            beams = 3;
-//                            break;
-//                        case 3:
-//                            beams = 4;
-//                            break;
-//                        case 4:
-//                            beams = 1;
-//                            break;
-//                    }
-//                    break;
-//            }
-//            this.requestLayout();
-//        }
-
-        return false;
     }
 
     public void setDuration(String duration) {
@@ -122,14 +91,6 @@ public class BeamView extends View {
                 lineCount = 4;
                 break;
         }
-    }
-
-    public void setHasAccidentalView(boolean hasAccidentalView) {
-        this.hasAccidentalView = hasAccidentalView;
-    }
-
-    public void setHasDottedView(boolean hasDottedView) {
-        this.hasDottedView = hasDottedView;
     }
 
     public String getDuration() {

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Vibrator;
 import android.text.method.TextKeyListener;
 import android.util.Pair;
 import android.view.GestureDetector;
@@ -28,18 +29,22 @@ import java.util.ArrayList;
  */
 public class PartViewGroup extends RelativeLayout {
     private static final String LOG_TAG = PartViewGroup.class.getName();
-    private static final String LYRIC_EDIT_MODE = "歌詞編輯";
-    private static final String MEASURE_EDIT_MODE = "樂譜編輯";
     private static final boolean SHOW_TIE_VIEW_COLOR = false;
     private static int tieStrokeWidth;
-    public static GestureDetector gestureDetector;
+    private static GestureDetector gestureDetector;
+
     private Context context;
+
+    private static String LYRIC_EDIT_MODE = "";
+    private static String SCORE_EDIT_MODE = "";
+
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
     private TieViewGroup tieViewGroup;
-
     private MeasureViewGroup clickMeasure;
     private WordView clickWord;
+
+    public static PartViewGroup curEditPart;
     public static MeasureViewGroup lyricEditStartMeasure = null;
     public static WordView lyricEditStartWord = null;
     private static boolean lyricEditing;
@@ -52,6 +57,9 @@ public class PartViewGroup extends RelativeLayout {
     public PartViewGroup(Context context) {
         super(context);
         this.context = context;
+        LYRIC_EDIT_MODE = context.getString(R.string.lyric_edit_mode);
+        SCORE_EDIT_MODE = context.getString(R.string.score_edit_mode);
+
         tieInfo = new ArrayList<>();
         gestureDetector = new GestureDetector(context, new mGestureDetector());
 
@@ -72,6 +80,16 @@ public class PartViewGroup extends RelativeLayout {
         this.addView(tieViewGroup);
 
         lyricEditing = false;
+
+//        ViewTreeObserver vto = getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//
+//                Log.e(LOG_TAG, "part on global layout!");
+//            }
+//        });
     }
 
     @Override
@@ -228,14 +246,8 @@ public class PartViewGroup extends RelativeLayout {
                 }
             }
 
-            // single touch down on note area
-            else if(y < getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
-                if(ShowScoreActivity.noteEditMode) {
-
-                }
-                else {
-
-                }
+            if(y < getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
+                PartViewGroup.curEditPart = PartViewGroup.this;
             }
 
             ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
@@ -251,10 +263,10 @@ public class PartViewGroup extends RelativeLayout {
             // long press on lyric view
             if(y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
                 ShowScoreActivity.lyricEditMode = !ShowScoreActivity.lyricEditMode;
-                if(ShowScoreActivity.measureEditMode) ShowScoreActivity.measureEditMode = false;
+                if(ShowScoreActivity.scoreEditMode) ShowScoreActivity.scoreEditMode = false;
             }
             else if(y < ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT) { // long press on note view
-                ShowScoreActivity.measureEditMode = !ShowScoreActivity.measureEditMode;
+                ShowScoreActivity.scoreEditMode = !ShowScoreActivity.scoreEditMode;
                 if(ShowScoreActivity.lyricEditMode) ShowScoreActivity.lyricEditMode = false;
             }
 
@@ -277,28 +289,26 @@ public class PartViewGroup extends RelativeLayout {
                 if(lyricEditStartMeasure != null) saveWordsIntoWordView();
             }
 
-            if(ShowScoreActivity.measureEditMode) {
+            if(ShowScoreActivity.scoreEditMode) {
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#64B5F6")));
-                ShowScoreActivity.actionBar.setTitle(MEASURE_EDIT_MODE);
+                ShowScoreActivity.actionBar.setTitle(SCORE_EDIT_MODE);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
-
-                ShowScoreActivity.keyboard.setVisibility(VISIBLE);
-                Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
-                ShowScoreActivity.keyboard.setAnimation(animation);
-                ShowScoreActivity.keyboard.animate();
             }
-            else if(!ShowScoreActivity.measureEditMode && ShowScoreActivity.keyboard.isShown()){
+            else if(!ShowScoreActivity.scoreEditMode && ShowScoreActivity.keyboard.isShown()){
                 Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_out);
                 ShowScoreActivity.keyboard.setAnimation(animation);
                 ShowScoreActivity.keyboard.animate();
                 ShowScoreActivity.keyboard.setVisibility(GONE);
             }
 
-            if(!ShowScoreActivity.measureEditMode && !ShowScoreActivity.lyricEditMode) {
+            if(!ShowScoreActivity.scoreEditMode && !ShowScoreActivity.lyricEditMode) {
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
                 ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
+
+            Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(100);
         }
     }
 

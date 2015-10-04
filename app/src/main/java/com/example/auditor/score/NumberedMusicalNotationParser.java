@@ -1,8 +1,14 @@
 package com.example.auditor.score;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.RelativeLayout;
 
 import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
@@ -23,12 +29,38 @@ public class NumberedMusicalNotationParser {
 
     public static final Character sentenceEndTag = '~';
 
-    public NumberedMusicalNotationParser(Context context, String musicString) {
+    public NumberedMusicalNotationParser(final Context context, String musicString) {
         this.context = context;
         this.musicString = musicString;
         noteContext = new NoteContext();
         scoreViewGroup = new ScoreViewGroup(context);
         scoreViewGroup.setId(R.id.score_view_group);
+
+        ViewTreeObserver vto = scoreViewGroup.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                scoreViewGroup.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                if(!ShowScoreActivity.scoreContainer.isShown()) {
+                    ShowScoreActivity.scoreContainer.setVisibility(View.VISIBLE);
+
+                    ShowScoreActivity.scoreContainer.postOnAnimation(new Runnable() {
+                        @Override
+                        public void run() {
+                            RelativeLayout loadingViewLayout = (RelativeLayout)ShowScoreActivity.rootView.findViewById(R.id.loading_image_layout);
+                            if(loadingViewLayout != null){
+                                Animation animation = AnimationUtils.loadAnimation(context, R.anim.loading_image_fade_out);
+                                loadingViewLayout.setAnimation(animation);
+                                loadingViewLayout.animate();
+                                ShowScoreActivity.rootView.removeView(loadingViewLayout);
+                            }
+                            ShowScoreActivity.rootView.setBackgroundColor(Color.WHITE);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     public void parse() {
@@ -79,7 +111,7 @@ public class NumberedMusicalNotationParser {
                     // add a new note view group
                     parseNoteContext(token);
                     addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
+                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
                     noteViewGroupIndex++;
                     break;
             }
@@ -97,7 +129,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.tieEnd = false;
                 for(int i = 0; i < 3; i++) {
                     addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
+                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
                     noteViewGroupIndex++;
                 }
             }
@@ -107,7 +139,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.note = durationNote;
                 noteContext.tieEnd = false;
                 addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                curParseMeasure.printWord(noteContext.word, noteViewGroupIndex);
+                curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
                 noteViewGroupIndex++;
             }
         }
@@ -193,6 +225,8 @@ public class NumberedMusicalNotationParser {
         MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
         if(noteViewGroupIndex == 0)
             measureViewGroup.printBarWidthView();
+
+//        Log.e(LOG_TAG, "note: " + noteContext.note + ", accidental: " + noteContext.accidental + ", octave: " + noteContext.octave + ", duration: " + noteContext.duration + ", tieStart: " + noteContext.tieStart + ", tieEnd: " + noteContext.tieEnd);
         measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteContext.tieStart, noteContext.tieEnd, noteViewGroupIndex);
 
         // store tie information

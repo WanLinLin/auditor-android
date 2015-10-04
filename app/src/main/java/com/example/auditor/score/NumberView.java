@@ -34,14 +34,20 @@ public class NumberView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
-        height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
-        setMeasuredDimension(width, height);
+        if(note.equals("")) setMeasuredDimension(0, 0);
+        else {
+            width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+            height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
+
+            setMeasuredDimension(width, height);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        if(note.equals("")) return;
 
         mPaint.setTextSize(height);
         mPaint.setTextAlign(Paint.Align.CENTER);

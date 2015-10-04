@@ -12,16 +12,18 @@ import com.example.auditor.ShowScoreActivity;
  * Created by wanlin on 15/9/10.
  */
 public class WordView extends View {
-    private int noteViewGroupWidth;
     private int width;
     private int height;
     private Paint textPaint;
     private String word;
+    private boolean hasAccidentalView;
+    private boolean hasDottedView;
 
-    public WordView(Context context, int width) {
+    public WordView(Context context, boolean hasAccidentalView, boolean hasDottedView) {
         super(context);
-        this.noteViewGroupWidth = width;
         this.height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
+        this.hasAccidentalView = hasAccidentalView;
+        this.hasDottedView = hasDottedView;
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
@@ -30,10 +32,14 @@ public class WordView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
-        width = (int) (noteViewGroupWidth * ShowScoreActivity.mScaleFactor);
 
-        setMeasuredDimension(width, height);
+        width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        if(hasAccidentalView)
+            width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+        if(hasDottedView)
+            width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+        setMeasuredDimension(width, ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT);
     }
 
     @Override
@@ -55,5 +61,21 @@ public class WordView extends View {
 
     public String getWord() {
         return word;
+    }
+
+    public boolean hasAccidentalView() {
+        return hasAccidentalView;
+    }
+
+    public void setHasAccidentalView(boolean hasAccidentalView) {
+        this.hasAccidentalView = hasAccidentalView;
+    }
+
+    public boolean hasDottedView() {
+        return hasDottedView;
+    }
+
+    public void setHasDottedView(boolean hasDottedView) {
+        this.hasDottedView = hasDottedView;
     }
 }

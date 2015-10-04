@@ -38,14 +38,19 @@ public class AccidentalView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        width = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
-        height = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT;
-        setMeasuredDimension(width, height);
+        if(accidental.equals("")) setMeasuredDimension(0, 0);
+        else {
+            width = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+            height = ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_HEIGHT;
+            setMeasuredDimension(width, height);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        if(accidental.equals("")) return;
 
         int incline = height / 15;
 

@@ -1,11 +1,14 @@
 package com.example.auditor.score;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.view.MotionEvent;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
+import com.example.auditor.button.OctaveButton;
 
 /**
  * Created by Wan Lin on 15/8/26.
@@ -13,13 +16,14 @@ import com.example.auditor.ShowScoreActivity;
  */
 public class NoteViewGroup extends RelativeLayout {
     private static final String LOG_TAG = NoteViewGroup.class.getName();
-    private final boolean SHOW_NOTE_VIEW_GROUP_COLOR = false;
     private Context context;
     private boolean hasAccidentalView;
     private boolean hasDottedView;
     private boolean hasBeamView;
     private boolean tieStart;
     private boolean tieEnd;
+
+    public static NoteViewGroup curEditNote;
 
     private int width;
 
@@ -41,6 +45,27 @@ public class NoteViewGroup extends RelativeLayout {
             width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
         if(hasDottedView)
             width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+//        ViewTreeObserver vto = getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                if (NoteViewGroup.this.isTieEnd()) {
+//                    PartViewGroup part = (PartViewGroup)getParent().getParent();
+//                    MeasureViewGroup measure = (MeasureViewGroup)getParent();
+//                    int notePosition = NoteViewGroup.this.getLeft() + measure.getLeft() + NoteViewGroup.this.getWidth()/2;
+//                    part.addTieInfo(new Pair<>(notePosition, "end"));
+//                }
+//                if (NoteViewGroup.this.isTieStart()) {
+//                    PartViewGroup part = (PartViewGroup)getParent().getParent();
+//                    MeasureViewGroup measure = (MeasureViewGroup)getParent();
+//                    int notePosition = NoteViewGroup.this.getLeft() + measure.getLeft() + NoteViewGroup.this.getWidth()/2;
+//                    part.addTieInfo(new Pair<>(notePosition, "start"));
+//                }
+//
+//                Log.e(LOG_TAG, "note on global layout!");
+//            }
+//        });
     }
 
     @Override
@@ -63,6 +88,55 @@ public class NoteViewGroup extends RelativeLayout {
         for(int i = 0; i < getChildCount(); i++) {
             getChildAt(i).requestLayout();
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if(ShowScoreActivity.scoreEditMode) {
+                    curEditNote = NoteViewGroup.this;
+
+                    NumberView numberView = (NumberView)findViewById(R.id.number_view);
+                    AccidentalView accidentalView = (AccidentalView)findViewById(R.id.accidental_view);
+                    DottedView dottedView = (DottedView)findViewById(R.id.dotted_view);
+                    BeamView beamView = (BeamView)findViewById(R.id.beam_view);
+                    OctaveView octaveView = (OctaveView)findViewById(R.id.octave_view);
+
+                    if(numberView != null) ShowScoreActivity.numberButton.setNote(numberView.getNote());
+                    else ShowScoreActivity.numberButton.setNote("R");
+
+                    if(accidentalView != null) ShowScoreActivity.accidentalButton.setAccidental(accidentalView.getAccidental());
+                    else ShowScoreActivity.accidentalButton.setAccidental("");
+
+                    if(dottedView != null) ShowScoreActivity.dottedButton.setDot(dottedView.getDot());
+                    else ShowScoreActivity.dottedButton.setDot("");
+
+                    if(beamView != null) ShowScoreActivity.beamButton.setDuration(beamView.getDuration());
+                    else ShowScoreActivity.beamButton.setDuration("");
+
+                    if(octaveView != null) OctaveButton.setOctave(octaveView.getOctave());
+                    else OctaveButton.setOctave("");
+                    ShowScoreActivity.topOctaveButton.invalidate();
+                    ShowScoreActivity.bottomOctaveButton.invalidate();
+
+                    if(!ShowScoreActivity.keyboard.isShown()) {
+                        ShowScoreActivity.keyboard.setVisibility(VISIBLE);
+                        Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
+                        ShowScoreActivity.keyboard.setAnimation(animation);
+                        ShowScoreActivity.keyboard.animate();
+                    }
+                    else {
+                        ShowScoreActivity.numberButton.invalidate();
+                        ShowScoreActivity.accidentalButton.invalidate();
+                        ShowScoreActivity.dottedButton.invalidate();
+                        ShowScoreActivity.beamButton.invalidate();
+                    }
+                }
+                break;
+        }
+
+        return super.onTouchEvent(event);
     }
 
     public void printBlankView() {
@@ -90,14 +164,8 @@ public class NoteViewGroup extends RelativeLayout {
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
         nlp.addRule(RelativeLayout.BELOW, R.id.blank_view);
 
-        if(hasAccidentalView)
-            nlp.addRule(RelativeLayout.RIGHT_OF, R.id.blank_view);
-        else
-            nlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        nlp.addRule(RelativeLayout.RIGHT_OF, R.id.accidental_view);
         n.setLayoutParams(nlp);
-
-        if(SHOW_NOTE_VIEW_GROUP_COLOR)
-            n.setBackgroundColor(Color.parseColor("#F5DA81"));
 
         this.addView(n);
     }
@@ -115,9 +183,6 @@ public class NoteViewGroup extends RelativeLayout {
         alp.addRule(RelativeLayout.BELOW, R.id.blank_view);
         alp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         a.setLayoutParams(alp);
-
-        if(SHOW_NOTE_VIEW_GROUP_COLOR)
-            a.setBackgroundColor(Color.parseColor("#CEF6EC"));
 
         this.addView(a);
     }
@@ -137,9 +202,6 @@ public class NoteViewGroup extends RelativeLayout {
         dlp.addRule(RelativeLayout.RIGHT_OF, R.id.number_view);
         d.setLayoutParams(dlp);
 
-        if(SHOW_NOTE_VIEW_GROUP_COLOR)
-            d.setBackgroundColor(Color.parseColor("#F5A9A9"));
-
         this.addView(d);
     }
 
@@ -147,8 +209,6 @@ public class NoteViewGroup extends RelativeLayout {
         // Beam view
         BeamView b = new BeamView(context);
         b.setId(R.id.beam_view);
-        b.setHasAccidentalView(hasAccidentalView);
-        b.setHasDottedView(hasDottedView);
         switch (beams) {
             case "w":
             case "h":
@@ -172,17 +232,14 @@ public class NoteViewGroup extends RelativeLayout {
         blp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         b.setLayoutParams(blp);
 
-        if(SHOW_NOTE_VIEW_GROUP_COLOR)
-            b.setBackgroundColor(Color.parseColor("#81F7D8"));
-
         this.addView(b);
     }
 
     public void printOctaveView(String oct) {
         // Octave view
         OctaveView o = new OctaveView(context, hasBeamView, hasAccidentalView);
-        int octave = Integer.parseInt(oct);
-        o.setOctave(octave);
+        int octave;
+        o.setOctave(oct);
         o.setId(R.id.octave_view);
         RelativeLayout.LayoutParams olp;
         olp = new RelativeLayout.LayoutParams(
@@ -190,25 +247,18 @@ public class NoteViewGroup extends RelativeLayout {
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
 
-        if(octave > 4) {
+        if(!oct.equals("")) {
+            octave = Integer.parseInt(oct);
+
+            if(octave > 4) olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            else olp.addRule(RelativeLayout.BELOW, R.id.beam_view);
+        }
+        else {
             olp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }
-        else if(octave < 4 && hasBeamView) {
-            olp.addRule(RelativeLayout.BELOW, R.id.beam_view);
-        }
-        else if(octave < 4 && !hasBeamView){
-            olp.addRule(RelativeLayout.BELOW, R.id.number_view);
-        }
 
-        if(hasAccidentalView)
-            olp.addRule(RelativeLayout.RIGHT_OF, R.id.blank_view);
-        else
-            olp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-
+        olp.addRule(RelativeLayout.RIGHT_OF, R.id.accidental_view);
         o.setLayoutParams(olp);
-
-        if(SHOW_NOTE_VIEW_GROUP_COLOR)
-            o.setBackgroundColor(Color.parseColor("#CCCCCC"));
 
         this.addView(o);
     }
@@ -231,5 +281,13 @@ public class NoteViewGroup extends RelativeLayout {
 
     public boolean hasDottedView() {
         return hasDottedView;
+    }
+
+    public void setHasAccidentalView(boolean hasAccidentalView) {
+        this.hasAccidentalView = hasAccidentalView;
+    }
+
+    public void setHasDottedView(boolean hasDottedView) {
+        this.hasDottedView = hasDottedView;
     }
 }

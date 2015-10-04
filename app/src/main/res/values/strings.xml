@@ -26,4 +26,8 @@
     <string name="recommend_lyric">推薦歌詞</string>
     <string name="complete_sentence">完成句子</string>
     <string name="rhyme_spinner">韻腳</string>
+    <string name="lyric_edit_mode">歌詞編輯</string>
+    <string name="score_edit_mode">樂譜編輯</string>
+
+    <string name="loading">讀取中...</string>
 </resources>

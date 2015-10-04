@@ -1,6 +1,7 @@
 package com.example.auditor.score;
 
 import android.content.Context;
+import android.view.MotionEvent;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.R;
@@ -16,9 +17,31 @@ public class MeasureViewGroup extends RelativeLayout {
     private int curNoteViewGroupWidth;
     private int width = 0;
 
+    public static MeasureViewGroup curEditMeasure;
+
     public MeasureViewGroup(Context context) {
         super(context);
         this.context = context;
+//        ViewTreeObserver vto = getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//                Log.e(LOG_TAG, "measure on global layout!");
+//            }
+//        });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (ShowScoreActivity.scoreEditMode) {
+                    curEditMeasure = MeasureViewGroup.this;
+                }
+                break;
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -72,30 +95,27 @@ public class MeasureViewGroup extends RelativeLayout {
         noteViewGroup.printNumberView(note);
 
         // has accidental
-        if(!accidental.isEmpty())
-            noteViewGroup.printAccidentalView(accidental);
+        noteViewGroup.printAccidentalView(accidental);
 
         // has dot
-        if(!dot.isEmpty())
-            noteViewGroup.printDottedView(dot);
+        noteViewGroup.printDottedView(dot);
 
         // duration to beam
         if("whqistx".contains(duration))
             noteViewGroup.printBeamView(duration);
 
         // octave is 0 ~ 3, 5 ~ 8
-        if(!octave.isEmpty())
-            noteViewGroup.printOctaveView(octave);
+        noteViewGroup.printOctaveView(octave);
 
         this.addView(noteViewGroup);
         this.width+=noteViewGroup.getViewWidth();
         curNoteViewGroupWidth = noteViewGroup.getViewWidth();
     }
 
-    public void printWord(String word, int i) {
+    public void printWord(String word, int i, boolean hasAccidentalView, boolean hasDottedView) {
         int noteViewGroupId = i + ShowScoreActivity.noteStartId;
 
-        WordView wordView = new WordView(context, curNoteViewGroupWidth);
+        WordView wordView = new WordView(context, hasAccidentalView, hasDottedView);
         wordView.setId(i + ShowScoreActivity.wordStartId);
         wordView.setWord(word);
 

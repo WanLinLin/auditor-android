@@ -21,7 +21,7 @@
 
             <RelativeLayout
                 android:id="@+id/score_container"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
             </RelativeLayout>
@@ -75,4 +75,20 @@
             style="?android:attr/borderlessButtonStyle"/>
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/loading_image_layout"
+        android:background="#e1e1e1" >
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/loading_image"
+            android:src="@drawable/loading"
+            android:layout_centerInParent="true"
+            android:contentDescription="loading..."/>
+
+    </RelativeLayout>
 </RelativeLayout>
