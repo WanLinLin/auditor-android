@@ -24,6 +24,7 @@ import java.io.IOException;
 
 public class AudioRecordActivity extends ActionBarActivity {
     private static final String LOG_TAG = "AudioRecordActivity";
+    private static final String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
     private static String mFileName = null;
     private ExtAudioRecorder extAudioRecorder = null;
     private final Context context = this;
@@ -59,7 +60,6 @@ public class AudioRecordActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_record);
 
-        auditorDir.mkdirs();
         mFileName = auditorDir.getAbsolutePath() + "/tmp.wav";
 
         /* ----LAYOUT SETTING---- */
@@ -155,7 +155,7 @@ public class AudioRecordActivity extends ActionBarActivity {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             File from = new File(mFileName);
-                            File to = new File(auditorDir.getAbsolutePath() + "/" +
+                            File to = new File(wavDir +
                                             userInput.getText() + ".wav");
 
                             if(from.renameTo(to)) {

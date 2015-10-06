@@ -1,13 +1,16 @@
 package com.example.auditor.convert;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import com.example.auditor.AudioRecordActivity;
 import com.example.auditor.song.ExtAudioRecorder;
 
-import org.jfugue.Pattern;
+import org.jfugue.midi.MidiFileManager;
+import org.jfugue.pattern.Pattern;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +33,7 @@ import be.tarsos.dsp.pitch.PitchProcessor;
  * Handle music stream pitch and notes conversion.
  */
 public class SongConverter {
+    private static final String LOG_TAG = SongConverter.class.getName();
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
     private static final float tooShortForHumanToSing = 0.06f; // can be ignore
@@ -48,10 +52,14 @@ public class SongConverter {
     private ArrayList<Pair<String, Float>> noteAndTimeResultList; // second processed pitch result (handle vibration and overtone)
     private ArrayList<NoteResult> noteResults;
 
-    public SongConverter() {
+    private Context context;
+
+    public SongConverter(Context context) {
         noteAndTimeList = new ArrayList<>();
         noteAndTimeResultList = new ArrayList<>();
         noteResults = new ArrayList<>();
+
+        this.context = context;
     }
 
     /**
@@ -62,14 +70,14 @@ public class SongConverter {
     public boolean setUp(String songTitle) {
         this.songTitle = songTitle;
 
-        File file = new File(auditorDir + songTitle + ".wav");
+        File file = new File(auditorDir + "wav/" + songTitle + ".wav");
         InputStream inputStream;
 
         // open a audio file
         try {
             inputStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            Log.e(getClass().getName(), "Failed to open a file!");
+            Log.e(LOG_TAG, "Failed to open a file!");
             return false;
         }
 
@@ -99,6 +107,8 @@ public class SongConverter {
             public void handlePitch(PitchDetectionResult pdr, AudioEvent ae){
                 String notation = pitchToNotation(pdr.getPitch());
                 Float sampleTime = ae.getConvertTime();
+
+                Log.e(LOG_TAG, "notation: " + notation + ", time: " + sampleTime);
 
                 // handle the first pitch
                 if(noteAndTimeList.isEmpty()) {
@@ -143,8 +153,8 @@ public class SongConverter {
         // convert byte file into float pitches, and store note names and time duration into
         dispatcher.run();
 
-        for(Pair<String, Float> p : noteAndTimeList)
-                Log.i(getClass().getName(), "notation: " + p.first + ", duration: " + p.second);
+//        for(Pair<String, Float> p : noteAndTimeList)
+//                Log.i(LOG_TAG, "notation: " + p.first + ", duration: " + p.second);
 
         // concat notes, handle vibration and overtone
         processNoteAndTimeList();
@@ -156,47 +166,24 @@ public class SongConverter {
                 noteResults.add(noteResult);
         }
 
-        for(Pair<String, Float> p : noteAndTimeResultList)
-            Log.e(getClass().getName(), "notation: " + p.first + ", duration: " + p.second);
+//        for(Pair<String, Float> p : noteAndTimeResultList)
+//            Log.e(getClass().getName(), "notation: " + p.first + ", duration: " + p.second);
 
         deleteBeginAndEndRests();
-
-        // convert result to music string
         musicString = convertToMusicString();
 
         pattern = new Pattern(musicString);
-        try {
-            pattern.savePattern(new File(auditorDir + songTitle + ".txt"));
-        }
+        try { pattern.save(new File(auditorDir + "txt/" + songTitle + ".txt")); }
         catch (IOException e) {
-            Log.e(getClass().getName(), "IOE");
+            Log.e(LOG_TAG, "IOE");
+            Toast.makeText(context, "檔案不存在", Toast.LENGTH_SHORT).show();
         }
 
-//        try {
-//            file = new FileOutputStream(new File(auditorDir + "/music.xml"));
-//            AuditorMusicXmlRenderer renderer = new AuditorMusicXmlRenderer();
-//            MusicStringParser parser = new MusicStringParser();
-//            parser.addParserListener(renderer);
-//
-//            Pattern pattern = new Pattern(musicString);
-//            parser.parse(pattern);
-//
-//            Serializer serializer = new Serializer(file, "UTF-8");
-//            serializer.setIndent(4);
-//            serializer.write(renderer.getMusicXMLDoc());
-//
-//            file.flush();
-//            file.close();
-//        }
-//        catch (FileNotFoundException e) {
-//            Log.e(LOG_TAG, "file not found");
-//        }
-//        catch (UnsupportedEncodingException e) {
-//            Log.e(LOG_TAG, "unsupported encoding exception");
-//        }
-//        catch (IOException e) {
-//            Log.e(LOG_TAG, "io exception");
-//        }
+        try { MidiFileManager.savePatternToMidi(pattern, new File(auditorDir + "midi/" + songTitle + ".mid")); }
+        catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage());
+            Toast.makeText(context, "儲存 MIDI 失敗", Toast.LENGTH_SHORT).show();
+        }
 
         Log.d(getClass().getName(), musicString);
         Log.i(getClass().getName(), "Pitch detect successfully!");

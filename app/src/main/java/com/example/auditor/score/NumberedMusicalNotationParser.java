@@ -13,8 +13,6 @@ import android.widget.RelativeLayout;
 import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 
-import org.jfugue.Pattern;
-
 /**
  * Created by Wan Lin on 15/8/26.
  * Parse music string and render it to a score object;
@@ -42,14 +40,14 @@ public class NumberedMusicalNotationParser {
             public void onGlobalLayout() {
                 scoreViewGroup.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-                if(!ShowScoreActivity.scoreContainer.isShown()) {
+                if (!ShowScoreActivity.scoreContainer.isShown()) {
                     ShowScoreActivity.scoreContainer.setVisibility(View.VISIBLE);
 
-                    ShowScoreActivity.scoreContainer.postOnAnimation(new Runnable() {
+                    ShowScoreActivity.scoreContainer.post(new Runnable() {
                         @Override
                         public void run() {
-                            RelativeLayout loadingViewLayout = (RelativeLayout)ShowScoreActivity.rootView.findViewById(R.id.loading_image_layout);
-                            if(loadingViewLayout != null){
+                            RelativeLayout loadingViewLayout = (RelativeLayout) ShowScoreActivity.rootView.findViewById(R.id.loading_image_layout);
+                            if (loadingViewLayout != null) {
                                 Animation animation = AnimationUtils.loadAnimation(context, R.anim.loading_image_fade_out);
                                 loadingViewLayout.setAnimation(animation);
                                 loadingViewLayout.animate();
@@ -71,8 +69,9 @@ public class NumberedMusicalNotationParser {
         PartViewGroup curParsePart;
         MeasureViewGroup curParseMeasure = new MeasureViewGroup(context);
 
-        Pattern pattern = new Pattern(musicString);
-        String[] tokens = pattern.getTokens();
+//        Pattern pattern = new Pattern(musicString);
+//        String[] tokens = pattern.getTokens();
+        String[] tokens = musicString.split(" ");
 
         // add first part
         scoreViewGroup.printPart(partIndex);
@@ -84,6 +83,7 @@ public class NumberedMusicalNotationParser {
         curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
 
         for(String token : tokens) {
+            if(token.equals("") || token.equals(" ")) continue;
             String s = token.substring(0,1);
             switch (s) {
                 case "K":

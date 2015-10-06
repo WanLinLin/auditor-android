@@ -12,11 +12,6 @@
     <!-- Use this permission to let music playback continue when the user's device becomes idle. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-
-    <uses-feature
-        android:name="android.hardware.bluetooth_le"
-        android:required="true" />
-
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

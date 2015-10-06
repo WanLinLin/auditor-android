@@ -65,7 +65,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.jfugue.Pattern;
+import org.jfugue.pattern.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,7 +79,7 @@ import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
-    private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
 
     public static ScoreViewGroup score;
     public static RelativeLayout scoreContainer;
@@ -151,9 +151,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_score);
 
-        final File scoreDir = new File(auditorDir + "score");
-        scoreDir.mkdirs();
-
         scoreEditMode = false;
         lyricEditMode = false;
 
@@ -190,10 +187,10 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         if(hasFocus && scoreContainer.getWidth() == 0) {
             try {
-                pattern = Pattern.loadPattern(new File(auditorDir + scoreName + ".txt"));
+                pattern = Pattern.load(new File(txtDir + scoreName + ".txt"));
 
                 numberedMusicalNotationParser =
-                        new NumberedMusicalNotationParser(ShowScoreActivity.this, pattern.getMusicString());
+                        new NumberedMusicalNotationParser(ShowScoreActivity.this, pattern.toString());
 
                 numberedMusicalNotationParser.parse();
                 score = numberedMusicalNotationParser.getScoreViewGroup();
@@ -552,7 +549,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
 
         pattern = new Pattern(musicString);
-        try { pattern.savePattern(new File(auditorDir + scoreName + ".txt")); }
+        try { pattern.save(new File(txtDir + scoreName + ".txt")); }
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
     }
 

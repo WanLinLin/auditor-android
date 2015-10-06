@@ -28,7 +28,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
     private static final String LOG_TAG = "MusicService";
-    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+    private File wavDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav");
     private MediaPlayer player;
     private ArrayList<Song> songs;
     private int songPosition; // current song position
@@ -143,7 +143,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         songTitle = playSong.getTitle();
 
         //set uri
-        String songPath = auditorDir + "/" + playSong.getTitle() + ".wav";
+        String songPath = wavDir + "/" + playSong.getTitle() + ".wav";
 
         try{
             player.setDataSource(songPath);

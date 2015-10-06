@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class ScoreFileListActivity extends ActionBarActivity {
-    private String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
+    private File txtDirFiles = new File(txtDir);
     private ScoreAdapter scoreAdapter;
     private ArrayList<Score> scoreList;
     private EditText userInput;
@@ -59,8 +60,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
                 return filename.endsWith(".txt");
             }
         };
-        File auditor = new File(auditorDir);
-        File[] files = auditor.listFiles(filter);
+        File[] files = txtDirFiles.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
             DateFormat sdf = DateFormat.getDateTimeInstance();
@@ -122,9 +122,9 @@ public class ScoreFileListActivity extends ActionBarActivity {
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(auditorDir + "/" + score.getTitle() + ".txt");
+                                File from = new File(txtDir + score.getTitle() + ".txt");
                                 File to = new File(
-                                        auditorDir + "/" + userInput.getText() + ".txt");
+                                        txtDir + userInput.getText() + ".txt");
                                 from.renameTo(to);
                                 scoreList.clear();
                                 getScoreList();
@@ -162,7 +162,7 @@ public class ScoreFileListActivity extends ActionBarActivity {
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(auditorDir + "/" + score.getTitle() + ".txt");
+                                File fileToDelete = new File(txtDir + score.getTitle() + ".txt");
                                 if (fileToDelete.delete())
                                     Toast.makeText(
                                             ScoreFileListActivity.this,

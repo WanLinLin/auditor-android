@@ -38,7 +38,8 @@ import java.util.Date;
 
 public class AudioFileListActivity extends ActionBarActivity implements MediaPlayerControl{
     private static final String LOG_TAG = "AudioFileActivity";
-    private File auditorDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor");
+    private static final String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
+    private File wavDirFiles = new File(wavDir);
     private MediaController controller;
     private MusicService musicService;
     private ArrayList<Song> songList;
@@ -312,7 +313,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                 return filename.endsWith(".wav");
             }
         };
-        File[] files = auditorDir.listFiles(filter);
+        File[] files = wavDirFiles.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
             DateFormat sdf = DateFormat.getDateTimeInstance();
@@ -365,9 +366,9 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(auditorDir + "/" + song.getTitle() + ".wav");
+                                File from = new File(wavDir + song.getTitle() + ".wav");
                                 File to = new File(
-                                        auditorDir + "/" + userInput.getText() + ".wav");
+                                        wavDir + userInput.getText() + ".wav");
                                 from.renameTo(to);
 
                                 // update song list view and reset songList of musicService
@@ -408,7 +409,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(auditorDir + "/" + song.getTitle() + ".wav");
+                                File fileToDelete = new File(wavDir + song.getTitle() + ".wav");
                                 if (fileToDelete.delete())
                                     Toast.makeText(
                                             AudioFileListActivity.this,
@@ -441,7 +442,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
     }
 
     public boolean convertSong(final Song song) {
-        SongConverter songConverter = new SongConverter();
+        SongConverter songConverter = new SongConverter(this);
 
         if(!songConverter.setUp(song.getTitle()))
             return false;
