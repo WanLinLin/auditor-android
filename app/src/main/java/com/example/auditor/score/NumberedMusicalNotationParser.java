@@ -69,9 +69,8 @@ public class NumberedMusicalNotationParser {
         PartViewGroup curParsePart;
         MeasureViewGroup curParseMeasure = new MeasureViewGroup(context);
 
-//        Pattern pattern = new Pattern(musicString);
-//        String[] tokens = pattern.getTokens();
         String[] tokens = musicString.split(" ");
+//        for(String t : tokens) Log.d(LOG_TAG, "token: " + t);
 
         // add first part
         scoreViewGroup.printPart(partIndex);
@@ -126,6 +125,7 @@ public class NumberedMusicalNotationParser {
             if(token.contains("w")) {
                 noteContext = new NoteContext();
                 noteContext.note = durationNote;
+                noteContext.duration = "-"; // indicate beam view that this note is a duration note
                 noteContext.tieEnd = false;
                 for(int i = 0; i < 3; i++) {
                     addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
@@ -137,6 +137,7 @@ public class NumberedMusicalNotationParser {
             if(token.contains("h")) {
                 noteContext = new NoteContext();
                 noteContext.note = durationNote;
+                noteContext.duration = "-"; // indicate beam view that this note is a duration note
                 noteContext.tieEnd = false;
                 addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                 curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
@@ -223,8 +224,7 @@ public class NumberedMusicalNotationParser {
     private void addNote(int measureId, int partId, int noteViewGroupIndex) {
         PartViewGroup partViewGroup = (PartViewGroup) scoreViewGroup.findViewById(partId);
         MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
-        if(noteViewGroupIndex == 0)
-            measureViewGroup.printBarWidthView();
+        if(noteViewGroupIndex == 0) measureViewGroup.printBarWidthView();
 
 //        Log.e(LOG_TAG, "note: " + noteContext.note + ", accidental: " + noteContext.accidental + ", octave: " + noteContext.octave + ", duration: " + noteContext.duration + ", tieStart: " + noteContext.tieStart + ", tieEnd: " + noteContext.tieEnd);
         measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteContext.tieStart, noteContext.tieEnd, noteViewGroupIndex);

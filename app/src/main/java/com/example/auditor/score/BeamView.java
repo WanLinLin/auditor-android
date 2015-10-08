@@ -40,7 +40,7 @@ public class BeamView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if(duration.equals("") || "whq".contains(duration)) setMeasuredDimension(0, 0);
+        if(duration.equals("") || "whq-".contains(duration)) setMeasuredDimension(0, 0);
         else {
             height = ShowScoreActivity.NoteChildViewDimension.BEAM_VIEW_HEIGHT;
 

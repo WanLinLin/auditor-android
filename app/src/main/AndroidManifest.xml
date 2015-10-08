@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Use this permission to let music playback continue when the user's device becomes idle. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -17,7 +17,6 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -50,6 +49,14 @@
         <activity
             android:name=".ShowScoreActivity"
             android:label="@string/title_activity_show_score" >
+        </activity>
+        <activity
+            android:name=".SlidingTabStrip"
+            android:label="@string/title_activity_swipe_tabs" >
+        </activity>
+        <activity
+            android:name=".SlidingTabActivity"
+            android:label="@string/title_activity_sliding_tab" >
         </activity>
     </application>
 

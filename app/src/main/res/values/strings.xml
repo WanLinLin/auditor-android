@@ -30,4 +30,6 @@
     <string name="score_edit_mode">樂譜編輯</string>
 
     <string name="loading">讀取中...</string>
+    <string name="title_activity_swipe_tabs">SwipeTabsActivity</string>
+    <string name="title_activity_sliding_tab">SlidingTabActivity</string>
 </resources>

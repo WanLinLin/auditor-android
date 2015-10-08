@@ -36,7 +36,7 @@ public class SongConverter {
     private static final String LOG_TAG = SongConverter.class.getName();
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
-    private static final float tooShortForHumanToSing = 0.06f; // can be ignore
+    private static final float tooShortForHumanToSing = 0.03f; // can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
 
     private int beatsPerMinute = 90; // bits per minute, speed
