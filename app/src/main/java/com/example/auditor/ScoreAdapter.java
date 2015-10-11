@@ -1,6 +1,5 @@
 package com.example.auditor;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,12 +19,14 @@ import java.util.ArrayList;
 public class ScoreAdapter extends BaseAdapter {
     private ArrayList<Score> scores;
     private LayoutInflater scoreInflater;
-    private ScoreFileListActivity scoreFileListActivity;
+    private SlidingTabActivity slidingTabActivity;
+    private ScoreFileListPage scoreFileListPage;
 
-    public ScoreAdapter(Context c, ArrayList<Score> scores) {
+    public ScoreAdapter(SlidingTabActivity slidingTabActivity, ArrayList<Score> scores, ScoreFileListPage fragment) {
         this.scores = scores;
-        scoreInflater = LayoutInflater.from(c);
-        this.scoreFileListActivity = (ScoreFileListActivity)c;
+        this.slidingTabActivity = slidingTabActivity;
+        scoreInflater = LayoutInflater.from(slidingTabActivity);
+        scoreFileListPage = fragment;
     }
 
     @Override
@@ -64,10 +65,10 @@ public class ScoreAdapter extends BaseAdapter {
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        if(item.getTitle().toString().equals(scoreFileListActivity.getString(R.string.rename)))
-                            scoreFileListActivity.renameScore(score);
-                        else if(item.getTitle().toString().equals(scoreFileListActivity.getString(R.string.delete)))
-                            scoreFileListActivity.deleteScore(score);
+                        if(item.getTitle().toString().equals(scoreFileListPage.getString(R.string.rename)))
+                            scoreFileListPage.renameScore(score);
+                        else if(item.getTitle().toString().equals(slidingTabActivity.getString(R.string.delete)))
+                            scoreFileListPage.deleteScore(score);
                         return true;
                     }
                 });

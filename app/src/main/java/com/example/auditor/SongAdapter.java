@@ -1,7 +1,6 @@
 package com.example.auditor;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -23,12 +22,14 @@ import java.util.ArrayList;
 public class SongAdapter extends BaseAdapter {
     private ArrayList<Song> songs;
     private LayoutInflater songInflater;
-    private AudioFileListActivity audioFileListActivity;
+    private AudioFileListPage audioFileListPage;
+    private SlidingTabActivity slidingTabActivity;
 
-    public SongAdapter(Context c, ArrayList<Song> theSongs){
-        songs = theSongs;
-        songInflater = LayoutInflater.from(c);
-        this.audioFileListActivity = (AudioFileListActivity)c;
+    public SongAdapter(SlidingTabActivity activity, ArrayList<Song> songs, AudioFileListPage audioFileListPage){
+        this.songs = songs;
+        this.audioFileListPage = audioFileListPage;
+        songInflater = LayoutInflater.from(activity);
+        slidingTabActivity = activity;
     }
 
     @Override
@@ -63,17 +64,17 @@ public class SongAdapter extends BaseAdapter {
         collapse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(audioFileListActivity, collapse);
+                PopupMenu popupMenu = new PopupMenu(slidingTabActivity, collapse);
                 popupMenu.getMenuInflater().inflate(R.menu.audio_file_popup_menu, popupMenu.getMenu());
 
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.convert)))
+                        if(item.getTitle().toString().equals(audioFileListPage.getString(R.string.convert)))
                             new ConvertSongTask().execute(currSong);
-                        else if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.rename)))
-                            audioFileListActivity.renameSong(currSong);
-                        else if(item.getTitle().toString().equals(audioFileListActivity.getString(R.string.delete)))
-                            audioFileListActivity.deleteSong(currSong);
+                        else if(item.getTitle().toString().equals(audioFileListPage.getString(R.string.rename)))
+                            audioFileListPage.renameSong(currSong);
+                        else if(item.getTitle().toString().equals(audioFileListPage.getString(R.string.delete)))
+                            audioFileListPage.deleteSong(currSong);
                         return true;
                     }
                 });
@@ -97,13 +98,13 @@ public class SongAdapter extends BaseAdapter {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progress = ProgressDialog.show(audioFileListActivity, "Song converting...",
+            progress = ProgressDialog.show(slidingTabActivity, "Song converting...",
                     "Please wait...", true);
         }
 
         @Override
         protected Boolean doInBackground(Song... songs) {
-            return audioFileListActivity.convertSong(songs[0]);
+            return audioFileListPage.convertSong(songs[0]);
         }
 
         @Override
@@ -111,9 +112,9 @@ public class SongAdapter extends BaseAdapter {
             super.onPostExecute(aBoolean);
             progress.dismiss();
             if (aBoolean)
-                Toast.makeText(audioFileListActivity, "Success!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(slidingTabActivity, "Success!", Toast.LENGTH_SHORT).show();
             else
-                Toast.makeText(audioFileListActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(slidingTabActivity, "Convert failed!", Toast.LENGTH_SHORT).show();
         }
     }
 }

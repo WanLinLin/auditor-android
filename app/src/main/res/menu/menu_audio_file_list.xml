@@ -5,18 +5,4 @@
     <!--<item android:id="@+id/action_settings" android:title="@string/action_settings"-->
         <!--android:orderInCategory="100" app:showAsAction="never" />-->
 
-    <item
-        android:id="@+id/action_shuffle"
-        android:icon="@drawable/rand"
-        android:orderInCategory="1"
-        app:showAsAction="ifRoom"
-        android:title="@string/shuffle" />
-
-    <item
-        android:id="@+id/action_end"
-        android:icon="@drawable/end"
-        android:orderInCategory="2"
-        app:showAsAction="ifRoom"
-        android:title="@string/end" />
-
 </menu>

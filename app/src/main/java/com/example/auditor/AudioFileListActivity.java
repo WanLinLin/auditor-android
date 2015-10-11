@@ -16,7 +16,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -98,7 +97,7 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
         getSongList();
 
         final ListView songListView = (ListView) findViewById(R.id.song_list);
-        songAdt = new SongAdapter(this, songList);
+//        songAdt = new SongAdapter(this, songList);
         songListView.setAdapter(songAdt);
         songListView.setTextFilterEnabled(true);
         songListView.setOnScrollListener(
@@ -196,26 +195,6 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_audio_file_list, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_shuffle:
-                musicService.setShuffle();
-                if (musicService.isShuffle())
-                    item.getIcon().setAlpha(70);
-                else
-                    item.getIcon().setAlpha(255);
-
-                break;
-            case R.id.action_end:
-                stopService(playIntent);
-                musicService = null;
-                System.exit(0);
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

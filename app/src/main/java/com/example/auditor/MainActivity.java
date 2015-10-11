@@ -1,9 +1,9 @@
 package com.example.auditor;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,9 +11,9 @@ import android.view.View;
 import java.io.File;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
-    private static final String LOG_TAG = MainActivity.class.getName();
+    private static final String LOG_TAG = "MainActivity";
 
     private boolean isPlaying = false;
 

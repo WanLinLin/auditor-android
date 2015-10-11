@@ -77,16 +77,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-//import org.apache.http.HttpEntity;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.NameValuePair;
-//import org.apache.http.client.HttpClient;
-//import org.apache.http.client.entity.UrlEncodedFormEntity;
-//import org.apache.http.client.methods.HttpPost;
-//import org.apache.http.impl.client.DefaultHttpClient;
-//import org.apache.http.message.BasicNameValuePair;
-//import org.apache.http.protocol.HTTP;
-
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
     private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
@@ -313,13 +303,14 @@ public class ShowScoreActivity extends ActionBarActivity {
                         keyboard.setVisibility(View.GONE);
                     }
 
-                    actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+                    actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
                     actionBar.setTitle(ShowScoreActivity.scoreName);
                     ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
                     ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
                 }
                 else {
-                    Intent intent = new Intent(this, ScoreFileListActivity.class);
+                    Intent intent = new Intent(this, SlidingTabActivity.class);
+                    intent.putExtra("initialPosition", SlidingTabAdapter.SCORE_FILE_LIST);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                 }
@@ -350,13 +341,15 @@ public class ShowScoreActivity extends ActionBarActivity {
                 keyboard.setVisibility(View.GONE);
             }
 
-            actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+            // set actionbar back to original color
+            actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
             actionBar.setTitle(ShowScoreActivity.scoreName);
             ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
             ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
         }
         else {
-            Intent intent = new Intent(this, ScoreFileListActivity.class);
+            Intent intent = new Intent(this, SlidingTabActivity.class);
+            intent.putExtra("initialPosition", SlidingTabAdapter.SCORE_FILE_LIST);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }

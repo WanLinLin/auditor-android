@@ -271,7 +271,7 @@ public class PartViewGroup extends RelativeLayout {
             }
 
             if(ShowScoreActivity.lyricEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#64B5F6")));
+                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
                 ShowScoreActivity.actionBar.setTitle(LYRIC_EDIT_MODE);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
@@ -290,7 +290,7 @@ public class PartViewGroup extends RelativeLayout {
             }
 
             if(ShowScoreActivity.scoreEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#64B5F6")));
+                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
                 ShowScoreActivity.actionBar.setTitle(SCORE_EDIT_MODE);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
                 ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
@@ -303,7 +303,7 @@ public class PartViewGroup extends RelativeLayout {
             }
 
             if(!ShowScoreActivity.scoreEditMode && !ShowScoreActivity.lyricEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
                 ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
 

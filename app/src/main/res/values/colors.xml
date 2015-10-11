@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <color name="AuditorColorPrimary">#37474F</color>
+    <color name="AuditorColorPrimaryDark">#263238</color>
+    <color name="AuditorColorAccent">#00BCD4</color>
+
+    <color name="White">#FFFFFF</color>
+</resources>

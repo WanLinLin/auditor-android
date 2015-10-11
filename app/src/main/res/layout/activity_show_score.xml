@@ -88,7 +88,7 @@
             android:id="@+id/loading_image"
             android:src="@drawable/loading"
             android:layout_centerInParent="true"
-            android:contentDescription="loading..."/>
+            android:contentDescription="@string/loading"/>
 
     </RelativeLayout>
 </RelativeLayout>

@@ -9,20 +9,22 @@ import android.support.v4.app.FragmentStatePagerAdapter;
  * SlidingTabAdapter
  */
 public class SlidingTabAdapter extends FragmentStatePagerAdapter {
-    private static final int FRAGMENT_1 = 0;
-    private static final int FRAGMENT_2 = 1;
-    private static final int FRAGMENT_3 = 2;
+    public static final int AUDIO_RECORD = 0;
+    public static final int AUDIO_FILE_LIST = 1;
+    public static final int SCORE_FILE_LIST = 2;
+    SlidingTabActivity slidingTabActivity;
 
-    public SlidingTabAdapter(FragmentManager fm) {
+    public SlidingTabAdapter(FragmentManager fm, SlidingTabActivity slidingTabActivity) {
         super(fm);
+        this.slidingTabActivity = slidingTabActivity;
     }
 
     @Override
     public Fragment getItem(int i) {
         switch (i){
-            case FRAGMENT_1 : return new PageFragment();
-            case FRAGMENT_2 : return new PageFragment();
-            case FRAGMENT_3 : return new PageFragment();
+            case AUDIO_RECORD: return new AudioRecordPage();
+            case AUDIO_FILE_LIST : return new AudioFileListPage(slidingTabActivity);
+            case SCORE_FILE_LIST : return new ScoreFileListPage(slidingTabActivity);
         }
         return null;
     }
@@ -30,9 +32,9 @@ public class SlidingTabAdapter extends FragmentStatePagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         switch (position){
-            case FRAGMENT_1 : return "RECORD";
-            case FRAGMENT_2 : return "AUDIO FILE";
-            case FRAGMENT_3 : return "Fragment 3 Title";
+            case AUDIO_RECORD: return "AudioRecord";
+            case AUDIO_FILE_LIST : return "AudioFileList";
+            case SCORE_FILE_LIST : return "ScoreFileList";
         }
         return super.getPageTitle(position);
     }

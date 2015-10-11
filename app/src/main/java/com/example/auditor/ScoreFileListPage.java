@@ -1,16 +1,19 @@
 package com.example.auditor;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,35 +23,60 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class ScoreFileListActivity extends ActionBarActivity {
+/**
+ * Created by wanlin on 2015/10/8.
+ */
+public class ScoreFileListPage extends Fragment{
+    private static String LOG_TAG = ScoreFileListPage.class.getName();
     private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
     private File txtDirFiles = new File(txtDir);
     private ScoreAdapter scoreAdapter;
     private ArrayList<Score> scoreList;
     private EditText userInput;
+    private ListView scoreListView;
+    private SlidingTabActivity slidingTabActivity;
+
+    public ScoreFileListPage() {
+        super();
+    }
+
+    public ScoreFileListPage(SlidingTabActivity slidingTabActivity) {
+        this.slidingTabActivity = slidingTabActivity;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_score_file_list);
 
         scoreList = new ArrayList<>();
-
-        // prepare the score list
         getScoreList();
 
-        final ListView scoreListView = (ListView) findViewById(R.id.score_list);
-//        scoreAdapter = new ScoreAdapter(this, scoreList);
+        scoreListView = new ListView(getActivity());
+        scoreAdapter = new ScoreAdapter(slidingTabActivity, scoreList, this);
         scoreListView.setAdapter(scoreAdapter);
         scoreListView.setTextFilterEnabled(true);
         scoreListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), ShowScoreActivity.class);
+                Intent intent = new Intent(slidingTabActivity, ShowScoreActivity.class);
                 intent.putExtra("score name", scoreList.get(position).getTitle());
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        RelativeLayout rootView = (RelativeLayout)inflater.inflate(R.layout.score_file_list_page, container, false);
+        rootView.addView(scoreListView);
+
+        return rootView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        slidingTabActivity = (SlidingTabActivity)activity;
     }
 
     private void getScoreList() {
@@ -74,10 +102,10 @@ public class ScoreFileListActivity extends ActionBarActivity {
 
     public void renameScore(final Score score) {
         // get audio_record_popup_rename.xml view
-        LayoutInflater li = LayoutInflater.from(this);
+        LayoutInflater li = LayoutInflater.from(slidingTabActivity);
         View promptsView = li.inflate(R.layout.audio_record_popup_rename, null);
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
         userInput = (EditText) promptsView
                 .findViewById(R.id.editTextDialogUserInput);
@@ -110,10 +138,10 @@ public class ScoreFileListActivity extends ActionBarActivity {
 
     public void deleteScore(final Score score) {
         // get audio_record_popup_delete.xml view
-        LayoutInflater li = LayoutInflater.from(this);
+        LayoutInflater li = LayoutInflater.from(slidingTabActivity);
         View promptsView = li.inflate(R.layout.audio_file_popup_delete, null);
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
 
         // set audio_record_popup_delete.xml to alert dialog builder
         alertDialogBuilder.setView(promptsView);
@@ -131,13 +159,13 @@ public class ScoreFileListActivity extends ActionBarActivity {
                                 File fileToDelete = new File(txtDir + score.getTitle() + ".txt");
                                 if (fileToDelete.delete())
                                     Toast.makeText(
-                                            ScoreFileListActivity.this,
+                                            slidingTabActivity,
                                             "Delete successfully!",
                                             Toast.LENGTH_SHORT
                                     ).show();
                                 else
                                     Toast.makeText(
-                                            ScoreFileListActivity.this,
+                                            slidingTabActivity,
                                             "Delete failed!",
                                             Toast.LENGTH_SHORT
                                     ).show();

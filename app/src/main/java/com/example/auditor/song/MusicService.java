@@ -13,8 +13,8 @@ import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.example.auditor.AudioFileListActivity;
 import com.example.auditor.R;
+import com.example.auditor.SlidingTabActivity;
 import com.example.auditor.Song;
 
 import java.io.File;
@@ -23,6 +23,7 @@ import java.util.Random;
 
 /**
  * Created by Wan Lin on 15/7/2.
+ * MusicService
  */
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
@@ -38,6 +39,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private boolean shuffle = false;
     private Random rand;
     private Intent notification;
+    private boolean isPaused;
 
     public class MusicBinder extends Binder {
         public MusicService getService() {
@@ -90,7 +92,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         //start playback
         mp.start();
 
-        Intent notIntent = new Intent(this, AudioFileListActivity.class);
+        Intent notIntent = new Intent(this, SlidingTabActivity.class);
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
                 notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -105,7 +107,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 .setContentText(songTitle);
         Notification not = builder.getNotification();
 
-        // send notification to AudioFileActivity
+        // send notification to activity
         notification.putExtra("action", "prepared");
         LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
 
@@ -116,7 +118,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onDestroy() {
-        Log.e(LOG_TAG, "Music service on destroy!");
+        Log.i(LOG_TAG, "Music service on destroy!");
         player = null;
 
         stopForeground(true);
@@ -125,6 +127,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         mp.reset();
+        Log.e(LOG_TAG, "Music service on error and reset!");
         return false;
     }
 
@@ -133,26 +136,29 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if(mp.getCurrentPosition() > 0){
             mp.stop();
             mp.reset();
+
+            notification.putExtra("action", "complete");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
         }
     }
 
     public void playSong(){
         player.reset();
+
         Song playSong = songs.get(songPosition);
-
-        songTitle = playSong.getTitle();
-
-        //set uri
         String songPath = wavDir + "/" + playSong.getTitle() + ".wav";
+        songTitle = playSong.getTitle();
 
         try{
             player.setDataSource(songPath);
+            player.prepareAsync();
+            notification.putExtra("action", "play");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+            isPaused = false;
         }
         catch(Exception e){
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
-
-        player.prepareAsync();
     }
 
     public void setSong(int songIndex){
@@ -174,6 +180,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             isPlaying = player.isPlaying();
         }
         catch (IllegalStateException e) {
+            Log.e(LOG_TAG, "isPlaying illegal");
             player = null;
             player = new MediaPlayer();
         }
@@ -183,6 +190,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void pausePlayer(){
         player.pause();
+        isPaused = true;
     }
 
     public void seek(int position){
@@ -190,7 +198,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void go(){
-        player.start();
+        if(isPaused) {
+            player.start();
+            isPaused = false;
+        }
+        else {
+            playSong();
+        }
     }
 
     public void setShuffle() {
@@ -198,14 +212,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         else shuffle = true;
     }
 
-    // skipping to the next and previous tracks
+    // skip to previous
     public void playPrev(){
         songPosition--;
         if(songPosition < 0) songPosition = songs.size() - 1;
         playSong();
     }
 
-    //skip to next
+    // skip to next
     public void playNext(){
         if(shuffle){
             int newSong = songPosition;
