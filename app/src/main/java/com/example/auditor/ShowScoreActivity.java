@@ -350,7 +350,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         else {
             Intent intent = new Intent(this, SlidingTabActivity.class);
             intent.putExtra("initialPosition", SlidingTabAdapter.SCORE_FILE_LIST);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
     }
@@ -818,4 +817,6 @@ public class ShowScoreActivity extends ActionBarActivity {
             lyricInputACTextView.showDropDown();
         }
     }
+
+    // TODO play midi and show what note is playing
 }

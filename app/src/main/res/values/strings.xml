@@ -1,35 +1,53 @@
 <resources>
+    <!-- app name -->
     <string name="app_name">Auditor</string>
 
+    <!-- activity names -->
     <string name="title_activity_audio_record">AudioRecordActivity</string>
     <string name="title_activity_audio_file">AudioFileActivity</string>
     <string name="title_activity_score_file_list">ScoreFileListActivity</string>
     <string name="title_activity_show_score">ShowScoreActivity</string>
+    <string name="title_activity_swipe_tabs">SwipeTabsActivity</string>
+    <string name="title_activity_sliding_tab">SlidingTabActivity</string>
 
+    <!-- odd activity names -->
     <string name="audio_file_button">錄音檔案</string>
     <string name="sheet_music_button">樂譜檔案</string>
-    <string name="action_settings">設定</string>
-    <string name="auditor">Auditor</string>
-    <string name="shuffle">隨機播放</string>
-    <string name="end">End</string>
-    <string name="convert">轉譜</string>
-    <string name="rename">重新命名</string>
-    <string name="delete">刪除</string>
-    <string name="zoom_in">放大</string>
-    <string name="zoom_out">縮小</string>
-    <string name="save">儲存</string>
-    <string name="yes">確定</string>
-    <string name="cancel">取消</string>
-    <string name="file_name">檔案名稱</string>
-    <string name="record">錄音</string>
-    <string name="stop">停止</string>
-    <string name="recommend_lyric">推薦歌詞</string>
-    <string name="complete_sentence">完成句子</string>
-    <string name="rhyme_spinner">韻腳</string>
     <string name="lyric_edit_mode">歌詞編輯</string>
     <string name="score_edit_mode">樂譜編輯</string>
 
-    <string name="loading">讀取中...</string>
-    <string name="title_activity_swipe_tabs">SwipeTabsActivity</string>
-    <string name="title_activity_sliding_tab">SlidingTabActivity</string>
+    <!-- menu buttons -->
+    <string name="action_settings">設定</string>
+    <string name="shuffle">隨機播放</string>
+    <string name="end">End</string>
+    <string name="zoom_in">放大</string>
+    <string name="zoom_out">縮小</string>
+    <string name="save">儲存</string>
+
+    <!-- popup menu items -->
+    <string name="convert">轉譜</string>
+    <string name="rename">重新命名</string>
+    <string name="delete">刪除</string>
+    <string name="yes">確定</string>
+    <string name="cancel">取消</string>
+    <string name="file_name">檔案名稱</string>
+
+    <!-- record button -->
+    <string name="record">錄音</string>
+    <string name="stop">停止</string>
+
+    <!-- recommend lyric area -->
+    <string name="recommend_lyric">推薦歌詞</string>
+    <string name="complete_sentence">完成句子</string>
+    <string name="rhyme_spinner">韻腳</string>
+
+    <!-- manage files -->
+    <string name="save_successfully">儲存成功</string>
+    <string name="save_failed">儲存失敗</string>
+    <string name="delete_successfully">刪除成功</string>
+    <string name="delete_failed">刪除失敗</string>
+    <string name="success">成功</string>
+    <string name="failed">失敗</string>
+
+    <string name="loading">讀取中&#8230;</string>
 </resources>

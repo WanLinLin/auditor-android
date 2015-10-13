@@ -29,16 +29,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
     private static final String LOG_TAG = "MusicService";
+    private static final int NOTIFY_ID = 1;
+
     private File wavDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav");
     private MediaPlayer player;
     private ArrayList<Song> songs;
     private int songPosition; // current song position
     private final IBinder musicBind = new MusicBinder();
     private String songTitle = "";
-    private static final int NOTIFY_ID = 1;
-    private boolean shuffle = false;
     private Random rand;
     private Intent notification;
+
+    private boolean shuffle = false;
     private boolean isPaused;
 
     public class MusicBinder extends Binder {
@@ -84,6 +86,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             player.release();
         }
 
+        // Return true if you would like to have the service's
         return false;
     }
 
@@ -109,9 +112,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         // send notification to activity
         notification.putExtra("action", "prepared");
+        notification.putExtra("song time", player.getDuration());
         LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
-        Log.e(LOG_TAG, "song time: " + player.getDuration());
 
         startForeground(NOTIFY_ID, not);
     }
@@ -189,6 +191,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void pausePlayer(){
+        notification.putExtra("action", "pause");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
         player.pause();
         isPaused = true;
     }
@@ -197,7 +201,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         player.seekTo(position);
     }
 
+    /**
+     * play
+     */
     public void go(){
+        notification.putExtra("action", "go");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
         if(isPaused) {
             player.start();
             isPaused = false;
@@ -212,14 +221,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         else shuffle = true;
     }
 
-    // skip to previous
+    /**
+     * skip to previous
+     */
     public void playPrev(){
         songPosition--;
         if(songPosition < 0) songPosition = songs.size() - 1;
         playSong();
     }
 
-    // skip to next
+    /**
+     * skip to next
+     */
     public void playNext(){
         if(shuffle){
             int newSong = songPosition;
@@ -237,5 +250,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public boolean isShuffle(){
         return shuffle;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 }

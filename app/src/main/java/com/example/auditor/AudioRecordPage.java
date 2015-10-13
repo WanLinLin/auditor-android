@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.auditor.song.ExtAudioRecorder;
 
@@ -141,10 +142,18 @@ public class AudioRecordPage extends Fragment{
                                         userInput.getText() + ".wav");
 
                                 if(from.renameTo(to)) {
-                                    Log.e(LOG_TAG, "Set name successfully!");
+                                    Toast.makeText(slidingTabActivity,
+                                            getString(R.string.save_successfully),
+                                            Toast.LENGTH_SHORT).show();
+
+                                    SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
+                                    AudioFileListPage page = (AudioFileListPage)adapter.getPage(SlidingTabAdapter.AUDIO_FILE_LIST);
+                                    page.refreshList();
                                 }
                                 else {
-                                    Log.e(LOG_TAG, "Set name failed!");
+                                    Toast.makeText(slidingTabActivity,
+                                            getResources().getString(R.string.save_failed),
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             }
                         })

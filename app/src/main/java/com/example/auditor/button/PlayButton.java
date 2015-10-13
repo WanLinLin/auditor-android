@@ -2,10 +2,10 @@ package com.example.auditor.button;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -23,6 +23,11 @@ public class PlayButton extends View{
     private Point point1_draw;
     private Point point2_draw;
     private Point point3_draw;
+    private Rect touchRegion;
+
+    /**
+     * true is play button, false is pause button
+     */
     private boolean play;
 
     public PlayButton(Context context) {
@@ -32,6 +37,7 @@ public class PlayButton extends View{
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        getHitRect(touchRegion);
         setMeasuredDimension((int) buttonSize, (int) buttonSize);
     }
 
@@ -85,12 +91,12 @@ public class PlayButton extends View{
         buttonSize = getResources().getDimension(R.dimen.play_button_size);
 
         mPaint = new Paint();
-        mPaint.setColor(Color.parseColor("#00BCD4"));
+        mPaint.setColor(getResources().getColor(R.color.AuditorColorAccent));
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
 
         trianglePaint = new Paint();
-        trianglePaint.setColor(Color.parseColor("#00BCD4"));
+        trianglePaint.setColor(getResources().getColor(R.color.AuditorColorAccent));
         trianglePaint.setAntiAlias(true);
         trianglePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         trianglePaint.setStrokeWidth(getResources().getDimension(R.dimen.play_button_stroke_width));
@@ -101,6 +107,8 @@ public class PlayButton extends View{
 
         path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
+
+        touchRegion = new Rect();
     }
 
     public void setPlay(boolean play) {

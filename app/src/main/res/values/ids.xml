@@ -28,6 +28,11 @@
     <item name="edit_top_octave_button" type="id" />
     <item name="edit_bottom_octave_button" type="id" />
     <item name="edit_blank_view" type="id" />
+
     <item name="controller" type="id" />
+    <item name="play_button" type="id" />
+    <item name="next_button" type="id" />
+    <item name="previous_button" type="id" />
+    <item name="seek_bar" type="id" />
 
 </resources>

@@ -107,8 +107,8 @@ public class ScoreFileListPage extends Fragment{
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
-        userInput = (EditText) promptsView
-                .findViewById(R.id.editTextDialogUserInput);
+        userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
+        userInput.setText(score.getTitle());
 
         // set dialog message
         alertDialogBuilder
@@ -119,10 +119,12 @@ public class ScoreFileListPage extends Fragment{
                                 File from = new File(txtDir + score.getTitle() + ".txt");
                                 File to = new File(
                                         txtDir + userInput.getText() + ".txt");
-                                from.renameTo(to);
-                                scoreList.clear();
-                                getScoreList();
-                                scoreAdapter.notifyDataSetChanged();
+                                if (!from.renameTo(to)) {
+                                    Toast.makeText(slidingTabActivity,
+                                            getString(R.string.failed),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                                refreshList();
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -169,9 +171,7 @@ public class ScoreFileListPage extends Fragment{
                                             "Delete failed!",
                                             Toast.LENGTH_SHORT
                                     ).show();
-                                scoreList.clear();
-                                getScoreList();
-                                scoreAdapter.notifyDataSetChanged();
+                                refreshList();
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -183,5 +183,11 @@ public class ScoreFileListPage extends Fragment{
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    public void refreshList() {
+        scoreList.clear();
+        getScoreList();
+        scoreAdapter.notifyDataSetChanged();
     }
 }
