@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 /**
@@ -58,8 +59,10 @@ public class SongAdapter extends BaseAdapter {
 
         final Song currSong = songs.get(position);
 
-        songTitle.setText(currSong.getTitle());
-        songModDate.setText(currSong.getLastModDate());
+        // not showing the filename extension
+        songTitle.setText(currSong.getTitle().substring(0, currSong.getTitle().length() - 4));
+        DateFormat sdf = DateFormat.getDateTimeInstance();
+        songModDate.setText(sdf.format(currSong.getLastModDate()));
 
         collapse.setOnClickListener(new View.OnClickListener() {
             @Override

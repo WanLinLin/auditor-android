@@ -1,6 +1,5 @@
 package com.example.auditor.score;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
@@ -19,7 +18,7 @@ import com.example.auditor.ShowScoreActivity;
  */
 public class NumberedMusicalNotationParser {
     private static final String LOG_TAG = NumberedMusicalNotationParser.class.getName();
-    private Context context;
+    private ShowScoreActivity showScoreActivity;
     private String musicString;
     private int curX; // to calculate tie position, relative to part view, refresh every part
     private ScoreViewGroup scoreViewGroup;
@@ -27,11 +26,11 @@ public class NumberedMusicalNotationParser {
 
     public static final Character sentenceEndTag = '~';
 
-    public NumberedMusicalNotationParser(final Context context, String musicString) {
-        this.context = context;
+    public NumberedMusicalNotationParser(ShowScoreActivity showScoreActivity, String musicString) {
+        this.showScoreActivity = showScoreActivity;
         this.musicString = musicString;
         noteContext = new NoteContext();
-        scoreViewGroup = new ScoreViewGroup(context);
+        scoreViewGroup = new ScoreViewGroup(showScoreActivity);
         scoreViewGroup.setId(R.id.score_view_group);
 
         ViewTreeObserver vto = scoreViewGroup.getViewTreeObserver();
@@ -48,7 +47,7 @@ public class NumberedMusicalNotationParser {
                         public void run() {
                             RelativeLayout loadingViewLayout = (RelativeLayout) ShowScoreActivity.rootView.findViewById(R.id.loading_image_layout);
                             if (loadingViewLayout != null) {
-                                Animation animation = AnimationUtils.loadAnimation(context, R.anim.loading_image_fade_out);
+                                Animation animation = AnimationUtils.loadAnimation(NumberedMusicalNotationParser.this.showScoreActivity, R.anim.loading_image_fade_out);
                                 loadingViewLayout.setAnimation(animation);
                                 loadingViewLayout.animate();
                                 ShowScoreActivity.rootView.removeView(loadingViewLayout);
@@ -67,7 +66,7 @@ public class NumberedMusicalNotationParser {
         int noteViewGroupIndex = 0;
         curX = 0;
         PartViewGroup curParsePart;
-        MeasureViewGroup curParseMeasure = new MeasureViewGroup(context);
+        MeasureViewGroup curParseMeasure = new MeasureViewGroup(showScoreActivity);
 
         String[] tokens = musicString.split(" ");
 //        for(String t : tokens) Log.d(LOG_TAG, "token: " + t);

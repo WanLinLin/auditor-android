@@ -299,9 +299,8 @@ public class AudioFileListActivity extends ActionBarActivity implements MediaPla
 
             File file = files[i];
             Date lastModDate = new Date(file.lastModified());
-            String lmd = sdf.format(lastModDate);
             String songTitle = file.getName().substring(0, file.getName().length() - 4);
-            Song song = new Song(i, songTitle, lmd);
+            Song song = new Song(i, songTitle, lastModDate);
             songList.add(song);
         }
     }

@@ -12,6 +12,6 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:textColor="#555555"
-        android:text="Delete " />
+        android:text="@string/delete_confirm" />
 
 </LinearLayout>

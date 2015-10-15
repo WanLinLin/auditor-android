@@ -45,27 +45,6 @@ public class NoteViewGroup extends RelativeLayout {
             width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
         if(hasDottedView)
             width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
-
-//        ViewTreeObserver vto = getViewTreeObserver();
-//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                if (NoteViewGroup.this.isTieEnd()) {
-//                    PartViewGroup part = (PartViewGroup)getParent().getParent();
-//                    MeasureViewGroup measure = (MeasureViewGroup)getParent();
-//                    int notePosition = NoteViewGroup.this.getLeft() + measure.getLeft() + NoteViewGroup.this.getWidth()/2;
-//                    part.addTieInfo(new Pair<>(notePosition, "end"));
-//                }
-//                if (NoteViewGroup.this.isTieStart()) {
-//                    PartViewGroup part = (PartViewGroup)getParent().getParent();
-//                    MeasureViewGroup measure = (MeasureViewGroup)getParent();
-//                    int notePosition = NoteViewGroup.this.getLeft() + measure.getLeft() + NoteViewGroup.this.getWidth()/2;
-//                    part.addTieInfo(new Pair<>(notePosition, "start"));
-//                }
-//
-//                Log.e(LOG_TAG, "note on global layout!");
-//            }
-//        });
     }
 
     @Override

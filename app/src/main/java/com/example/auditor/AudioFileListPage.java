@@ -35,8 +35,9 @@ import com.example.auditor.song.MusicService;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -44,7 +45,7 @@ import java.util.Date;
  * AudioFileListPage
  */
 public class AudioFileListPage extends Fragment implements MediaController.MediaPlayerControl {
-    private static final String LOG_TAG = AudioFileListPage.class.getName();
+    private static final String LOG_TAG = "AudioFileListPage";
     private static final String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
     private static MusicService musicService;
 
@@ -109,7 +110,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         notificationReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent i) {
-                Log.i(LOG_TAG, "onReceive: " + i.getStringExtra("action"));
+//                Log.i(LOG_TAG, "onReceive: " + i.getStringExtra("action"));
                 switch (i.getStringExtra("action")) {
                     case "prepared":
                         int songTime = i.getIntExtra("song time", 0);
@@ -130,6 +131,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
                     case "complete":
                         playButton.setPlay(true);
                         playButton.invalidate();
+                        playbackPaused = true;
                         updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
                         seekBar.setProgress(0);
                         break;
@@ -176,13 +178,20 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     public void onPause() {
         super.onPause();
         updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
+
+        // pause music
+        if (musicService.isPlaying()) {
+            musicService.pausePlayer();
+            playButton.setPlay(true);
+            playButton.invalidate();
+            playbackPaused = true;
+        }
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if(musicService != null)
-            updateSeekBarHandler.post(updateSeekBarTask);
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.e(LOG_TAG, "onCreate()");
     }
 
     @Override
@@ -256,7 +265,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
         userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
-        userInput.setText(song.getTitle());
+        userInput.setText(song.getTitle().substring(0, song.getTitle().length() - 4));
 
         // set dialog message
         alertDialogBuilder
@@ -264,7 +273,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(wavDir + song.getTitle() + ".wav");
+                                File from = new File(wavDir + song.getTitle());
                                 File to = new File(
                                         wavDir + userInput.getText() + ".wav");
                                 if (!from.renameTo(to)) {
@@ -298,9 +307,9 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         // set audio_record_popup_delete.xml to alert dialog builder
         alertDialogBuilder.setView(promptsView);
 
-        final TextView dialogTitle = (TextView) promptsView
-                .findViewById(R.id.popupWindowTitle);
-        dialogTitle.setText(dialogTitle.getText() + song.getTitle() + "?");
+        TextView dialogTitle = (TextView) promptsView.findViewById(R.id.popupWindowTitle);
+        String title = getString(R.string.delete_confirm) + " " + song.getTitle() + "?";
+        dialogTitle.setText(title);
 
         // set dialog message
         alertDialogBuilder
@@ -308,7 +317,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(wavDir + song.getTitle() + ".wav");
+                                File fileToDelete = new File(wavDir + song.getTitle());
                                 if (!fileToDelete.delete())
                                     Toast.makeText(slidingTabActivity,
                                             getString(R.string.failed),
@@ -373,15 +382,20 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         File[] files = wavDirFiles.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
-            DateFormat sdf = DateFormat.getDateTimeInstance();
-
             File file = files[i];
             Date lastModDate = new Date(file.lastModified());
-            String lmd = sdf.format(lastModDate);
-            String songTitle = file.getName().substring(0, file.getName().length() - 4);
-            Song song = new Song(i, songTitle, lmd);
+            String songTitle = file.getName();
+            Song song = new Song(i, songTitle, lastModDate);
             songList.add(song);
         }
+
+        // Sorting
+        Collections.sort(songList, new Comparator<Song>() {
+            @Override
+            public int compare(Song song1, Song song2) {
+                return song2.getLastModDate().compareTo(song1.getLastModDate());
+            }
+        });
     }
 
     public void bindService() {
@@ -396,6 +410,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         slidingTabActivity.stopService(playIntent);
         slidingTabActivity.unbindService(musicConnection);
         LocalBroadcastManager.getInstance(slidingTabActivity).unregisterReceiver(notificationReceiver);
+
         notificationReceiver = null;
         musicService = null;
     }
@@ -437,7 +452,13 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
                     playButton.invalidate();
                     playbackPaused = true;
                 } else {
-                    musicService.go();
+                    if(playbackPaused) {
+                        musicService.go();
+                    }
+                    else {
+                        musicService.playSong();
+                    }
+
                     playButton.setPlay(false);
                     playButton.invalidate();
                     playbackPaused = false;

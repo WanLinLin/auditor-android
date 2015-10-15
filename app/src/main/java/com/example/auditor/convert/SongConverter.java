@@ -33,7 +33,7 @@ import be.tarsos.dsp.pitch.PitchProcessor;
  * Handle music stream pitch and notes conversion.
  */
 public class SongConverter {
-    private static final String LOG_TAG = SongConverter.class.getName();
+    private static final String LOG_TAG = "SongConverter";
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
     private static final float tooShortForHumanToSing = 0.03f; // can be ignore
@@ -70,7 +70,7 @@ public class SongConverter {
     public boolean setUp(String songTitle) {
         this.songTitle = songTitle;
 
-        File file = new File(auditorDir + "wav/" + songTitle + ".wav");
+        File file = new File(auditorDir + "wav/" + songTitle);
         InputStream inputStream;
 
         // open a audio file
@@ -107,8 +107,9 @@ public class SongConverter {
             public void handlePitch(PitchDetectionResult pdr, AudioEvent ae){
                 String notation = pitchToNotation(pdr.getPitch());
                 Float sampleTime = ae.getConvertTime();
+                Log.e(LOG_TAG, "pitch: " + pdr.getPitch());
 
-                Log.e(LOG_TAG, "notation: " + notation + ", time: " + sampleTime);
+//                Log.e(LOG_TAG, "notation: " + notation + ", time: " + sampleTime);
 
                 // handle the first pitch
                 if(noteAndTimeList.isEmpty()) {
@@ -173,13 +174,13 @@ public class SongConverter {
         musicString = convertToMusicString();
 
         pattern = new Pattern(musicString);
-        try { pattern.save(new File(auditorDir + "txt/" + songTitle + ".txt")); }
+        try { pattern.save(new File(auditorDir + "txt/" + songTitle.substring(0, songTitle.length() - 4) + ".txt")); }
         catch (IOException e) {
             Log.e(LOG_TAG, "IOE");
             Toast.makeText(context, "檔案不存在", Toast.LENGTH_SHORT).show();
         }
 
-        try { MidiFileManager.savePatternToMidi(pattern, new File(auditorDir + "midi/" + songTitle + ".mid")); }
+        try { MidiFileManager.savePatternToMidi(pattern, new File(auditorDir + "midi/" + songTitle.substring(0, songTitle.length() - 4) + ".mid")); }
         catch (IOException e) {
             Log.e(LOG_TAG, e.getMessage());
             Toast.makeText(context, "儲存 MIDI 失敗", Toast.LENGTH_SHORT).show();

@@ -10,6 +10,7 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 /**
@@ -53,8 +54,9 @@ public class ScoreAdapter extends BaseAdapter {
         final Score score = scores.get(position);
         final TextView scoreModDate = (TextView)songLayout.findViewById(R.id.file_mod_date);
 
-        scoreTitle.setText(score.getTitle());
-        scoreModDate.setText(score.getLastModDate());
+        scoreTitle.setText(score.getTitle().substring(0, score.getTitle().length() - 4));
+        DateFormat sdf = DateFormat.getDateTimeInstance();
+        scoreModDate.setText(sdf.format(score.getLastModDate()));
         songLayout.setTag(position);
 
         collapse.setOnClickListener(new View.OnClickListener() {

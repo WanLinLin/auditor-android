@@ -17,4 +17,9 @@
         android:title="@string/save"
         android:icon="@drawable/save"
         app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/score_play"
+        android:title="@string/play"
+        android:icon="@drawable/play"
+        app:showAsAction="ifRoom"/>
 </menu>

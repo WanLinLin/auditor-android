@@ -1,6 +1,5 @@
 package com.example.auditor.score;
 
-import android.content.Context;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.ShowScoreActivity;
@@ -10,14 +9,12 @@ import com.example.auditor.ShowScoreActivity;
  * Keep Part
  */
 public class ScoreViewGroup extends RelativeLayout {
+    private static final String LOG_TAG = "ScoreViewGroup";
     private ShowScoreActivity showScoreActivity;
-    private Context context;
 
-    public ScoreViewGroup(Context context) {
-        super(context);
-        this.context = context;
-
-        this.showScoreActivity = (ShowScoreActivity)context;
+    public ScoreViewGroup(final ShowScoreActivity showScoreActivity) {
+        super(showScoreActivity);
+        this.showScoreActivity = showScoreActivity;
 
         LayoutParams slp = new LayoutParams(
                     LayoutParams.WRAP_CONTENT,
@@ -38,7 +35,7 @@ public class ScoreViewGroup extends RelativeLayout {
 
     public void printPart(int i) {
         int partViewGroupId = i + ShowScoreActivity.partStartId;
-        PartViewGroup partViewGroup = new PartViewGroup(context);
+        PartViewGroup partViewGroup = new PartViewGroup(showScoreActivity);
 
         RelativeLayout.LayoutParams plp =
                 new RelativeLayout.LayoutParams(

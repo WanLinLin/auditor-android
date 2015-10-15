@@ -10,6 +10,11 @@
     <string name="title_activity_swipe_tabs">SwipeTabsActivity</string>
     <string name="title_activity_sliding_tab">SlidingTabActivity</string>
 
+    <!-- page titles -->
+    <string name="audio_record_page_title">錄音</string>
+    <string name="audio_file_list_page_title">錄音檔案</string>
+    <string name="score_file_list_page_title">樂譜檔案</string>
+
     <!-- odd activity names -->
     <string name="audio_file_button">錄音檔案</string>
     <string name="sheet_music_button">樂譜檔案</string>
@@ -48,6 +53,8 @@
     <string name="delete_failed">刪除失敗</string>
     <string name="success">成功</string>
     <string name="failed">失敗</string>
+    <string name="delete_confirm">確定要刪除 </string>
 
     <string name="loading">讀取中&#8230;</string>
+    <string name="play">播放</string>
 </resources>

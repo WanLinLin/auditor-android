@@ -1,14 +1,17 @@
 package com.example.auditor;
 
+import java.util.Date;
+
 /**
- * Created by wanlin on 15/8/29.
+ * Created by Wan Lin on 15/8/29.
+ * Score
  */
 public class Score {
     private long id;
     private String title;
-    private String lastModDate;
+    private Date lastModDate;
 
-    public Score(long scoreID, String scoreTitle, String scoreModDate) {
+    public Score(long scoreID, String scoreTitle, Date scoreModDate) {
         id = scoreID;
         title = scoreTitle;
         lastModDate = scoreModDate;
@@ -16,5 +19,5 @@ public class Score {
 
     public long getID() {return id;}
     public String getTitle() {return title;}
-    public String getLastModDate() {return lastModDate;}
+    public Date getLastModDate() {return lastModDate;}
 }

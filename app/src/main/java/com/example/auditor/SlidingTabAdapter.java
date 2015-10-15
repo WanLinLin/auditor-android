@@ -47,9 +47,12 @@ public class SlidingTabAdapter extends FragmentStatePagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         switch (position){
-            case AUDIO_RECORD: return "AudioRecord";
-            case AUDIO_FILE_LIST : return "AudioFileList";
-            case SCORE_FILE_LIST : return "ScoreFileList";
+            case AUDIO_RECORD:
+                return slidingTabActivity.getString(R.string.audio_record_page_title);
+            case AUDIO_FILE_LIST:
+                return slidingTabActivity.getString(R.string.audio_file_list_page_title);
+            case SCORE_FILE_LIST:
+                return slidingTabActivity.getString(R.string.score_file_list_page_title);
         }
         return super.getPageTitle(position);
     }

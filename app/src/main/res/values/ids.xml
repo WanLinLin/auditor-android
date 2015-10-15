@@ -35,4 +35,5 @@
     <item name="previous_button" type="id" />
     <item name="seek_bar" type="id" />
 
+    <item name="pager" type="id" />
 </resources>

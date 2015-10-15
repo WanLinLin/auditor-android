@@ -1,6 +1,5 @@
 package com.example.auditor.song;
 
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -13,11 +12,9 @@ import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.example.auditor.R;
 import com.example.auditor.SlidingTabActivity;
 import com.example.auditor.Song;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -31,17 +28,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private static final String LOG_TAG = "MusicService";
     private static final int NOTIFY_ID = 1;
 
-    private File wavDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav");
+    private String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
     private MediaPlayer player;
     private ArrayList<Song> songs;
     private int songPosition; // current song position
     private final IBinder musicBind = new MusicBinder();
-    private String songTitle = "";
+    private Song curPlaySong;
     private Random rand;
-    private Intent notification;
+    private Intent intent;
 
     private boolean shuffle = false;
-    private boolean isPaused;
 
     public class MusicBinder extends Binder {
         public MusicService getService() {
@@ -52,7 +48,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCreate(){
         super.onCreate();
 
-        notification = new Intent("Player");
+        intent = new Intent("Player");
         songPosition = 0;
         player = new MediaPlayer();
         rand = new Random();
@@ -92,7 +88,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        //start playback
+        // start playback
         mp.start();
 
         Intent notIntent = new Intent(this, SlidingTabActivity.class);
@@ -100,22 +96,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
                 notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification.Builder builder = new Notification.Builder(this);
+        // set up status bar notification
+        // TODO notification onclick would new a music service
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//        builder.setContentIntent(pendInt)
+//                .setSmallIcon(R.drawable.play)
+//                .setTicker(curPlaySong.getTitle())
+//                .setOngoing(true)
+//                .setContentTitle(curPlaySong.getTitle())
+//                .setContentText(curPlaySong.getLastModDate());
+//        Notification not = builder.getNotification();
+//        startForeground(NOTIFY_ID, not);
 
-        builder.setContentIntent(pendInt)
-                .setSmallIcon(R.drawable.play)
-                .setTicker(songTitle)
-                .setOngoing(true)
-                .setContentTitle("Playing")
-                .setContentText(songTitle);
-        Notification not = builder.getNotification();
-
-        // send notification to activity
-        notification.putExtra("action", "prepared");
-        notification.putExtra("song time", player.getDuration());
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-
-        startForeground(NOTIFY_ID, not);
+        // send intent to activity
+        intent.putExtra("action", "prepared");
+        intent.putExtra("song time", player.getDuration());
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
@@ -136,27 +132,24 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onCompletion(MediaPlayer mp) {
         if(mp.getCurrentPosition() > 0){
-            mp.stop();
-            mp.reset();
-
-            notification.putExtra("action", "complete");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+//            mp.stop();
+//            mp.reset();
+            intent.putExtra("action", "complete");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
 
     public void playSong(){
         player.reset();
 
-        Song playSong = songs.get(songPosition);
-        String songPath = wavDir + "/" + playSong.getTitle() + ".wav";
-        songTitle = playSong.getTitle();
+        curPlaySong = songs.get(songPosition);
+        String songPath = wavDir + curPlaySong.getTitle();
 
         try{
             player.setDataSource(songPath);
             player.prepareAsync();
-            notification.putExtra("action", "play");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-            isPaused = false;
+            intent.putExtra("action", "play");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
         catch(Exception e){
             Log.e("MUSIC SERVICE", "Error setting data source", e);
@@ -191,10 +184,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void pausePlayer(){
-        notification.putExtra("action", "pause");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
+        intent.putExtra("action", "pause");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         player.pause();
-        isPaused = true;
     }
 
     public void seek(int position){
@@ -205,15 +197,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      * play
      */
     public void go(){
-        notification.putExtra("action", "go");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(notification);
-        if(isPaused) {
-            player.start();
-            isPaused = false;
-        }
-        else {
-            playSong();
-        }
+        intent.putExtra("action", "go");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        player.start();
     }
 
     public void setShuffle() {
@@ -250,9 +236,5 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public boolean isShuffle(){
         return shuffle;
-    }
-
-    public boolean isPaused() {
-        return isPaused;
     }
 }

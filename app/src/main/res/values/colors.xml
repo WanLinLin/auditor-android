@@ -7,4 +7,7 @@
     <color name="SlideTabsBorder">#455A64</color>
 
     <color name="White">#FFFFFF</color>
+
+    <color name="TabNotSelect">#90A4AE</color>
+    <color name="TabSelected">#546E7A</color>
 </resources>

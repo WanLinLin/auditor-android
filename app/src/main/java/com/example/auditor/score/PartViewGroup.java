@@ -80,16 +80,6 @@ public class PartViewGroup extends RelativeLayout {
         this.addView(tieViewGroup);
 
         lyricEditing = false;
-
-//        ViewTreeObserver vto = getViewTreeObserver();
-//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//
-//                Log.e(LOG_TAG, "part on global layout!");
-//            }
-//        });
     }
 
     @Override
@@ -304,7 +294,6 @@ public class PartViewGroup extends RelativeLayout {
 
             if(!ShowScoreActivity.scoreEditMode && !ShowScoreActivity.lyricEditMode) {
                 ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
-                ShowScoreActivity.actionBar.setTitle(ShowScoreActivity.scoreName);
             }
 
             Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);

@@ -1,5 +1,4 @@
 <resources>
-
     <style name="AuditorTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="actionBarStyle">@style/AuditorActionBar</item>
         <item name="actionBarTabTextStyle">@style/AuditorActionBarTabText</item>

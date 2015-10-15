@@ -9,4 +9,6 @@
     <dimen name="play_button_stroke_width">2dp</dimen>
     <dimen name="pause_button_stroke_width">3dp</dimen>
     <dimen name="controller_container_padding">8dp</dimen>
+
+    <dimen name="sliding_tab_text_size">5dp</dimen>
 </resources>

@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -61,13 +60,10 @@ public class ScoreFileListActivity extends ActionBarActivity {
         File[] files = txtDirFiles.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
-            DateFormat sdf = DateFormat.getDateTimeInstance();
-
             File file = files[i];
             Date lastModDate = new Date(file.lastModified());
-            String lmd = sdf.format(lastModDate);
             String songTitle = file.getName().substring(0, file.getName().length() - 4);
-            Score score = new Score(i, songTitle, lmd);
+            Score score = new Score(i, songTitle, lastModDate);
             scoreList.add(score);
         }
     }

@@ -19,8 +19,9 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -89,15 +90,20 @@ public class ScoreFileListPage extends Fragment{
         File[] files = txtDirFiles.listFiles(filter);
 
         for (int i = 0; i < files.length; i++) {
-            DateFormat sdf = DateFormat.getDateTimeInstance();
-
             File file = files[i];
             Date lastModDate = new Date(file.lastModified());
-            String lmd = sdf.format(lastModDate);
-            String songTitle = file.getName().substring(0, file.getName().length() - 4);
-            Score score = new Score(i, songTitle, lmd);
+            String songTitle = file.getName();
+            Score score = new Score(i, songTitle, lastModDate);
             scoreList.add(score);
         }
+
+        //Sorting
+        Collections.sort(scoreList, new Comparator<Score>() {
+            @Override
+            public int compare(Score score1, Score score2) {
+                return score2.getLastModDate().compareTo(score1.getLastModDate());
+            }
+        });
     }
 
     public void renameScore(final Score score) {
@@ -108,7 +114,7 @@ public class ScoreFileListPage extends Fragment{
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
         userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
-        userInput.setText(score.getTitle());
+        userInput.setText(score.getTitle().substring(0, score.getTitle().length() - 4));
 
         // set dialog message
         alertDialogBuilder
@@ -116,7 +122,7 @@ public class ScoreFileListPage extends Fragment{
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(txtDir + score.getTitle() + ".txt");
+                                File from = new File(txtDir + score.getTitle());
                                 File to = new File(
                                         txtDir + userInput.getText() + ".txt");
                                 if (!from.renameTo(to)) {
@@ -158,19 +164,14 @@ public class ScoreFileListPage extends Fragment{
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(txtDir + score.getTitle() + ".txt");
-                                if (fileToDelete.delete())
+                                File fileToDelete = new File(txtDir + score.getTitle());
+                                if (!fileToDelete.delete()) {
                                     Toast.makeText(
                                             slidingTabActivity,
-                                            "Delete successfully!",
+                                            getString(R.string.delete_failed),
                                             Toast.LENGTH_SHORT
                                     ).show();
-                                else
-                                    Toast.makeText(
-                                            slidingTabActivity,
-                                            "Delete failed!",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
+                                }
                                 refreshList();
                             }
                         })

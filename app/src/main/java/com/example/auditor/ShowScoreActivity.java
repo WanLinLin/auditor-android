@@ -9,12 +9,16 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
@@ -34,6 +38,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +49,7 @@ import com.example.auditor.button.BlankView;
 import com.example.auditor.button.DottedButton;
 import com.example.auditor.button.NumberButton;
 import com.example.auditor.button.OctaveButton;
+import com.example.auditor.button.PlayButton;
 import com.example.auditor.score.AccidentalView;
 import com.example.auditor.score.BeamView;
 import com.example.auditor.score.DottedView;
@@ -80,11 +86,19 @@ import java.util.ArrayList;
 public class ShowScoreActivity extends ActionBarActivity {
     private static final String LOG_TAG = ShowScoreActivity.class.getName();
     private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
+    private static final String midiDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/midi/";
 
     public static ScoreViewGroup score;
     public static RelativeLayout scoreContainer;
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
+
+    /* play midi part */
+    private MediaPlayer musicPlayer;
+    private Handler updateSeekBarHandler = new Handler();
+    private Runnable updateSeekBarTask;
+    private boolean playbackPaused = false;
+    private MusicController musicController;
 
     /* using for two dimension scroll */
     private VScrollView vScroll;
@@ -94,7 +108,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     public static ActionBar actionBar;
     public static Menu menu;
-    public static String scoreName;
+    public String scoreName;
 
     /* View id index */
     public static final int partMaxNumber = 5000;
@@ -174,11 +188,40 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         // set action bar title
         actionBar = getSupportActionBar();
-        actionBar.setTitle(scoreName);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         setUpLyricRecommendGroup();
         setUpEditScoreKeyboard();
+
+        musicController = new MusicController(this);
+        musicController.setVisibility(View.GONE);
+
+        initPlayer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
+
+        // pause music
+        if (musicPlayer.isPlaying()) {
+            musicPlayer.pause();
+            musicController.playButton.setPlay(true);
+            musicController.playButton.invalidate();
+            playbackPaused = true;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (musicPlayer.isPlaying()) {
+            musicPlayer.stop();
+            musicPlayer.release();
+        }
     }
 
     @Override
@@ -187,10 +230,10 @@ public class ShowScoreActivity extends ActionBarActivity {
 
         if(hasFocus && scoreContainer.getWidth() == 0) {
             try {
-                pattern = Pattern.load(new File(txtDir + scoreName + ".txt"));
+                pattern = Pattern.load(new File(txtDir + scoreName));
 
                 numberedMusicalNotationParser =
-                        new NumberedMusicalNotationParser(ShowScoreActivity.this, pattern.toString());
+                        new NumberedMusicalNotationParser(this, pattern.toString());
 
                 numberedMusicalNotationParser.parse();
                 score = numberedMusicalNotationParser.getScoreViewGroup();
@@ -283,6 +326,20 @@ public class ShowScoreActivity extends ActionBarActivity {
 //                }).start();
 
                 return true;
+
+            case R.id.score_play:
+                if(!musicController.isShown()) {
+                    musicController.setVisibility(View.VISIBLE);
+                    Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_in);
+                    musicController.setAnimation(animation);
+                    musicController.animate();
+                }
+
+                playSong();
+                updateSeekBarHandler.post(updateSeekBarTask);
+
+                return true;
+
             case android.R.id.home:
                 if(scoreEditMode || lyricEditMode) {
                     lyricEditMode = false;
@@ -304,7 +361,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     }
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
-                    actionBar.setTitle(ShowScoreActivity.scoreName);
+                    actionBar.setTitle(scoreName);
                     ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
                     ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
                 }
@@ -343,9 +400,15 @@ public class ShowScoreActivity extends ActionBarActivity {
 
             // set actionbar back to original color
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
-            actionBar.setTitle(ShowScoreActivity.scoreName);
+            actionBar.setTitle(scoreName);
             ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
             ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
+        }
+        else if(musicController.isShown()) {
+            Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
+            musicController.setAnimation(animation);
+            musicController.animate();
+            musicController.setVisibility(View.GONE);
         }
         else {
             Intent intent = new Intent(this, SlidingTabActivity.class);
@@ -551,7 +614,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
 
         pattern = new Pattern(musicString);
-        try { pattern.save(new File(txtDir + scoreName + ".txt")); }
+        try { pattern.save(new File(txtDir + scoreName)); }
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
     }
 
@@ -575,7 +638,8 @@ public class ShowScoreActivity extends ActionBarActivity {
             public void onClick(View v) {
                 if (lyricInputACTextView.getText().length() == 0) return;
                 RecommendTask recommendTask = new RecommendTask();
-                String[] args = {lyricInputACTextView.getText().toString(), Integer.toString(lyricNumberPicker.getValue()), rhymeSpinner.getSelectedItem().toString()};
+                String rhyme = rhymeSpinner.getSelectedItem().toString().equals("無") ? "": rhymeSpinner.getSelectedItem().toString();
+                String[] args = {lyricInputACTextView.getText().toString(), Integer.toString(lyricNumberPicker.getValue()), rhyme};
                 recommendTask.execute(args);
             }
         });
@@ -606,7 +670,8 @@ public class ShowScoreActivity extends ActionBarActivity {
         lyricInputACTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                lyricInputACTextView.setText(inputSentence + wordAdapter.getItem(position));
+                String text = inputSentence + wordAdapter.getItem(position);
+                lyricInputACTextView.setText(text);
                 lyricInputACTextView.setSelection(lyricInputACTextView.getText().length());
             }
         });
@@ -735,6 +800,10 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
     }
 
+    public String getScoreName() {
+        return scoreName;
+    }
+
     class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
         protected ArrayList<String> doInBackground(String... arg) {
@@ -816,6 +885,159 @@ public class ShowScoreActivity extends ActionBarActivity {
             wordAdapter.notifyDataSetChanged();
             lyricInputACTextView.showDropDown();
         }
+    }
+
+    class MusicController extends RelativeLayout {
+        private PlayButton playButton;
+        private SeekBar seekBar;
+
+        public MusicController(Context context) {
+            super(context);
+            init();
+        }
+
+        public MusicController(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            init();
+        }
+
+        public MusicController(Context context, AttributeSet attrs, int defStyleAttr) {
+            super(context, attrs, defStyleAttr);
+            init();
+        }
+
+        private void init() {
+            this.setPadding((int) (getResources().getDimension(R.dimen.controller_container_padding)),
+                    (int) (getResources().getDimension(R.dimen.controller_container_padding)),
+                    (int) (getResources().getDimension(R.dimen.controller_container_padding)),
+                    (int) (getResources().getDimension(R.dimen.controller_container_padding)));
+            RelativeLayout.LayoutParams lp =
+                    new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            this.setBackgroundColor(getResources().getColor(R.color.AuditorColorPrimaryDark));
+            this.setLayoutParams(lp);
+
+            seekBar = new SeekBar(ShowScoreActivity.this);
+            seekBar.setId(R.id.seek_bar);
+            RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            slp.addRule(RelativeLayout.ALIGN_PARENT_TOP, R.id.play_button);
+            seekBar.setLayoutParams(slp);
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    musicPlayer.seekTo(seekBar.getProgress());
+                }
+            });
+
+            playButton = new PlayButton(ShowScoreActivity.this);
+            playButton.setId(R.id.play_button);
+            playButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (musicPlayer.isPlaying()) { // do pause
+                        musicPlayer.pause();
+                        playButton.setPlay(true);
+                        playButton.invalidate();
+                        playbackPaused = true;
+
+                        updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
+                    } else { // do play
+                        if (playbackPaused) {
+                            musicPlayer.start();
+                        } else {
+                            playSong();
+                        }
+
+                        playButton.setPlay(false);
+                        playButton.invalidate();
+                        playbackPaused = false;
+                        updateSeekBarHandler.post(updateSeekBarTask);
+                    }
+                }
+            });
+            RelativeLayout.LayoutParams plp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            plp.addRule(RelativeLayout.BELOW, R.id.seek_bar);
+            plp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            playButton.setLayoutParams(plp);
+
+            this.addView(playButton);
+            this.addView(seekBar);
+            rootView.addView(this);
+        }
+    }
+
+    private void playSong() {
+        musicPlayer.reset();
+        String songPath = midiDir + scoreName.substring(0, scoreName.length() - 4) + ".mid";
+
+        try{
+            musicPlayer.setDataSource(songPath);
+            musicPlayer.prepareAsync();
+            musicPlayer.start();
+        } catch(Exception e){
+            Log.e("MediaPlayer", "Error setting data source", e);
+        }
+    }
+
+    private void initPlayer() {
+        musicPlayer = new MediaPlayer();
+        musicPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        musicPlayer.setVolume(1, 1);
+
+        updateSeekBarTask = new Runnable() {
+            @Override
+            public void run() {
+                musicController.seekBar.setProgress(musicPlayer.getCurrentPosition());
+                updateSeekBarHandler.postDelayed(this, 300);
+            }
+        };
+
+        musicPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                int songTime = musicPlayer.getDuration();
+                Log.e(LOG_TAG, "song time: " + songTime);
+                musicController.seekBar.setMax(songTime);
+
+                updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
+                updateSeekBarHandler.post(updateSeekBarTask);
+
+                musicController.playButton.setPlay(false);
+                musicController.playButton.invalidate();
+                playbackPaused = false;
+            }
+        });
+
+        musicPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                musicController.playButton.setPlay(true);
+                musicController.playButton.invalidate();
+                updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
+                musicController.seekBar.setProgress(0);
+                playbackPaused = true;
+            }
+        });
+
+        musicPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                mp.reset();
+                Log.e(LOG_TAG, "Music service on error and reset!");
+                return false;
+            }
+        });
     }
 
     // TODO play midi and show what note is playing

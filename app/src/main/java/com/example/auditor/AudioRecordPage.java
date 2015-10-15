@@ -33,6 +33,7 @@ public class AudioRecordPage extends Fragment{
     private SlidingTabActivity slidingTabActivity;
     public static final int bufferSize = 1024;
     private EditText userInput;
+    private boolean setFileName;
 
     public AudioRecordPage() {
         super();
@@ -149,12 +150,14 @@ public class AudioRecordPage extends Fragment{
                                     SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
                                     AudioFileListPage page = (AudioFileListPage)adapter.getPage(SlidingTabAdapter.AUDIO_FILE_LIST);
                                     page.refreshList();
+                                    slidingTabActivity.getViewPager().setCurrentItem(SlidingTabAdapter.AUDIO_FILE_LIST, true);
                                 }
                                 else {
                                     Toast.makeText(slidingTabActivity,
                                             getResources().getString(R.string.save_failed),
                                             Toast.LENGTH_SHORT).show();
                                 }
+                                setFileName = true;
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -163,6 +166,7 @@ public class AudioRecordPage extends Fragment{
                                 dialog.cancel();
                                 File tmpFile = new File(mFileName);
                                 tmpFile.delete();
+                                setFileName = false;
                             }
                         });
 
