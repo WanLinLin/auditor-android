@@ -18,12 +18,15 @@ import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.WordView;
 
 /**
- * Created by wanlin on 2015/10/3.
+ * Created by Wan Lin on 2015/10/3.
+ * DottedButton
  */
 public class DottedButton extends Button{
     private static String LOG_TAG = DottedButton.class.getName();
     private Paint mPaint;
     private String dot;
+    private int width;
+    private int height;
 
     public DottedButton(Context context) {
         super(context);
@@ -44,6 +47,9 @@ public class DottedButton extends Button{
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
+
+        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.25);
+        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.4);
 
         this.setOnClickListener(new OnClickListener() {
             @Override
@@ -66,6 +72,11 @@ public class DottedButton extends Button{
                 }
             }
         });
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(width, height);
     }
 
     @Override

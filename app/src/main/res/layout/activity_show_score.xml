@@ -91,4 +91,86 @@
             android:contentDescription="@string/loading"/>
 
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:id="@+id/edit_score_keyboard"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/darker_gray"
+        android:visibility="gone">
+
+        <com.example.auditor.button.NewNoteButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_score_group"
+            android:layout_centerInParent="true">
+
+            <com.example.auditor.button.BlankView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_blank_view"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                />
+
+            <com.example.auditor.button.AccidentalButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_accident_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/edit_blank_view"/>
+
+            <com.example.auditor.button.NumberButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_number_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_toRightOf="@id/edit_blank_view"
+                android:layout_below="@id/edit_blank_view" />
+
+            <com.example.auditor.button.BeamButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_beam_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_below="@id/edit_number_button"
+                android:layout_toRightOf="@id/edit_blank_view" />
+
+            <com.example.auditor.button.DottedButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_dot_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_toRightOf="@id/edit_number_button"
+                android:layout_below="@id/edit_blank_view"/>
+
+            <com.example.auditor.button.OctaveButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_top_octave_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@id/edit_blank_view" />
+
+            <com.example.auditor.button.OctaveButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@id/edit_bottom_octave_button"
+                android:background="@color/edit_note_button_color"
+                android:layout_below="@id/edit_beam_button"
+                android:layout_toRightOf="@id/edit_blank_view" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
 </RelativeLayout>

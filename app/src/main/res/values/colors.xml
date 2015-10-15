@@ -10,4 +10,6 @@
 
     <color name="TabNotSelect">#90A4AE</color>
     <color name="TabSelected">#546E7A</color>
+
+    <color name="edit_note_button_color">#F5F5F5</color>
 </resources>

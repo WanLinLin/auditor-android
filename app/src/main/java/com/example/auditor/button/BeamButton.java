@@ -20,6 +20,8 @@ public class BeamButton extends Button{
     private Paint mPaint;
     private String duration;
     private int lineCount = 0;
+    private int width;
+    private int height;
 
     public BeamButton(Context context) {
         super(context);
@@ -40,6 +42,9 @@ public class BeamButton extends Button{
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.STROKE);
+
+        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.5);
+        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.15);
 
         this.setOnClickListener(new OnClickListener() {
             @Override
@@ -70,6 +75,11 @@ public class BeamButton extends Button{
                 }
             }
         });
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(width, height);
     }
 
     @Override

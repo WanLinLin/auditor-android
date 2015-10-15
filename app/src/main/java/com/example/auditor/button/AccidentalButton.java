@@ -19,13 +19,16 @@ import com.example.auditor.score.PartViewGroup;
 import com.example.auditor.score.WordView;
 
 /**
- * Created by wanlin on 2015/10/2.
+ * Created by Wan Lin on 2015/10/2.
+ * AccidentalButton
  */
 public class AccidentalButton extends Button{
     private static String LOG_TAG = AccidentalButton.class.getName();
     private Paint mPaint;
     private RectF rect;
-    private String accidental;
+    private String accidental = "";
+    private int width;
+    private int height;
 
     public AccidentalButton(Context context) {
         super(context);
@@ -42,42 +45,9 @@ public class AccidentalButton extends Button{
         init();
     }
 
-    private void init() {
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(Color.BLACK);
-        mPaint.setStyle(Paint.Style.STROKE);
-
-        rect = new RectF();
-
-        this.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ShowScoreActivity.scoreEditMode) {
-                    switch (accidental) {
-                        case "#":
-                            accidental = "b";
-                            break;
-                        case "b":
-                            accidental = "";
-                            break;
-                        case "":
-                            accidental = "#";
-                            break;
-                    }
-                    AccidentalButton.this.invalidate();
-
-                    AccidentalView accidentalView = (AccidentalView) NoteViewGroup.curEditNote.findViewById(R.id.accidental_view);
-                    if (accidentalView != null) {
-                        accidentalView.setAccidental(accidental);
-                        NoteViewGroup.curEditNote.setHasAccidentalView(!accidental.equals(""));
-                        WordView wordView = (WordView) MeasureViewGroup.curEditMeasure.findViewById(NoteViewGroup.curEditNote.getId() - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
-                        if (wordView != null) wordView.setHasAccidentalView(!accidental.equals(""));
-                        MeasureViewGroup.curEditMeasure.requestLayout();
-                        updateTieView();
-                    }
-                }
-            }
-        });
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(width, height);
     }
 
     @Override
@@ -133,6 +103,47 @@ public class AccidentalButton extends Button{
                 canvas.drawLine((left + right) / 2, top, (left + right) / 2, bottom + arcStrokeRatioWidth / 2, mPaint);
                 break;
         }
+    }
+
+    private void init() {
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(Color.BLACK);
+        mPaint.setStyle(Paint.Style.STROKE);
+
+        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.25);
+        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.4);
+
+        rect = new RectF();
+
+        this.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ShowScoreActivity.scoreEditMode) {
+                    switch (accidental) {
+                        case "#":
+                            accidental = "b";
+                            break;
+                        case "b":
+                            accidental = "";
+                            break;
+                        case "":
+                            accidental = "#";
+                            break;
+                    }
+                    AccidentalButton.this.invalidate();
+
+                    AccidentalView accidentalView = (AccidentalView) NoteViewGroup.curEditNote.findViewById(R.id.accidental_view);
+                    if (accidentalView != null) {
+                        accidentalView.setAccidental(accidental);
+                        NoteViewGroup.curEditNote.setHasAccidentalView(!accidental.equals(""));
+                        WordView wordView = (WordView) MeasureViewGroup.curEditMeasure.findViewById(NoteViewGroup.curEditNote.getId() - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
+                        if (wordView != null) wordView.setHasAccidentalView(!accidental.equals(""));
+                        MeasureViewGroup.curEditMeasure.requestLayout();
+                        updateTieView();
+                    }
+                }
+            }
+        });
     }
 
     public void setAccidental(String accidental) {

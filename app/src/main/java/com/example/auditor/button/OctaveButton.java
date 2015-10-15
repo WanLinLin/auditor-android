@@ -16,13 +16,16 @@ import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.OctaveView;
 
 /**
- * Created by wanlin on 2015/10/3.
+ * Created by Wan Lin on 2015/10/3.
+ * OctaveButton
  */
 public class OctaveButton extends Button {
     private Paint mPaint;
     private int dotCount;
     private boolean position; // true = top, false = bottom
-    private static String octave;
+    private static String octave = "";
+    private int width;
+    private int height;
 
     public OctaveButton(Context context) {
         super(context);
@@ -43,6 +46,9 @@ public class OctaveButton extends Button {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
+
+        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.5);
+        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.225);
 
         this.setOnClickListener(new OnClickListener() {
             @Override
@@ -112,6 +118,11 @@ public class OctaveButton extends Button {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(width, height);
     }
 
     @Override

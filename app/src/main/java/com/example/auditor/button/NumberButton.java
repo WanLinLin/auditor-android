@@ -14,11 +14,14 @@ import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberView;
 
 /**
- * Created by wanlin on 2015/10/2.
+ * Created by Wan Lin on 2015/10/2.
+ * NumberButton
  */
 public class NumberButton extends Button{
     private Paint mPaint;
     private String note;
+    private int width;
+    private int height;
 
     public NumberButton(Context context) {
         super(context);
@@ -38,6 +41,9 @@ public class NumberButton extends Button{
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
+
+        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.5);
+        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.4);
 
         this.setOnClickListener(new OnClickListener() {
             @Override
@@ -79,6 +85,11 @@ public class NumberButton extends Button{
                 }
             }
         });
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(width, height);
     }
 
     @Override

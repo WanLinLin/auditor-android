@@ -1,6 +1,7 @@
 package com.example.auditor;
 
 import android.app.ProgressDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,6 +23,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -172,7 +174,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
         defaultNoteHeight = screenHeight / 6;
-        defaultNoteEditHeight = screenHeight / 3;
+        defaultNoteEditHeight = (int)getResources().getDimension(R.dimen.default_note_edit_height);
         defaultNoteEditWidth = defaultNoteEditHeight / 3 * 2;
 
         // reset parameters
@@ -618,6 +620,9 @@ public class ShowScoreActivity extends ActionBarActivity {
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
     }
 
+    /**
+     * Recommend group include number picker, rhyme, recommend button, and complete button
+     */
     private void setUpLyricRecommendGroup() {
         /* LYRIC NUMBER PICKER */
         lyricNumberPicker = (NumberPicker)findViewById(R.id.lyric_number_picker);
@@ -697,87 +702,20 @@ public class ShowScoreActivity extends ActionBarActivity {
         setLyricRecommendGroupVisibility(false);
     }
 
+    /**
+     * Score keyboard include a note group view, new a note, and delete a note
+     */
     private void setUpEditScoreKeyboard() {
-        String buttonColor = "#F5F5F5";
+        keyboard = (RelativeLayout)findViewById(R.id.edit_score_keyboard);
 
-        keyboard = new RelativeLayout(this);
-        RelativeLayout.LayoutParams kblp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (screenHeight * 0.4));
-        kblp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        keyboard.setBackgroundColor(Color.LTGRAY);
-        keyboard.setLayoutParams(kblp);
-        rootView.addView(keyboard);
-
-        BlankView bv = new BlankView(this);
-        bv.setId(R.id.edit_blank_view);
-        RelativeLayout.LayoutParams bvlp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.225));
-        bvlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        bvlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        bv.setLayoutParams(bvlp);
-
-        accidentalButton = new AccidentalButton(this);
-        accidentalButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
-        accidentalButton.setId(R.id.edit_accident_button);
-        RelativeLayout.LayoutParams ablp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
-        ablp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        ablp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        accidentalButton.setLayoutParams(ablp);
-
-        numberButton = new NumberButton(this);
-        numberButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
-        numberButton.setId(R.id.edit_number_button);
-        RelativeLayout.LayoutParams nblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.4));
-        nblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
-        nblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        numberButton.setLayoutParams(nblp);
-
-        beamButton = new BeamButton(this);
-        beamButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
-        beamButton.setId(R.id.edit_beam_button);
-        RelativeLayout.LayoutParams bblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.15));
-        bblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
-        bblp.addRule(RelativeLayout.BELOW, R.id.edit_number_button);
-        beamButton.setLayoutParams(bblp);
-
-        dottedButton = new DottedButton(this);
-        dottedButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
-        dottedButton.setId(R.id.edit_dot_button);
-        RelativeLayout.LayoutParams dblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.25), (int) (defaultNoteEditHeight * 0.4));
-        dblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_number_button);
-        dblp.addRule(RelativeLayout.BELOW, R.id.edit_blank_view);
-        dottedButton.setLayoutParams(dblp);
-
-        topOctaveButton = new OctaveButton(this);
-        topOctaveButton.getBackground().setColorFilter(Color.parseColor(buttonColor), PorterDuff.Mode.MULTIPLY);
-        topOctaveButton.setId(R.id.edit_top_octave_button);
+        accidentalButton = (AccidentalButton)findViewById(R.id.edit_accident_button);
+        numberButton = (NumberButton)findViewById(R.id.edit_number_button);
+        beamButton = (BeamButton)findViewById(R.id.edit_beam_button);
+        dottedButton = (DottedButton)findViewById(R.id.edit_dot_button);
+        topOctaveButton = (OctaveButton)findViewById(R.id.edit_top_octave_button);
         topOctaveButton.setPosition(true);
-        RelativeLayout.LayoutParams toblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
-        toblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
-        toblp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        topOctaveButton.setLayoutParams(toblp);
-
-        bottomOctaveButton = new OctaveButton(this);
-        bottomOctaveButton.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
-        bottomOctaveButton.setId(R.id.edit_bottom_octave_button);
+        bottomOctaveButton = (OctaveButton)findViewById(R.id.edit_bottom_octave_button);
         bottomOctaveButton.setPosition(false);
-        RelativeLayout.LayoutParams boblp = new RelativeLayout.LayoutParams((int) (defaultNoteEditWidth * 0.5), (int) (defaultNoteEditHeight * 0.225));
-        boblp.addRule(RelativeLayout.RIGHT_OF, R.id.edit_blank_view);
-        boblp.addRule(RelativeLayout.BELOW, R.id.edit_beam_button);
-        bottomOctaveButton.setLayoutParams(boblp);
-
-        RelativeLayout editScoreGroup = new RelativeLayout(this);
-        RelativeLayout.LayoutParams esglp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        esglp.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        esglp.addRule(RelativeLayout.CENTER_VERTICAL);
-        editScoreGroup.setLayoutParams(esglp);
-        keyboard.addView(editScoreGroup);
-
-        editScoreGroup.addView(bv);
-        editScoreGroup.addView(accidentalButton);
-        editScoreGroup.addView(numberButton);
-        editScoreGroup.addView(beamButton);
-        editScoreGroup.addView(dottedButton);
-        editScoreGroup.addView(topOctaveButton);
-        editScoreGroup.addView(bottomOctaveButton);
 
         keyboard.setVisibility(View.GONE);
     }
@@ -1040,5 +978,5 @@ public class ShowScoreActivity extends ActionBarActivity {
         });
     }
 
-    // TODO play midi and show what note is playing
+    // TODO show what note is playing
 }
