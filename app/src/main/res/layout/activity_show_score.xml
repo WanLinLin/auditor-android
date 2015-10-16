@@ -33,8 +33,9 @@
         android:layout_height="wrap_content"
         android:id="@id/lyric_input_text_view"
         android:layout_above="@id/lyric_recommend_group"
-        android:inputType="textShortMessage"/>
+        android:inputType="textShortMessage" />
 
+    <!-- recommend keyboard -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -43,7 +44,6 @@
         android:layout_alignParentBottom="true">
 
         <NumberPicker
-            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@id/lyric_number_picker"
@@ -76,6 +76,7 @@
 
     </LinearLayout>
 
+    <!-- loading view -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -92,17 +93,19 @@
 
     </RelativeLayout>
 
+    <!-- edit score keyboard -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="@dimen/edit_score_keyboard_height"
         android:id="@+id/edit_score_keyboard"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/darker_gray"
+        android:background="@color/edit_score_keyboard_bgColor"
         android:visibility="gone">
 
         <com.example.auditor.button.NewNoteButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/new_note_button"
             android:background="?attr/selectableItemBackgroundBorderless"
             />
 
@@ -119,7 +122,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                />
+                android:layout_margin="@dimen/edit_score_button_margin" />
 
             <com.example.auditor.button.AccidentalButton
                 android:layout_width="wrap_content"
@@ -128,7 +131,8 @@
                 android:background="@color/edit_note_button_color"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_below="@id/edit_blank_view"/>
+                android:layout_below="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin"/>
 
             <com.example.auditor.button.NumberButton
                 android:layout_width="wrap_content"
@@ -136,7 +140,8 @@
                 android:id="@id/edit_number_button"
                 android:background="@color/edit_note_button_color"
                 android:layout_toRightOf="@id/edit_blank_view"
-                android:layout_below="@id/edit_blank_view" />
+                android:layout_below="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin"/>
 
             <com.example.auditor.button.BeamButton
                 android:layout_width="wrap_content"
@@ -144,7 +149,8 @@
                 android:id="@id/edit_beam_button"
                 android:background="@color/edit_note_button_color"
                 android:layout_below="@id/edit_number_button"
-                android:layout_toRightOf="@id/edit_blank_view" />
+                android:layout_toRightOf="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin" />
 
             <com.example.auditor.button.DottedButton
                 android:layout_width="wrap_content"
@@ -152,7 +158,8 @@
                 android:id="@id/edit_dot_button"
                 android:background="@color/edit_note_button_color"
                 android:layout_toRightOf="@id/edit_number_button"
-                android:layout_below="@id/edit_blank_view"/>
+                android:layout_below="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin"/>
 
             <com.example.auditor.button.OctaveButton
                 android:layout_width="wrap_content"
@@ -160,7 +167,8 @@
                 android:id="@id/edit_top_octave_button"
                 android:background="@color/edit_note_button_color"
                 android:layout_alignParentTop="true"
-                android:layout_toRightOf="@id/edit_blank_view" />
+                android:layout_toRightOf="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin"/>
 
             <com.example.auditor.button.OctaveButton
                 android:layout_width="wrap_content"
@@ -168,7 +176,8 @@
                 android:id="@id/edit_bottom_octave_button"
                 android:background="@color/edit_note_button_color"
                 android:layout_below="@id/edit_beam_button"
-                android:layout_toRightOf="@id/edit_blank_view" />
+                android:layout_toRightOf="@id/edit_blank_view"
+                android:layout_margin="@dimen/edit_score_button_margin"/>
 
         </RelativeLayout>
 

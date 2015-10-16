@@ -48,8 +48,8 @@ public class DottedButton extends Button{
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.25);
-        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.4);
+        width = (int) (getResources().getDimension(R.dimen.default_edit_note_group_width) * 0.25);
+        height = (int) (getResources().getDimension(R.dimen.default_edit_note_group_height) * 0.4);
 
         this.setOnClickListener(new OnClickListener() {
             @Override

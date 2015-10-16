@@ -12,8 +12,10 @@
 
     <dimen name="sliding_tab_text_size">5dp</dimen>
 
-    <dimen name="default_note_edit_height">180dp</dimen>
-    <dimen name="default_note_edit_width">120dp</dimen>
+    <dimen name="edit_score_keyboard_height">280dp</dimen>
+    <dimen name="default_edit_note_group_height">180dp</dimen>
+    <dimen name="default_edit_note_group_width">120dp</dimen>
     <dimen name="new_note_button_size">80dp</dimen>
+    <dimen name="edit_score_button_margin">2dp</dimen>
 
 </resources>

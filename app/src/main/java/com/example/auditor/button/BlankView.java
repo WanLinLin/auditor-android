@@ -50,7 +50,7 @@ public class BlankView extends View{
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(Color.TRANSPARENT);
 
-        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.25);
-        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.225);
+        width = (int) (getResources().getDimension(R.dimen.default_edit_note_group_width) * 0.25);
+        height = (int) (getResources().getDimension(R.dimen.default_edit_note_group_height) * 0.225);
     }
 }

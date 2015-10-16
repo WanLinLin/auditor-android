@@ -2,12 +2,13 @@ package com.example.auditor;
 
 import android.app.ProgressDialog;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -23,7 +24,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
-import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,8 +47,8 @@ import android.widget.Toast;
 
 import com.example.auditor.button.AccidentalButton;
 import com.example.auditor.button.BeamButton;
-import com.example.auditor.button.BlankView;
 import com.example.auditor.button.DottedButton;
+import com.example.auditor.button.NewNoteButton;
 import com.example.auditor.button.NumberButton;
 import com.example.auditor.button.OctaveButton;
 import com.example.auditor.button.PlayButton;
@@ -174,7 +174,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
         defaultNoteHeight = screenHeight / 6;
-        defaultNoteEditHeight = (int)getResources().getDimension(R.dimen.default_note_edit_height);
+        defaultNoteEditHeight = (int)getResources().getDimension(R.dimen.default_edit_note_group_height);
         defaultNoteEditWidth = defaultNoteEditHeight / 3 * 2;
 
         // reset parameters
@@ -717,6 +717,37 @@ public class ShowScoreActivity extends ActionBarActivity {
         bottomOctaveButton = (OctaveButton)findViewById(R.id.edit_bottom_octave_button);
         bottomOctaveButton.setPosition(false);
 
+        final NewNoteButton newNoteButton = (NewNoteButton)findViewById(R.id.new_note_button);
+        newNoteButton.setOnLongClickListener(new View.OnLongClickListener() {
+            public boolean onLongClick(View v) {
+
+                // Create a new ClipData.
+                // This is done in two steps to provide clarity. The convenience method
+                // ClipData.newPlainText() can create a plain text ClipData in one step.
+
+                // Create a new ClipData.Item from the ImageView object's tag
+                ClipData.Item item = new ClipData.Item(v.getTag().toString());
+
+                // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                // the already-created item. This will create a new ClipDescription object within the
+                // ClipData, and set its MIME type entry to "text/plain"
+                ClipData dragData = new ClipData(v.getTag().toString(), new String[]{ ClipDescription.MIMETYPE_TEXT_PLAIN } , item);
+
+                // Instantiates the drag shadow builder.
+                View.DragShadowBuilder myShadow = new MyDragShadowBuilder(newNoteButton);
+
+                // Starts the drag
+
+                v.startDrag(dragData,  // the data to be dragged
+                        myShadow,  // the drag shadow builder
+                        null,      // no need to use local data
+                        0          // flags (not currently used, set to 0)
+                );
+
+                return false;
+            }
+        });
+
         keyboard.setVisibility(View.GONE);
     }
 
@@ -912,6 +943,44 @@ public class ShowScoreActivity extends ActionBarActivity {
             this.addView(playButton);
             this.addView(seekBar);
             rootView.addView(this);
+        }
+    }
+
+    private static class MyDragShadowBuilder extends View.DragShadowBuilder {
+        private static Drawable shadow;
+
+        public MyDragShadowBuilder(View v) {
+            super(v);
+            shadow = new ColorDrawable(Color.LTGRAY);
+        }
+
+        @Override
+        public void onProvideShadowMetrics (Point size, Point touch) {
+            int width, height;
+
+            width = getView().getWidth() / 2;
+            height = getView().getHeight() / 2;
+
+            // The drag shadow is a ColorDrawable. This sets its dimensions to be the same as the
+            // Canvas that the system will provide. As a result, the drag shadow will fill the
+            // Canvas.
+            shadow.setBounds(0, 0, width, height);
+
+            // Sets the size parameter's width and height values. These get back to the system
+            // through the size parameter.
+            size.set(width, height);
+
+            // Sets the touch point's position to be in the middle of the drag shadow
+            touch.set(width / 2, height / 2);
+        }
+
+        // Defines a callback that draws the drag shadow in a Canvas that the system constructs
+        // from the dimensions passed in onProvideShadowMetrics().
+        @Override
+        public void onDrawShadow(Canvas canvas) {
+
+            // Draws the ColorDrawable in the Canvas passed in from the system.
+            shadow.draw(canvas);
         }
     }
 

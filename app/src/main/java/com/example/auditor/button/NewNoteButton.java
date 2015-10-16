@@ -5,8 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.auditor.R;
@@ -32,12 +30,6 @@ public class NewNoteButton extends View {
     public NewNoteButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.e(LOG_TAG, "action: " + event.getAction());
-        return super.onTouchEvent(event);
     }
 
     @Override

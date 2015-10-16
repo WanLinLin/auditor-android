@@ -42,13 +42,13 @@ public class NumberButton extends Button{
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
 
-        width = (int) (getResources().getDimension(R.dimen.default_note_edit_width) * 0.5);
-        height = (int) (getResources().getDimension(R.dimen.default_note_edit_height) * 0.4);
+        width = (int) (getResources().getDimension(R.dimen.default_edit_note_group_width) * 0.5);
+        height = (int) (getResources().getDimension(R.dimen.default_edit_note_group_height) * 0.4);
 
         this.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ShowScoreActivity.scoreEditMode) {
+                if (ShowScoreActivity.scoreEditMode) {
                     switch (note) {
                         case "C":
                             note = "D";
@@ -78,7 +78,7 @@ public class NumberButton extends Button{
                     NumberButton.this.invalidate();
 
                     NumberView numberView = (NumberView) NoteViewGroup.curEditNote.findViewById(R.id.number_view);
-                    if(numberView != null) {
+                    if (numberView != null) {
                         numberView.setNote(note);
                         numberView.invalidate();
                     }
