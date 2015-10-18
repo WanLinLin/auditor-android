@@ -1,5 +1,7 @@
 package com.example.auditor.score;
 
+import android.content.Context;
+import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
 import com.example.auditor.ShowScoreActivity;
@@ -12,14 +14,32 @@ public class ScoreViewGroup extends RelativeLayout {
     private static final String LOG_TAG = "ScoreViewGroup";
     private ShowScoreActivity showScoreActivity;
 
-    public ScoreViewGroup(final ShowScoreActivity showScoreActivity) {
+    public ScoreViewGroup(Context context) {
+        super(context);
+        init();
+    }
+
+    public ScoreViewGroup(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public ScoreViewGroup(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    public ScoreViewGroup(ShowScoreActivity showScoreActivity) {
         super(showScoreActivity);
         this.showScoreActivity = showScoreActivity;
+        init();
+    }
 
+    private void init() {
         LayoutParams slp = new LayoutParams(
-                    LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT
-                );
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
 
         this.setLayoutParams(slp);
     }

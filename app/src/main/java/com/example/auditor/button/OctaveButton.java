@@ -75,7 +75,8 @@ public class OctaveButton extends Button {
                                     break;
                             }
                         }
-                    } else { // is bottom octave button
+                    }
+                    else { // is bottom octave button
                         if (Integer.parseInt(octave) > 4) octave = "3";
                         else {
                             switch (octave) {

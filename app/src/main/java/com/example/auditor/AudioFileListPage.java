@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -186,12 +185,6 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
             playButton.invalidate();
             playbackPaused = true;
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e(LOG_TAG, "onCreate()");
     }
 
     @Override

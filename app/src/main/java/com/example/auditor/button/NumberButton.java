@@ -12,6 +12,7 @@ import com.example.auditor.R;
 import com.example.auditor.ShowScoreActivity;
 import com.example.auditor.score.NoteViewGroup;
 import com.example.auditor.score.NumberView;
+import com.example.auditor.score.OctaveView;
 
 /**
  * Created by Wan Lin on 2015/10/2.
@@ -76,6 +77,24 @@ public class NumberButton extends Button{
                             break;
                     }
                     NumberButton.this.invalidate();
+
+                    // prevent edit octave of rest note
+                    if (note.equals("R")) { // it's rest note
+                        OctaveButton.setOctave("");
+                        ShowScoreActivity.topOctaveButton.setEnabled(false);
+                        ShowScoreActivity.bottomOctaveButton.setEnabled(false);
+
+                        // set current note octave to be empty string
+                        OctaveView octaveView = (OctaveView) NoteViewGroup.curEditNote.findViewById(R.id.octave_view);
+                        if (octaveView != null) {
+                            octaveView.setOctave("");
+                            octaveView.invalidate();
+                        }
+                    } else { // if it's a normal note, set octave to be 4
+                        OctaveButton.setOctave("4");
+                        ShowScoreActivity.topOctaveButton.setEnabled(true);
+                        ShowScoreActivity.bottomOctaveButton.setEnabled(true);
+                    }
 
                     NumberView numberView = (NumberView) NoteViewGroup.curEditNote.findViewById(R.id.number_view);
                     if (numberView != null) {

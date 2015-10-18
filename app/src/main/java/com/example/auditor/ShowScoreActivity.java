@@ -1,14 +1,11 @@
 package com.example.auditor;
 
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -48,7 +45,6 @@ import android.widget.Toast;
 import com.example.auditor.button.AccidentalButton;
 import com.example.auditor.button.BeamButton;
 import com.example.auditor.button.DottedButton;
-import com.example.auditor.button.NewNoteButton;
 import com.example.auditor.button.NumberButton;
 import com.example.auditor.button.OctaveButton;
 import com.example.auditor.button.PlayButton;
@@ -86,7 +82,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
-    private static final String LOG_TAG = ShowScoreActivity.class.getName();
+    private static final String LOG_TAG = "ShowScoreActivity";
     private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
     private static final String midiDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/midi/";
 
@@ -95,44 +91,43 @@ public class ShowScoreActivity extends ActionBarActivity {
     private Pattern pattern;
     private NumberedMusicalNotationParser numberedMusicalNotationParser;
 
-    /* play midi part */
+    // play midi
     private MediaPlayer musicPlayer;
     private Handler updateSeekBarHandler = new Handler();
     private Runnable updateSeekBarTask;
     private boolean playbackPaused = false;
-    private MusicController musicController;
+    public MusicController musicController;
 
-    /* using for two dimension scroll */
+    // using for two dimension scroll
     private VScrollView vScroll;
     private HScrollView hScroll;
-    public static float mx;
-    public static float my;
+    public float mx;
+    public float my;
 
-    public static ActionBar actionBar;
-    public static Menu menu;
+    public ActionBar actionBar;
     public String scoreName;
+    public Menu menu;
 
-    /* View id index */
+    // View id index
     public static final int partMaxNumber = 5000;
     public static final int partStartId = 10001;
     public static final int measureStartId = 201;
     public static final int wordStartId = 101;
     public static final int noteStartId = 1;
 
-    /* View size */
-    public static int defaultNoteHeight;
-    public static int defaultNoteEditHeight;
-    public static int defaultNoteEditWidth;
+    // View size
+    private int defaultNoteHeight;
     public static int noteHeight;
     public static int noteWidth;
 
     private int screenHeight;
 
-    /* Edit parameter */
+    // Edit parameter
+    public static boolean playMode;
     public static boolean scoreEditMode;
     public static boolean lyricEditMode;
 
-    /* lyric recommend views */
+    // lyric recommend views
     public static Button recommendButton;
     public static Button completeButton;
     public static Spinner rhymeSpinner;
@@ -141,7 +136,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static AutoCompleteTextView lyricInputACTextView;
     public static RelativeLayout keyboard;
 
-    /* score edit buttons */
+    // score edit buttons
     public static AccidentalButton accidentalButton;
     public static NumberButton numberButton;
     public static BeamButton beamButton;
@@ -154,7 +149,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     private WordAdapter wordAdapter;
     private String inputSentence = "";
 
-    private static final int secondsPerMinute = 60; // seconds per minutes
+    private final int secondsPerMinute = 60; // seconds per minutes
     private int beatsPerMinute = 90; // bits per minute, speed
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
@@ -174,8 +169,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
         defaultNoteHeight = screenHeight / 6;
-        defaultNoteEditHeight = (int)getResources().getDimension(R.dimen.default_edit_note_group_height);
-        defaultNoteEditWidth = defaultNoteEditHeight / 3 * 2;
 
         // reset parameters
         mScaleFactor = 1.f;
@@ -184,7 +177,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         vScroll = (VScrollView) findViewById(R.id.vScroll);
         hScroll = (HScrollView) findViewById(R.id.hScroll);
         scoreContainer = (RelativeLayout)findViewById(R.id.score_container);
-        scoreContainer.setVisibility(View.GONE);
+        scoreContainer.setVisibility(View.GONE); // prepare for loading animation
         rootView = (RelativeLayout)findViewById(R.id.activity_show_score);
         scoreName = getIntent().getStringExtra("score name");
 
@@ -230,6 +223,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
+        // activity on focus, and score is not rendered on screen
         if(hasFocus && scoreContainer.getWidth() == 0) {
             try {
                 pattern = Pattern.load(new File(txtDir + scoreName));
@@ -249,7 +243,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        ShowScoreActivity.menu = menu;
+        this.menu = menu;
         getMenuInflater().inflate(R.menu.menu_show_score, menu);
         return true;
     }
@@ -257,6 +251,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            // click zoom in
             case R.id.action_zoom_in:
                 if(mScaleFactor < 3) {
                     mScaleFactor += 0.2;
@@ -271,6 +266,8 @@ public class ShowScoreActivity extends ActionBarActivity {
                     }
                 }
                 return true;
+
+            // click zoom out
             case R.id.action_zoom_out:
                 if (mScaleFactor > 0.6) {
                     mScaleFactor -= 0.2;
@@ -285,6 +282,8 @@ public class ShowScoreActivity extends ActionBarActivity {
                     }
                 }
                 return true;
+
+            // click save
             case R.id.action_save:
                 dialog = ProgressDialog.show(ShowScoreActivity.this,
                         "儲存中", "請稍後...",true);
@@ -329,8 +328,12 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 return true;
 
+            // click play
             case R.id.score_play:
-                if(!musicController.isShown()) {
+                playMode = true;
+
+                // open musicController and play midi song
+                if (!musicController.isShown()) {
                     musicController.setVisibility(View.VISIBLE);
                     Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_in);
                     musicController.setAnimation(animation);
@@ -339,9 +342,9 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 playSong();
                 updateSeekBarHandler.post(updateSeekBarTask);
-
                 return true;
 
+            // click back button
             case android.R.id.home:
                 if(scoreEditMode || lyricEditMode) {
                     lyricEditMode = false;
@@ -364,8 +367,11 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
                     actionBar.setTitle(scoreName);
-                    ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
-                    ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
+                    menu.findItem(R.id.action_zoom_in).setVisible(true);
+                    menu.findItem(R.id.action_zoom_out).setVisible(true);
+                }
+                else if(musicController.isShown()) {
+                    closeMusicController();
                 }
                 else {
                     Intent intent = new Intent(this, SlidingTabActivity.class);
@@ -403,14 +409,11 @@ public class ShowScoreActivity extends ActionBarActivity {
             // set actionbar back to original color
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
             actionBar.setTitle(scoreName);
-            ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(true);
-            ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(true);
+            menu.findItem(R.id.action_zoom_in).setVisible(true);
+            menu.findItem(R.id.action_zoom_out).setVisible(true);
         }
         else if(musicController.isShown()) {
-            Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
-            musicController.setAnimation(animation);
-            musicController.animate();
-            musicController.setVisibility(View.GONE);
+            closeMusicController();
         }
         else {
             Intent intent = new Intent(this, SlidingTabActivity.class);
@@ -717,37 +720,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         bottomOctaveButton = (OctaveButton)findViewById(R.id.edit_bottom_octave_button);
         bottomOctaveButton.setPosition(false);
 
-        final NewNoteButton newNoteButton = (NewNoteButton)findViewById(R.id.new_note_button);
-        newNoteButton.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View v) {
-
-                // Create a new ClipData.
-                // This is done in two steps to provide clarity. The convenience method
-                // ClipData.newPlainText() can create a plain text ClipData in one step.
-
-                // Create a new ClipData.Item from the ImageView object's tag
-                ClipData.Item item = new ClipData.Item(v.getTag().toString());
-
-                // Create a new ClipData using the tag as a label, the plain text MIME type, and
-                // the already-created item. This will create a new ClipDescription object within the
-                // ClipData, and set its MIME type entry to "text/plain"
-                ClipData dragData = new ClipData(v.getTag().toString(), new String[]{ ClipDescription.MIMETYPE_TEXT_PLAIN } , item);
-
-                // Instantiates the drag shadow builder.
-                View.DragShadowBuilder myShadow = new MyDragShadowBuilder(newNoteButton);
-
-                // Starts the drag
-
-                v.startDrag(dragData,  // the data to be dragged
-                        myShadow,  // the drag shadow builder
-                        null,      // no need to use local data
-                        0          // flags (not currently used, set to 0)
-                );
-
-                return false;
-            }
-        });
-
         keyboard.setVisibility(View.GONE);
     }
 
@@ -946,44 +918,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
     }
 
-    private static class MyDragShadowBuilder extends View.DragShadowBuilder {
-        private static Drawable shadow;
-
-        public MyDragShadowBuilder(View v) {
-            super(v);
-            shadow = new ColorDrawable(Color.LTGRAY);
-        }
-
-        @Override
-        public void onProvideShadowMetrics (Point size, Point touch) {
-            int width, height;
-
-            width = getView().getWidth() / 2;
-            height = getView().getHeight() / 2;
-
-            // The drag shadow is a ColorDrawable. This sets its dimensions to be the same as the
-            // Canvas that the system will provide. As a result, the drag shadow will fill the
-            // Canvas.
-            shadow.setBounds(0, 0, width, height);
-
-            // Sets the size parameter's width and height values. These get back to the system
-            // through the size parameter.
-            size.set(width, height);
-
-            // Sets the touch point's position to be in the middle of the drag shadow
-            touch.set(width / 2, height / 2);
-        }
-
-        // Defines a callback that draws the drag shadow in a Canvas that the system constructs
-        // from the dimensions passed in onProvideShadowMetrics().
-        @Override
-        public void onDrawShadow(Canvas canvas) {
-
-            // Draws the ColorDrawable in the Canvas passed in from the system.
-            shadow.draw(canvas);
-        }
-    }
-
     private void playSong() {
         musicPlayer.reset();
         String songPath = midiDir + scoreName.substring(0, scoreName.length() - 4) + ".mid";
@@ -1014,7 +948,6 @@ public class ShowScoreActivity extends ActionBarActivity {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 int songTime = musicPlayer.getDuration();
-                Log.e(LOG_TAG, "song time: " + songTime);
                 musicController.seekBar.setMax(songTime);
 
                 updateSeekBarHandler.removeCallbacks(updateSeekBarTask);
@@ -1045,6 +978,17 @@ public class ShowScoreActivity extends ActionBarActivity {
                 return false;
             }
         });
+    }
+
+    public void closeMusicController() {
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
+        musicController.setAnimation(animation);
+        musicController.animate();
+        musicController.setVisibility(View.GONE);
+
+        if(musicPlayer.isPlaying())
+            musicPlayer.pause();
+        playMode = false;
     }
 
     // TODO show what note is playing

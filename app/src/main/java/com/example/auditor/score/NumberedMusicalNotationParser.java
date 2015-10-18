@@ -1,7 +1,6 @@
 package com.example.auditor.score;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -33,15 +32,18 @@ public class NumberedMusicalNotationParser {
         scoreViewGroup = new ScoreViewGroup(showScoreActivity);
         scoreViewGroup.setId(R.id.score_view_group);
 
+        // ViewTreeObserver notify when whole score is ready
         ViewTreeObserver vto = scoreViewGroup.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 scoreViewGroup.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
+                // if the score hasn't shown
                 if (!ShowScoreActivity.scoreContainer.isShown()) {
                     ShowScoreActivity.scoreContainer.setVisibility(View.VISIBLE);
 
+                    // play the loading fade out loading animation
                     ShowScoreActivity.scoreContainer.post(new Runnable() {
                         @Override
                         public void run() {
@@ -69,7 +71,6 @@ public class NumberedMusicalNotationParser {
         MeasureViewGroup curParseMeasure = new MeasureViewGroup(showScoreActivity);
 
         String[] tokens = musicString.split(" ");
-//        for(String t : tokens) Log.d(LOG_TAG, "token: " + t);
 
         // add first part
         scoreViewGroup.printPart(partIndex);
@@ -84,12 +85,10 @@ public class NumberedMusicalNotationParser {
             if(token.equals("") || token.equals(" ")) continue;
             String s = token.substring(0,1);
             switch (s) {
-                case "K":
-//                    Log.e(getClass().getName(), "key signature: " + token);
+                case "K": // it's a key signature token
                     break;
 
-                case "T":
-//                    Log.e(getClass().getName(), "tempo: " + token);
+                case "T": // it's a tempo token
                     break;
 
                 case "|":
@@ -108,8 +107,7 @@ public class NumberedMusicalNotationParser {
 
                     // add a new note view group
                     parseNoteContext(token);
-                    addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
+                    addNoteAndWord(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                     break;
             }
@@ -127,8 +125,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.duration = "-"; // indicate beam view that this note is a duration note
                 noteContext.tieEnd = false;
                 for(int i = 0; i < 3; i++) {
-                    addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                    curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
+                    addNoteAndWord(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                 }
             }
@@ -138,8 +135,7 @@ public class NumberedMusicalNotationParser {
                 noteContext.note = durationNote;
                 noteContext.duration = "-"; // indicate beam view that this note is a duration note
                 noteContext.tieEnd = false;
-                addNote(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
-                curParseMeasure.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.equals(""), !noteContext.dot.equals(""));
+                addNoteAndWord(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                 noteViewGroupIndex++;
             }
         }
@@ -220,13 +216,12 @@ public class NumberedMusicalNotationParser {
         }
     }
 
-    private void addNote(int measureId, int partId, int noteViewGroupIndex) {
+    private void addNoteAndWord(int measureId, int partId, int noteViewGroupIndex) {
         PartViewGroup partViewGroup = (PartViewGroup) scoreViewGroup.findViewById(partId);
         MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
         if(noteViewGroupIndex == 0) measureViewGroup.printBarWidthView();
 
-//        Log.e(LOG_TAG, "note: " + noteContext.note + ", accidental: " + noteContext.accidental + ", octave: " + noteContext.octave + ", duration: " + noteContext.duration + ", tieStart: " + noteContext.tieStart + ", tieEnd: " + noteContext.tieEnd);
-        measureViewGroup.printNote(noteContext.note, noteContext.accidental, noteContext.dot, noteContext.octave, noteContext.duration, noteContext.tieStart, noteContext.tieEnd, noteViewGroupIndex);
+        measureViewGroup.printNoteAndWord(noteContext, noteViewGroupIndex);
 
         // store tie information
         if(noteContext.tieEnd) {
@@ -243,25 +238,5 @@ public class NumberedMusicalNotationParser {
         return scoreViewGroup;
     }
 
-    class NoteContext {
-        String note = "";
-        String octave = "";
-        String accidental = "";
-        Boolean tieEnd = null;
-        String duration = ""; // i, s, ,t ,x
-        Boolean tieStart = false;
-        String dot = "";
-        String word = "";
-
-        void printNoteContext() {
-            Log.e(getClass().getName(), "note: " + note);
-            Log.e(getClass().getName(), "octave: " + octave);
-            Log.e(getClass().getName(), "accidental: " + accidental);
-            Log.e(getClass().getName(), "tieEnd: " + tieEnd);
-            Log.e(getClass().getName(), "duration: " + duration);
-            Log.e(getClass().getName(), "tieStart: " + tieStart);
-            Log.e(getClass().getName(), "dot: " + dot);
-        }
-    }
 }
 // TODO smart phone loop station

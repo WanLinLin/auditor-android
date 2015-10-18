@@ -4,12 +4,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
 
 /**
- * Created by wanlin on 15/9/10.
+ * Created by Wan Lin on 15/9/10.
+ * WordView
  */
 public class WordView extends View {
     private int width;
@@ -19,12 +21,31 @@ public class WordView extends View {
     private boolean hasAccidentalView;
     private boolean hasDottedView;
 
+    public WordView(Context context) {
+        super(context);
+        init();
+    }
+
+    public WordView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public WordView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
     public WordView(Context context, boolean hasAccidentalView, boolean hasDottedView) {
         super(context);
         this.height = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_HEIGHT;
         this.hasAccidentalView = hasAccidentalView;
         this.hasDottedView = hasDottedView;
 
+        init();
+    }
+
+    private void init() {
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
     }
@@ -34,12 +55,13 @@ public class WordView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+        height = ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT;
         if(hasAccidentalView)
             width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
         if(hasDottedView)
             width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
 
-        setMeasuredDimension(width, ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT);
+        setMeasuredDimension(width, height);
     }
 
     @Override

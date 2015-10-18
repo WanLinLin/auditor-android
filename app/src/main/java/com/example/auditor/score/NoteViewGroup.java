@@ -29,16 +29,22 @@ public class NoteViewGroup extends RelativeLayout {
 
     public NoteViewGroup(Context context) {
         super(context);
+        this.context = context;
+        this.hasAccidentalView = false;
+        this.hasDottedView = false;
+        this.hasBeamView = false;
+        this.tieStart = false;
+        this.tieEnd = false;
     }
 
-    public NoteViewGroup(Context context, boolean hasAccidentalView, boolean hasBeamView, boolean hasDottedView, boolean tieStart, boolean tieEnd) {
+    public NoteViewGroup(Context context, NoteContext noteContext) {
         super(context);
         this.context = context;
-        this.hasAccidentalView = hasAccidentalView;
-        this.hasBeamView = hasBeamView;
-        this.hasDottedView = hasDottedView;
-        this.tieStart = tieStart;
-        this.tieEnd = tieEnd;
+        this.hasAccidentalView = !noteContext.accidental.isEmpty();
+        this.hasBeamView = !noteContext.duration.isEmpty();
+        this.hasDottedView = !noteContext.dot.isEmpty();
+        this.tieStart = noteContext.tieStart;
+        this.tieEnd = noteContext.tieEnd;
 
         width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
         if(hasAccidentalView)
@@ -73,49 +79,73 @@ public class NoteViewGroup extends RelativeLayout {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if(ShowScoreActivity.scoreEditMode) {
-                    curEditNote = NoteViewGroup.this;
-
-                    NumberView numberView = (NumberView)findViewById(R.id.number_view);
-                    AccidentalView accidentalView = (AccidentalView)findViewById(R.id.accidental_view);
-                    DottedView dottedView = (DottedView)findViewById(R.id.dotted_view);
-                    BeamView beamView = (BeamView)findViewById(R.id.beam_view);
-                    OctaveView octaveView = (OctaveView)findViewById(R.id.octave_view);
-
-                    if(numberView != null) ShowScoreActivity.numberButton.setNote(numberView.getNote());
-                    else ShowScoreActivity.numberButton.setNote("R");
-
-                    if(accidentalView != null) ShowScoreActivity.accidentalButton.setAccidental(accidentalView.getAccidental());
-                    else ShowScoreActivity.accidentalButton.setAccidental("");
-
-                    if(dottedView != null) ShowScoreActivity.dottedButton.setDot(dottedView.getDot());
-                    else ShowScoreActivity.dottedButton.setDot("");
-
-                    if(beamView != null) ShowScoreActivity.beamButton.setDuration(beamView.getDuration());
-                    else ShowScoreActivity.beamButton.setDuration("");
-
-                    if(octaveView != null) OctaveButton.setOctave(octaveView.getOctave());
-                    else OctaveButton.setOctave("");
-                    ShowScoreActivity.topOctaveButton.invalidate();
-                    ShowScoreActivity.bottomOctaveButton.invalidate();
-
-                    if(!ShowScoreActivity.keyboard.isShown()) {
-                        ShowScoreActivity.keyboard.setVisibility(VISIBLE);
-                        Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
-                        ShowScoreActivity.keyboard.setAnimation(animation);
-                        ShowScoreActivity.keyboard.animate();
-                    }
-                    else {
-                        ShowScoreActivity.numberButton.invalidate();
-                        ShowScoreActivity.accidentalButton.invalidate();
-                        ShowScoreActivity.dottedButton.invalidate();
-                        ShowScoreActivity.beamButton.invalidate();
-                    }
-                }
+                collectNoteContextToEditButton();
                 break;
         }
 
         return super.onTouchEvent(event);
+    }
+
+    public void collectNoteContextToEditButton() {
+        if(ShowScoreActivity.scoreEditMode) {
+            curEditNote = NoteViewGroup.this;
+
+            NumberView numberView = (NumberView)findViewById(R.id.number_view);
+            AccidentalView accidentalView = (AccidentalView)findViewById(R.id.accidental_view);
+            DottedView dottedView = (DottedView)findViewById(R.id.dotted_view);
+            BeamView beamView = (BeamView)findViewById(R.id.beam_view);
+            OctaveView octaveView = (OctaveView)findViewById(R.id.octave_view);
+
+            String note;
+            if(numberView != null) {
+                note = numberView.getNote();
+                ShowScoreActivity.numberButton.setNote(note);
+            }
+            else {
+                ShowScoreActivity.numberButton.setNote("R");
+                note = "R";
+            }
+
+            if(accidentalView != null) ShowScoreActivity.accidentalButton.setAccidental(accidentalView.getAccidental());
+            else ShowScoreActivity.accidentalButton.setAccidental("");
+
+            if(dottedView != null) ShowScoreActivity.dottedButton.setDot(dottedView.getDot());
+            else ShowScoreActivity.dottedButton.setDot("");
+
+            if(beamView != null) ShowScoreActivity.beamButton.setDuration(beamView.getDuration());
+            else ShowScoreActivity.beamButton.setDuration("");
+
+            if(octaveView != null) {
+                if(note.equals("R")) {
+                    ShowScoreActivity.topOctaveButton.setEnabled(false);
+                    ShowScoreActivity.bottomOctaveButton.setEnabled(false);
+//                            OctaveButton.setOctave(octaveView.getOctave());
+                }
+                else {
+                    ShowScoreActivity.topOctaveButton.setEnabled(true);
+                    ShowScoreActivity.bottomOctaveButton.setEnabled(true);
+                    OctaveButton.setOctave(octaveView.getOctave().equals("") ? "4" : octaveView.getOctave());
+                }
+            }
+            else {
+                OctaveButton.setOctave("4");
+            }
+            ShowScoreActivity.topOctaveButton.invalidate();
+            ShowScoreActivity.bottomOctaveButton.invalidate();
+
+            if(!ShowScoreActivity.keyboard.isShown()) {
+                ShowScoreActivity.keyboard.setVisibility(VISIBLE);
+                Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
+                ShowScoreActivity.keyboard.setAnimation(animation);
+                ShowScoreActivity.keyboard.animate();
+            }
+            else {
+                ShowScoreActivity.numberButton.invalidate();
+                ShowScoreActivity.accidentalButton.invalidate();
+                ShowScoreActivity.dottedButton.invalidate();
+                ShowScoreActivity.beamButton.invalidate();
+            }
+        }
     }
 
     public void printBlankView() {

@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Vibrator;
 import android.text.method.TextKeyListener;
+import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -29,11 +30,10 @@ import java.util.ArrayList;
  */
 public class PartViewGroup extends RelativeLayout {
     private static final String LOG_TAG = PartViewGroup.class.getName();
-    private static final boolean SHOW_TIE_VIEW_COLOR = false;
     private static int tieStrokeWidth;
     private static GestureDetector gestureDetector;
 
-    private Context context;
+    private ShowScoreActivity showScoreActivity;
 
     private static String LYRIC_EDIT_MODE = "";
     private static String SCORE_EDIT_MODE = "";
@@ -56,12 +56,31 @@ public class PartViewGroup extends RelativeLayout {
 
     public PartViewGroup(Context context) {
         super(context);
-        this.context = context;
-        LYRIC_EDIT_MODE = context.getString(R.string.lyric_edit_mode);
-        SCORE_EDIT_MODE = context.getString(R.string.score_edit_mode);
+        init();
+    }
+
+    public PartViewGroup(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public PartViewGroup(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    public PartViewGroup(ShowScoreActivity showScoreActivity) {
+        super(showScoreActivity);
+        this.showScoreActivity = showScoreActivity;
+        init();
+    }
+
+    private void init() {
+        LYRIC_EDIT_MODE = getContext().getString(R.string.lyric_edit_mode);
+        SCORE_EDIT_MODE = getContext().getString(R.string.score_edit_mode);
 
         tieInfo = new ArrayList<>();
-        gestureDetector = new GestureDetector(context, new mGestureDetector());
+        gestureDetector = new GestureDetector(showScoreActivity, new mGestureDetector());
 
         tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
         tieStrokeWidth = ShowScoreActivity.NoteChildViewDimension.TIE_STROKE_WIDTH;
@@ -70,7 +89,7 @@ public class PartViewGroup extends RelativeLayout {
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
 
-        tieViewGroup = new TieViewGroup(context);
+        tieViewGroup = new TieViewGroup(showScoreActivity);
         tieViewGroup.setId(R.id.tie_view_group);
 
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
@@ -97,7 +116,7 @@ public class PartViewGroup extends RelativeLayout {
     }
 
     public void printBarView(int measureViewGroupId) {
-        BarView barView = new BarView(context);
+        BarView barView = new BarView(getContext());
         RelativeLayout.LayoutParams lp =
                 new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -113,7 +132,7 @@ public class PartViewGroup extends RelativeLayout {
 
     public void printMeasure(int i) {
         int measureViewGroupId = i + ShowScoreActivity.measureStartId;
-        MeasureViewGroup measureViewGroup = new MeasureViewGroup(context);
+        MeasureViewGroup measureViewGroup = new MeasureViewGroup(getContext());
 
         RelativeLayout.LayoutParams rlp =
                 new LayoutParams(
@@ -151,9 +170,7 @@ public class PartViewGroup extends RelativeLayout {
                 tieViewHeight = ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT;
 
                 RectF rectF = new RectF(tieStrokeWidth/2, tieViewHeight/2, rectWidth + tieStrokeWidth/2, tieViewHeight*3/2);
-                TieView tieView = new TieView(context, rectF);
-                if(SHOW_TIE_VIEW_COLOR)
-                    tieView.setBackgroundColor(Color.RED);
+                TieView tieView = new TieView(getContext(), rectF);
 
                 RelativeLayout.LayoutParams rlp =
                         new RelativeLayout.LayoutParams(
@@ -183,14 +200,12 @@ public class PartViewGroup extends RelativeLayout {
             if (y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
                 if(ShowScoreActivity.lyricEditMode) {
                     if(lyricEditing) return true;
-
                     searchClickWordView(x);
-
-                    /* if clicked word is empty, return */
                     if(clickWord == null) return true; // click on not word view area
-                    NoteViewGroup note =
-                            (NoteViewGroup)clickMeasure.findViewById(clickWord.getId() - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
+                    NoteViewGroup note = (NoteViewGroup)clickMeasure.findViewById(
+                                    clickWord.getId() - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
                     NumberView numberView = (NumberView)note.findViewById(R.id.number_view);
+
                     if(clickWord.getWord().equals("") && !note.isTieEnd() && !"R-".contains(numberView.getNote())) {
                         lyricEditStartMeasure = clickMeasure;
                         lyricEditStartWord = clickWord;
@@ -204,13 +219,13 @@ public class PartViewGroup extends RelativeLayout {
                         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
 
-                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
-                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
+                        showScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        showScoreActivity.my = e.getRawY(); // y position relative to screen
                         return true;
                     }
                     else if(clickWord.getWord().equals("") && (note.isTieEnd() || "R-".contains(numberView.getNote())) ) {
-                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
-                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
+                        showScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        showScoreActivity.my = e.getRawY(); // y position relative to screen
                         return true;
                     }
 
@@ -225,7 +240,7 @@ public class PartViewGroup extends RelativeLayout {
                     ShowScoreActivity.lyricInputACTextView.setSelection(originalLyrics.length());
                     ShowScoreActivity.lyricInputACTextView.requestFocus();
 
-                    /* show keyboard */
+                    // show keyboard
                     addArrow();
                     lyricEditing = true;
                     ShowScoreActivity.setLyricRecommendGroupVisibility(true);
@@ -240,69 +255,82 @@ public class PartViewGroup extends RelativeLayout {
                 PartViewGroup.curEditPart = PartViewGroup.this;
             }
 
-            ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
-            ShowScoreActivity.my = e.getRawY(); // y position relative to screen
+            showScoreActivity.mx = e.getRawX(); // x position relative to screen
+            showScoreActivity.my = e.getRawY(); // y position relative to screen
             return true; // onDown must return true
         }
 
         @Override
         public void onLongPress(MotionEvent e) {
-            float x = e.getX();
             float y = e.getY();
 
-            // long press on lyric view
+            // long press on lyric view, change lyric edit mode
             if(y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
                 ShowScoreActivity.lyricEditMode = !ShowScoreActivity.lyricEditMode;
                 if(ShowScoreActivity.scoreEditMode) ShowScoreActivity.scoreEditMode = false;
             }
-            else if(y < ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT) { // long press on note view
+            // long press on note view, change score edit mode
+            else if(y < ShowScoreActivity.NoteChildViewDimension.TIE_VIEW_HEIGHT + ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_HEIGHT) {
                 ShowScoreActivity.scoreEditMode = !ShowScoreActivity.scoreEditMode;
                 if(ShowScoreActivity.lyricEditMode) ShowScoreActivity.lyricEditMode = false;
             }
 
+            // is editing lyric
             if(ShowScoreActivity.lyricEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
-                ShowScoreActivity.actionBar.setTitle(LYRIC_EDIT_MODE);
-                ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
-                ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+                showScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
+                showScoreActivity.actionBar.setTitle(LYRIC_EDIT_MODE);
+                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
 
                 ShowScoreActivity.setLyricRecommendGroupVisibility(true);
             }
+            // is not editing lyric
             else {
-                /* hide lyric input text view and recommend button */
+                // hide lyric input text view and recommend button
                 ShowScoreActivity.setLyricRecommendGroupVisibility(false);
 
-                /* close keyboard */
-                InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                // close keyboard
+                InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
 
                 if(lyricEditStartMeasure != null) saveWordsIntoWordView();
             }
 
+            // is editing score
             if(ShowScoreActivity.scoreEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
-                ShowScoreActivity.actionBar.setTitle(SCORE_EDIT_MODE);
-                ShowScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
-                ShowScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+                showScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
+                showScoreActivity.actionBar.setTitle(SCORE_EDIT_MODE);
+                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
             }
+            // is not editing score
             else if(!ShowScoreActivity.scoreEditMode && ShowScoreActivity.keyboard.isShown()){
-                Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_out);
+                // close edit score keyboard
+                Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.keyboard_swipe_out);
                 ShowScoreActivity.keyboard.setAnimation(animation);
                 ShowScoreActivity.keyboard.animate();
                 ShowScoreActivity.keyboard.setVisibility(GONE);
             }
 
-            if(!ShowScoreActivity.scoreEditMode && !ShowScoreActivity.lyricEditMode) {
-                ShowScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
+            if(ShowScoreActivity.scoreEditMode || ShowScoreActivity.lyricEditMode) {
+                ShowScoreActivity.playMode = false;
+                showScoreActivity.closeMusicController();
             }
 
-            Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            // is not editing anything
+            if(!ShowScoreActivity.scoreEditMode && !ShowScoreActivity.lyricEditMode) {
+                // set actionBar back to default color
+                showScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
+            }
+
+            // vibrate when change to any mode
+            Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
             v.vibrate(100);
         }
     }
 
     private String collectWords() {
-        /* collect word views' words into original lyrics */
+        // collect word views' words into original lyrics
         String originalLyrics = "";
         if(lyricEditStartMeasure == null) lyricEditStartMeasure = (MeasureViewGroup)findViewById(ShowScoreActivity.measureStartId);
         if(lyricEditStartWord == null) lyricEditStartWord = (WordView)lyricEditStartMeasure.findViewById(ShowScoreActivity.wordStartId);
@@ -330,7 +358,6 @@ public class PartViewGroup extends RelativeLayout {
                 curCollectWord.invalidate();
             }
         }
-
         return originalLyrics;
     }
 
@@ -398,7 +425,7 @@ public class PartViewGroup extends RelativeLayout {
     }
 
     private void addArrow(){
-        arrow = new ImageView(context);
+        arrow = new ImageView(getContext());
         arrow.setId(R.id.lyric_arrow);
         arrow.setImageResource(R.drawable.lyric_arrow);
         arrow.setEnabled(false);
@@ -411,7 +438,7 @@ public class PartViewGroup extends RelativeLayout {
         lp.topMargin = lyricEditStartWord.getTop() + lyricEditStartWord.getHeight();
         arrow.setLayoutParams(lp);
 
-        Animation animation = AnimationUtils.loadAnimation(context, R.anim.floating);
+        Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.floating);
         arrow.startAnimation(animation);
 
         this.addView(arrow);
