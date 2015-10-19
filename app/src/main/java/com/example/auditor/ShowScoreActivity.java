@@ -1,11 +1,14 @@
 package com.example.auditor;
 
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -21,6 +24,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +39,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -688,7 +693,8 @@ public class ShowScoreActivity extends ActionBarActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+                    if (PartViewGroup.lyricEditStartMeasure != null)
+                        PartViewGroup.saveWordsIntoWordView();
 
                     /* hide lyric input text view and recommend button */
                     setLyricRecommendGroupVisibility(false);
@@ -719,6 +725,165 @@ public class ShowScoreActivity extends ActionBarActivity {
         topOctaveButton.setPosition(true);
         bottomOctaveButton = (OctaveButton)findViewById(R.id.edit_bottom_octave_button);
         bottomOctaveButton.setPosition(false);
+
+        final ImageButton newNoteButton = (ImageButton) findViewById(R.id.new_note_button);
+        newNoteButton.setTag("NewNoteButton");
+        newNoteButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // Create a new ClipData.Item from the NewNoteButton's tag
+                ClipData.Item item = new ClipData.Item(v.getTag().toString());
+                // Create a new ClipData using the tag as a label
+                ClipData dragData =
+                        new ClipData(
+                                v.getTag().toString(),
+                                new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN},
+                                item
+                        );
+                // Instantiates the drag shadow builder.
+                View.DragShadowBuilder myShadow = new MyDragShadowBuilder(newNoteButton);
+
+                // Starts the drag
+                v.startDrag(dragData,   // the data to be dragged
+                        myShadow,       // the drag shadow builder
+                        null,           // no need to use local data
+                        0               // flags (not currently used, set to 0)
+                );
+
+                return false;
+            }
+        });
+
+        final ImageButton deleteNoteButton = (ImageButton) findViewById(R.id.delete_note_button);
+        deleteNoteButton.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
+                        if (event.getClipDescription().getLabel().toString().equals("NoteViewGroup")) {
+                            // if the drag event is sent from NoteViewGroup
+                            ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
+                            i.setImageResource(R.drawable.bin_open);
+                            i.invalidate();
+                            return true;
+                        }
+                        return false;
+
+                    case DragEvent.ACTION_DRAG_ENTERED: // touch point enter the view bound
+                        deleteNoteButton.setBackgroundColor(Color.LTGRAY);
+                        deleteNoteButton.invalidate();
+                        return true;
+
+                    case DragEvent.ACTION_DRAG_LOCATION: // touch point is in the view bound
+                        return true;
+
+                    case DragEvent.ACTION_DRAG_EXITED: // touch point leave the view bound
+                        deleteNoteButton.setBackgroundColor(getResources().getColor(R.color.edit_note_button_color));
+                        deleteNoteButton.invalidate();
+                        return true;
+
+                    case DragEvent.ACTION_DROP:
+                        deleteNoteButton.setBackgroundColor(getResources().getColor(R.color.edit_note_button_color));
+                        deleteNoteButton.invalidate();
+
+                        // Gets the item containing the dragged data
+                        ClipData.Item item = event.getClipData().getItemAt(0);
+                        Intent data = item.getIntent();
+
+                        // remove note info
+                        int noteId = data.getIntExtra("note id", 0);
+                        int measureId = data.getIntExtra("measure id", 0);
+                        int partId = data.getIntExtra("part id", 0);
+
+                        PartViewGroup p = (PartViewGroup)score.findViewById(partId);
+                        MeasureViewGroup m = (MeasureViewGroup)p.findViewById(measureId);
+                        // remove note
+                        m.removeView(m.findViewById(noteId));
+                        // remove word
+                        m.removeView(m.findViewById(noteId - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId));
+
+                        // realign all notes and words behind the new note
+                        for(int i = noteId + 1; i < ShowScoreActivity.wordStartId; i++) {
+                            // realign note
+                            NoteViewGroup n = (NoteViewGroup)m.findViewById(i);
+                            if (n == null) break; // search beyond the last note, break
+
+                            int newNoteId = i - 1;
+                            n.setId(newNoteId);
+                            RelativeLayout.LayoutParams nlp = new RelativeLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                            nlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                            if(newNoteId == ShowScoreActivity.noteStartId) {
+                                nlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
+                            }
+                            else {
+                                nlp.addRule(RelativeLayout.RIGHT_OF, newNoteId - 1);
+                            }
+                            n.setLayoutParams(nlp);
+
+                            // realign word
+                            WordView w = (WordView) m.findViewById(i - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
+                            int newWordId = i - 1 - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId;
+
+                            w.setId(newWordId);
+                            RelativeLayout.LayoutParams wlp =
+                                    new RelativeLayout.LayoutParams(
+                                            RelativeLayout.LayoutParams.WRAP_CONTENT,
+                                            RelativeLayout.LayoutParams.WRAP_CONTENT);
+                            wlp.addRule(RelativeLayout.BELOW, R.id.bar_width_view);
+                            if(newWordId == ShowScoreActivity.wordStartId) {
+                                Log.e(LOG_TAG, "new word id: " + newWordId);
+                                wlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
+                            }
+                            else {
+                                wlp.addRule(RelativeLayout.RIGHT_OF, newWordId - 1);
+                                Log.e(LOG_TAG, "new word id: " + newWordId);
+                            }
+                            w.setLayoutParams(wlp);
+                        }
+
+                        // if the measure has no note
+                        if(m.getChildCount() == 1) { // number 1 is BarWidthView
+                            // remove the empty measure
+                            p.removeView(m);
+
+                            // realign all part
+                            for(int i = measureId + 1; i < ShowScoreActivity.partStartId; i++) {
+                                MeasureViewGroup measure = (MeasureViewGroup) p.findViewById(i);
+                                if (measure == null) break; // search beyond the last note, break
+
+                                int newMeasureId = i - 1;
+                                measure.setId(newMeasureId);
+                                RelativeLayout.LayoutParams plp = new RelativeLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                                plp.addRule(RelativeLayout.BELOW, R.id.tie_view_group);
+                                if(newMeasureId == ShowScoreActivity.measureStartId) {
+                                    plp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                                }
+                                else {
+                                    plp.addRule(RelativeLayout.RIGHT_OF, newMeasureId - 1);
+                                }
+                                measure.setLayoutParams(plp);
+                            }
+                        }
+
+                        p.requestLayout();
+                        return true;
+
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
+                        i.setImageResource(R.drawable.bin_close);
+                        i.invalidate();
+                        return true;
+
+                    default: // An unknown action type was received.
+                        Log.e("DragDrop Example", "Unknown action type received by OnDragListener.");
+                        return false;
+                }
+            }
+        });
 
         keyboard.setVisibility(View.GONE);
     }
@@ -915,6 +1080,38 @@ public class ShowScoreActivity extends ActionBarActivity {
             this.addView(playButton);
             this.addView(seekBar);
             rootView.addView(this);
+        }
+    }
+
+    public static class MyDragShadowBuilder extends View.DragShadowBuilder {
+        private static Drawable shadow;
+
+        public MyDragShadowBuilder(View v) {
+            super(v);
+            shadow = new ColorDrawable(Color.LTGRAY);
+        }
+
+        @Override
+        public void onProvideShadowMetrics (Point size, Point touch) {
+            int width, height;
+
+            width = (int) (getView().getWidth() * 0.7);
+            height = (int) (getView().getHeight() * 0.7);
+
+            // shadow rectangle
+            shadow.setBounds(0, 0, width, height);
+
+            // Sets the size parameter's width and height values. These get back to the system
+            // through the size parameter.
+            size.set(width, height);
+
+            // Sets the touch point's position to be in the middle of the drag shadow
+            touch.set(width / 2, height / 3 * 2);
+        }
+
+        @Override
+        public void onDrawShadow(Canvas canvas) {
+            shadow.draw(canvas);
         }
     }
 

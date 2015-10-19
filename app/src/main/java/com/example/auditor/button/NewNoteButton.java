@@ -110,7 +110,7 @@ public class NewNoteButton extends View {
             size.set(width, height);
 
             // Sets the touch point's position to be in the middle of the drag shadow
-            touch.set(width / 2, height / 2);
+            touch.set(width / 2, height / 3);
         }
 
         @Override

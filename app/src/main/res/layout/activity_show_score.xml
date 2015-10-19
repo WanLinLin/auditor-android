@@ -102,12 +102,37 @@
         android:background="@color/edit_score_keyboard_bgColor"
         android:visibility="gone">
 
-        <com.example.auditor.button.NewNoteButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <!-- new note button -->
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:id="@+id/new_note_button"
-            android:background="?attr/selectableItemBackground"
-            />
+            android:src="@drawable/add"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:padding="15dp"
+            android:antialias="true"
+            android:contentDescription="new note button"
+            android:background="@color/edit_note_button_color" />
+
+        <!-- delete note button -->
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/delete_note_button"
+            android:src="@drawable/bin_close"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:padding="15dp"
+            android:antialias="true"
+            android:contentDescription="delete note button"
+            android:background="@color/edit_note_button_color" />
 
         <RelativeLayout
             android:layout_width="wrap_content"

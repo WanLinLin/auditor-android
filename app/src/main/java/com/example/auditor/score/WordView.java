@@ -46,8 +46,12 @@ public class WordView extends View {
     }
 
     private void init() {
+        height = ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT;
+
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize((int) (height * 0.6));
+        textPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     @Override
@@ -67,9 +71,6 @@ public class WordView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        textPaint.setTextSize((int) (height * 0.5));
-        textPaint.setTextAlign(Paint.Align.CENTER);
 
         int x = width / 2;
         int y = (int) ((height / 2) - ((textPaint.descent() + textPaint.ascent()) / 2));

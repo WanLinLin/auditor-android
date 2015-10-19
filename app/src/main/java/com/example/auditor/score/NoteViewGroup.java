@@ -1,7 +1,11 @@
 package com.example.auditor.score;
 
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
+import android.content.Intent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
@@ -35,6 +39,8 @@ public class NoteViewGroup extends RelativeLayout {
         this.hasBeamView = false;
         this.tieStart = false;
         this.tieEnd = false;
+
+        init();
     }
 
     public NoteViewGroup(Context context, NoteContext noteContext) {
@@ -51,6 +57,47 @@ public class NoteViewGroup extends RelativeLayout {
             width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
         if(hasDottedView)
             width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+        init();
+    }
+
+    private void init() {
+        setTag("NoteViewGroup");
+
+        this.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(ShowScoreActivity.scoreEditMode) {
+                    MeasureViewGroup m = (MeasureViewGroup) getParent();
+                    PartViewGroup p = (PartViewGroup) m.getParent();
+                    MeasureViewGroup.curEditMeasure = m;
+
+                    Intent data = new Intent();
+                    data.putExtra("note id", getId());
+                    data.putExtra("measure id", m.getId());
+                    data.putExtra("part id", p.getId());
+                    // Create a new ClipData.Item from the NewNoteButton's tag
+                    ClipData.Item item = new ClipData.Item(data);
+                    // Create a new ClipData using the tag as a label
+                    ClipData dragData =
+                            new ClipData(
+                                    v.getTag().toString(),
+                                    new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN},
+                                    item
+                            );
+                    // Instantiates the drag shadow builder.
+                    View.DragShadowBuilder myShadow = new ShowScoreActivity.MyDragShadowBuilder(NoteViewGroup.this);
+
+                    // Starts the drag
+                    v.startDrag(dragData,   // the data to be dragged
+                            myShadow,       // the drag shadow builder
+                            null,           // no need to use local data
+                            0               // flags (not currently used, set to 0)
+                    );
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -88,6 +135,7 @@ public class NoteViewGroup extends RelativeLayout {
 
     public void collectNoteContextToEditButton() {
         if(ShowScoreActivity.scoreEditMode) {
+            MeasureViewGroup.curEditMeasure = (MeasureViewGroup)getParent();
             curEditNote = NoteViewGroup.this;
 
             NumberView numberView = (NumberView)findViewById(R.id.number_view);

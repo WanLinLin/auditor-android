@@ -1,11 +1,9 @@
 package com.example.auditor.score;
 
-import android.content.ClipDescription;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.DragEvent;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
@@ -39,25 +37,13 @@ public class MeasureViewGroup extends RelativeLayout {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (ShowScoreActivity.scoreEditMode) {
-                    curEditMeasure = MeasureViewGroup.this;
-                }
-                break;
-        }
-        return super.onTouchEvent(event);
-    }
-
-    @Override
     public boolean onDragEvent(DragEvent event) {
         int x = (int) event.getX();
 
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-                // Determines if this View can accept the dragged data
-                if (event.getClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                if (event.getClipDescription().getLabel().toString().equals("NewNoteButton")) {
+                    // if the drag event is sent from NewNoteButton
                     return true;
                 }
                 return false;
@@ -71,12 +57,18 @@ public class MeasureViewGroup extends RelativeLayout {
 
                 // reset all note margin and padding to 0
                 for(int i = 0; i < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; i++) {
-                    NoteViewGroup n = (NoteViewGroup)findViewById(ShowScoreActivity.noteStartId + i);
+                    NoteViewGroup n = (NoteViewGroup) findViewById(ShowScoreActivity.noteStartId + i);
                     if(n == null) break; // search beyond the last note, break
 
-                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams)n.getLayoutParams();
+                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) n.getLayoutParams();
                     lp.leftMargin = 0;
                     n.setLayoutParams(lp);
+
+                    WordView w = (WordView) findViewById(ShowScoreActivity.wordStartId + i);
+                    RelativeLayout.LayoutParams wlp = (RelativeLayout.LayoutParams) w.getLayoutParams();
+                    wlp.addRule(BELOW, R.id.bar_width_view);
+                    wlp.leftMargin = 0;
+                    w.setLayoutParams(wlp);
                 }
                 setPadding(0, 0, 0, 0);
 
@@ -95,6 +87,12 @@ public class MeasureViewGroup extends RelativeLayout {
                             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) n.getLayoutParams();
                             lp.leftMargin = blankNoteWidth;
                             n.setLayoutParams(lp);
+
+                            WordView w = (WordView) findViewById(ShowScoreActivity.wordStartId + i);
+                            RelativeLayout.LayoutParams wlp = (RelativeLayout.LayoutParams) w.getLayoutParams();
+                            wlp.addRule(BELOW, R.id.bar_width_view);
+                            wlp.leftMargin = blankNoteWidth;
+                            w.setLayoutParams(wlp);
                             break;
                         }
                         prevNoteCenterX = n.getLeft() + n.getWidth() / 2;
@@ -110,9 +108,15 @@ public class MeasureViewGroup extends RelativeLayout {
                     NoteViewGroup n = (NoteViewGroup)findViewById(ShowScoreActivity.noteStartId + i);
                     if(n == null) break; // search beyond the last note, break
 
-                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams)n.getLayoutParams();
+                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) n.getLayoutParams();
                     lp.leftMargin = 0;
                     n.setLayoutParams(lp);
+
+                    WordView w = (WordView) findViewById(ShowScoreActivity.wordStartId + i);
+                    RelativeLayout.LayoutParams wlp = (RelativeLayout.LayoutParams) w.getLayoutParams();
+                    wlp.addRule(BELOW, R.id.bar_width_view);
+                    wlp.leftMargin = 0;
+                    w.setLayoutParams(wlp);
                 }
                 setPadding(0, 0, 0, 0);
                 return true;
@@ -154,9 +158,10 @@ public class MeasureViewGroup extends RelativeLayout {
                     NoteViewGroup n = (NoteViewGroup)findViewById(newNoteId + 1);
                     n.collectNoteContextToEditButton();
                 }
-                else {
+                else { // if is not drop on the last note
                     // realign all notes and words behind the new note
                     for (int i = (getChildCount() - 1) / 2; i > newNoteId - 1; i--) {
+                        // realign note
                         NoteViewGroup n = (NoteViewGroup) findViewById(i);
                         if (n == null) break; // search beyond the last note, break
 
@@ -167,7 +172,20 @@ public class MeasureViewGroup extends RelativeLayout {
                         nlp.addRule(ALIGN_PARENT_TOP);
                         nlp.addRule(RIGHT_OF, i);
                         n.setLayoutParams(nlp);
+
+                        // realign word
+                        WordView w = (WordView) findViewById(i - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
+
+                        w.setId(i + 1 - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
+                        RelativeLayout.LayoutParams wlp =
+                                new RelativeLayout.LayoutParams(
+                                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+                        wlp.addRule(RelativeLayout.BELOW, R.id.bar_width_view);
+                        wlp.addRule(RIGHT_OF, i - ShowScoreActivity.noteStartId + ShowScoreActivity.wordStartId);
+                        w.setLayoutParams(wlp);
                     }
+
 
                     // create a new note insert into the measure
                     NoteContext noteContext = new NoteContext();
@@ -266,7 +284,7 @@ public class MeasureViewGroup extends RelativeLayout {
     }
 
     public void printWord(String word, int i, boolean hasAccidentalView, boolean hasDottedView) {
-        int noteViewGroupId = i + ShowScoreActivity.noteStartId;
+        int wordId = i + ShowScoreActivity.wordStartId;
 
         WordView wordView = new WordView(context, hasAccidentalView, hasDottedView);
         wordView.setId(i + ShowScoreActivity.wordStartId);
@@ -278,12 +296,12 @@ public class MeasureViewGroup extends RelativeLayout {
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         rlp.addRule(RelativeLayout.BELOW, R.id.bar_width_view);
-        if (noteViewGroupId == ShowScoreActivity.noteStartId) { // is the first word, make it align left
+        if (wordId == ShowScoreActivity.wordStartId) { // is the first word, make it align left
             rlp.addRule(RelativeLayout.RIGHT_OF, R.id.bar_width_view);
         }
-        else if (noteViewGroupId > ShowScoreActivity.noteStartId) { // not the first word, make it right of the left one
+        else if (wordId > ShowScoreActivity.wordStartId) { // not the first word, make it right of the left one
             rlp.addRule(RelativeLayout.RIGHT_OF,
-                    noteViewGroupId - 1);
+                    wordId - 1);
         }
 
         wordView.setLayoutParams(rlp);
