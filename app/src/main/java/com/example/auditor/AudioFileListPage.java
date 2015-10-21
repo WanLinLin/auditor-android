@@ -159,6 +159,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 songPicked(view);
+                view.setSelected(true);
             }
         });
 

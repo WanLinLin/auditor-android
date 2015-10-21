@@ -17,7 +17,6 @@ import com.example.auditor.ShowScoreActivity;
 public class MeasureViewGroup extends RelativeLayout {
     private static final String LOG_TAG = MeasureViewGroup.class.getName();
     private Context context;
-    private int curNoteViewGroupWidth;
 
     public static MeasureViewGroup curEditMeasure;
 
@@ -280,7 +279,6 @@ public class MeasureViewGroup extends RelativeLayout {
         noteViewGroup.printOctaveView(noteContext.octave);
 
         this.addView(noteViewGroup);
-        curNoteViewGroupWidth = noteViewGroup.getViewWidth();
     }
 
     public void printWord(String word, int i, boolean hasAccidentalView, boolean hasDottedView) {
@@ -306,9 +304,5 @@ public class MeasureViewGroup extends RelativeLayout {
 
         wordView.setLayoutParams(rlp);
         this.addView(wordView);
-    }
-
-    public float getCurNoteViewGroupWidth() {
-        return curNoteViewGroupWidth;
     }
 }

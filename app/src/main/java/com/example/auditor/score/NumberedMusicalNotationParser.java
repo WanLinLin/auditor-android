@@ -66,9 +66,10 @@ public class NumberedMusicalNotationParser {
         int partIndex = 0;
         int measureIndex = 0;
         int noteViewGroupIndex = 0;
+        int curParseX;
         curX = 0;
         PartViewGroup curParsePart;
-        MeasureViewGroup curParseMeasure = new MeasureViewGroup(showScoreActivity);
+        MeasureViewGroup curParseMeasure = null;
 
         String[] tokens = musicString.split(" ");
 
@@ -92,20 +93,21 @@ public class NumberedMusicalNotationParser {
                     break;
 
                 case "|":
-                    // print bar view
+                    // a measure end, print BarView
                     curParsePart.printBarView(curParseMeasure.getId());
                     noteViewGroupIndex = 0;
                     curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
                     break;
 
                 default:
+                    // is the fist note of a measure, add a measure
                     if(noteViewGroupIndex == 0) {
                         curParsePart.printMeasure(measureIndex);
                         curParseMeasure = (MeasureViewGroup)scoreViewGroup.findViewById(measureIndex + ShowScoreActivity.measureStartId);
                         measureIndex++;
                     }
 
-                    // add a new note view group
+                    // add a new note
                     parseNoteContext(token);
                     addNoteAndWord(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
@@ -223,15 +225,18 @@ public class NumberedMusicalNotationParser {
 
         measureViewGroup.printNoteAndWord(noteContext, noteViewGroupIndex);
 
+        // the current adding note
+        NoteViewGroup note = (NoteViewGroup)measureViewGroup.findViewById(noteViewGroupIndex + ShowScoreActivity.noteStartId);
+
         // store tie information
         if(noteContext.tieEnd) {
-            partViewGroup.addTieInfo(new Pair<>((int)(curX + measureViewGroup.getCurNoteViewGroupWidth()/2), "end"));
+            partViewGroup.addTieInfo(new Pair<>(curX + note.getViewWidth()/2, "end"));
         }
         if(noteContext.tieStart) {
-            partViewGroup.addTieInfo(new Pair<>((int)(curX + measureViewGroup.getCurNoteViewGroupWidth()/2), "start"));
+            partViewGroup.addTieInfo(new Pair<>(curX + note.getViewWidth()/2, "start"));
         }
 
-        curX += measureViewGroup.getCurNoteViewGroupWidth();
+        curX += note.getViewWidth();
     }
 
     public ScoreViewGroup getScoreViewGroup() {

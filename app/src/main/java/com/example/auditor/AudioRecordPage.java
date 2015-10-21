@@ -2,8 +2,10 @@ package com.example.auditor;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -16,6 +18,7 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.auditor.convert.SongConverter;
 import com.example.auditor.song.ExtAudioRecorder;
 
 import java.io.File;
@@ -28,7 +31,7 @@ import java.io.IOException;
 public class AudioRecordPage extends Fragment{
     private static final String LOG_TAG = "AudioRecordActivity";
     private static final String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
-    private static String mFileName = null;
+    private static String tmpFileName = null;
     private ExtAudioRecorder extAudioRecorder = null;
     private SlidingTabActivity slidingTabActivity;
     public static final int bufferSize = 1024;
@@ -43,7 +46,7 @@ public class AudioRecordPage extends Fragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFileName = wavDir + "tmp.wav";
+        tmpFileName = wavDir + "tmp.wav";
     }
 
     @Override
@@ -107,7 +110,7 @@ public class AudioRecordPage extends Fragment{
     private void startRecording() {
         // false means not compressed
         extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        extAudioRecorder.setOutputFile(mFileName);
+        extAudioRecorder.setOutputFile(tmpFileName);
 
         try { extAudioRecorder.prepare(); }
         catch (IOException e) { Log.e(LOG_TAG, ".prepare() failed"); }
@@ -135,24 +138,21 @@ public class AudioRecordPage extends Fragment{
 
         // set dialog message
         alertDialogBuilder.setCancelable(false)
-                .setPositiveButton(R.string.yes,
+                .setPositiveButton(R.string.yes, // click yes
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File from = new File(mFileName);
-                                File to = new File(wavDir +
-                                        userInput.getText() + ".wav");
+                                String newFileName = userInput.getText() + ".wav";
+                                File from = new File(tmpFileName);
+                                File to = new File(wavDir + newFileName);
 
-                                if(from.renameTo(to)) {
-                                    Toast.makeText(slidingTabActivity,
-                                            getString(R.string.save_successfully),
-                                            Toast.LENGTH_SHORT).show();
-
+                                if(from.renameTo(to)) { // if save successfully
                                     SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
-                                    AudioFileListPage page = (AudioFileListPage)adapter.getPage(SlidingTabAdapter.AUDIO_FILE_LIST);
-                                    page.refreshList();
-                                    slidingTabActivity.getViewPager().setCurrentItem(SlidingTabAdapter.AUDIO_FILE_LIST, true);
+                                    AudioFileListPage audioFileListPage = (AudioFileListPage)adapter.getPage(SlidingTabAdapter.AUDIO_FILE_LIST);
+                                    audioFileListPage.refreshList();
+
+                                    new ConvertSongTask().execute(newFileName);
                                 }
-                                else {
+                                else { // if save failed
                                     Toast.makeText(slidingTabActivity,
                                             getResources().getString(R.string.save_failed),
                                             Toast.LENGTH_SHORT).show();
@@ -160,11 +160,11 @@ public class AudioRecordPage extends Fragment{
                                 setFileName = true;
                             }
                         })
-                .setNegativeButton(R.string.cancel,
+                .setNegativeButton(R.string.cancel, // click no
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
-                                File tmpFile = new File(mFileName);
+                                File tmpFile = new File(tmpFileName);
                                 tmpFile.delete();
                                 setFileName = false;
                             }
@@ -172,5 +172,45 @@ public class AudioRecordPage extends Fragment{
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    private class ConvertSongTask extends AsyncTask<String, Void, Boolean> {
+        private ProgressDialog progress;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progress = ProgressDialog.show(slidingTabActivity, getString(R.string.converting),
+                    getString(R.string.please_wait), true);
+        }
+
+        @Override
+        protected Boolean doInBackground(String... songs) {
+            SongConverter songConverter = new SongConverter(slidingTabActivity);
+
+            Log.e(LOG_TAG, songs[0]);
+            if (!songConverter.setUp(songs[0]))
+                return false;
+
+            songConverter.convert();
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if (aBoolean) {
+                SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
+                ScoreFileListPage scoreFileListPage = (ScoreFileListPage)adapter.getPage(SlidingTabAdapter.SCORE_FILE_LIST);
+                scoreFileListPage.refreshList();
+                slidingTabActivity.getViewPager().setCurrentItem(SlidingTabAdapter.SCORE_FILE_LIST, true);
+
+                Toast.makeText(slidingTabActivity, slidingTabActivity.getString(R.string.success), Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(slidingTabActivity, slidingTabActivity.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+            }
+
+            progress.dismiss();
+        }
     }
 }

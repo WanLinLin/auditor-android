@@ -43,14 +43,13 @@ public class ScoreFileListPage extends Fragment{
 
     public ScoreFileListPage(SlidingTabActivity slidingTabActivity) {
         this.slidingTabActivity = slidingTabActivity;
+        scoreList = new ArrayList<>();
+        getScoreList();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        scoreList = new ArrayList<>();
-        getScoreList();
 
         scoreListView = new ListView(getActivity());
         scoreAdapter = new ScoreAdapter(slidingTabActivity, scoreList, this);

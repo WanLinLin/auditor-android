@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,11 +17,18 @@ public class MainActivity extends Activity {
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private static final String LOG_TAG = "MainActivity";
 
+    // TODO upload lyric using phone id
+    // android phone id
+    private String androidId;
+
     private boolean isPlaying = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.e(LOG_TAG, "android id: " + androidId);
 
         File auditor = new File(auditorDir);
         auditor.mkdir();

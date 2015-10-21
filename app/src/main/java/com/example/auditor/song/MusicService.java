@@ -1,6 +1,5 @@
 package com.example.auditor.song;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -26,7 +25,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
     private static final String LOG_TAG = "MusicService";
-    private static final int NOTIFY_ID = 1;
 
     private String wavDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/wav/";
     private MediaPlayer player;
@@ -93,20 +91,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         Intent notIntent = new Intent(this, SlidingTabActivity.class);
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
-                notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // set up status bar notification
-        // TODO notification onclick would new a music service
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//        builder.setContentIntent(pendInt)
-//                .setSmallIcon(R.drawable.play)
-//                .setTicker(curPlaySong.getTitle())
-//                .setOngoing(true)
-//                .setContentTitle(curPlaySong.getTitle())
-//                .setContentText(curPlaySong.getLastModDate());
-//        Notification not = builder.getNotification();
-//        startForeground(NOTIFY_ID, not);
 
         // send intent to activity
         intent.putExtra("action", "prepared");
@@ -132,8 +116,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onCompletion(MediaPlayer mp) {
         if(mp.getCurrentPosition() > 0){
-//            mp.stop();
-//            mp.reset();
             intent.putExtra("action", "complete");
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }

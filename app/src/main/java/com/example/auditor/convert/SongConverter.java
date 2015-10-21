@@ -402,8 +402,12 @@ public class SongConverter {
      * Delete Rests at the beginning and at the end of NoteResult array.
      */
     private void deleteBeginAndEndRests() {
+        if(noteResults.isEmpty()) return;
+
         // delete pause at the beginning
         while(true) {
+            if(noteResults.isEmpty()) break; // delete to no any notes
+
             if (noteResults.get(0).getNoteName().equals("Pause"))
                 noteResults.remove(0);
             else
@@ -412,6 +416,8 @@ public class SongConverter {
 
         // delete pause at the end
         while(true) {
+            if(noteResults.isEmpty()) break; // delete to no any notes
+
             if (noteResults.get(noteResults.size() - 1).getNoteName().equals("Pause"))
                 noteResults.remove(noteResults.size() - 1);
             else

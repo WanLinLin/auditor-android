@@ -100,8 +100,8 @@ public class SongAdapter extends BaseAdapter {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progress = ProgressDialog.show(slidingTabActivity, "Song converting...",
-                    "Please wait...", true);
+            progress = ProgressDialog.show(slidingTabActivity, slidingTabActivity.getString(R.string.converting),
+                    slidingTabActivity.getString(R.string.please_wait), true);
         }
 
         @Override
