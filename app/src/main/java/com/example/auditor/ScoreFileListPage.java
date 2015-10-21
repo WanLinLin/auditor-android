@@ -114,7 +114,9 @@ public class ScoreFileListPage extends Fragment{
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
         userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
-        userInput.setText(score.getTitle().substring(0, score.getTitle().length() - 4));
+        String fileName = score.getTitle().substring(0, score.getTitle().length() - 4);
+        userInput.setText(fileName);
+        userInput.setSelection(fileName.length());
 
         // set dialog message
         alertDialogBuilder
@@ -156,7 +158,9 @@ public class ScoreFileListPage extends Fragment{
 
         final TextView dialogTitle = (TextView) promptsView
                 .findViewById(R.id.popupWindowTitle);
-        dialogTitle.setText(dialogTitle.getText() + score.getTitle() + "?");
+        String fileName = score.getTitle().substring(0, score.getTitle().length() - 4);
+        String title = getString(R.string.delete_confirm) + " " + fileName + " ?";
+        dialogTitle.setText(title);
 
         // set dialog message
         alertDialogBuilder

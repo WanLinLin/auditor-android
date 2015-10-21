@@ -279,8 +279,8 @@ public class PartViewGroup extends RelativeLayout {
             if(ShowScoreActivity.lyricEditMode) {
                 showScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
                 showScoreActivity.actionBar.setTitle(LYRIC_EDIT_MODE);
-                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
-                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+//                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+//                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
 
                 ShowScoreActivity.setLyricRecommendGroupVisibility(true);
             }
@@ -300,8 +300,8 @@ public class PartViewGroup extends RelativeLayout {
             if(ShowScoreActivity.scoreEditMode) {
                 showScoreActivity.actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
                 showScoreActivity.actionBar.setTitle(SCORE_EDIT_MODE);
-                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
-                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+//                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+//                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
             }
             // is not editing score
             else if(!ShowScoreActivity.scoreEditMode && ShowScoreActivity.keyboard.isShown()){

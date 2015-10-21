@@ -203,6 +203,7 @@ public class SongConverter {
             ArrayList<Pair<String, Integer>> noteTimArr = n.getNoteTimeArr();
             String jfugueNotation = n.getNoteName();
 
+            // convert notation info to jfugue notation
             if(n.getNoteName().length() > 2) {
                 jfugueNotation = n.getNoteName().substring(0, 3);
 
@@ -219,13 +220,16 @@ public class SongConverter {
                 }
             }
 
+            // process the same note array
             for(int i = 0; i < noteTimArr.size(); i++) {
                 musicString += jfugueNotation;
                 Pair p = noteTimArr.get(i);
 
+                // if the note is Rest
                 if (i != 0 && !jfugueNotation.equals("R"))
                     musicString += "-";
 
+                // process duration
                 switch(p.first.toString()) {
                     case "wholeNote":
                         musicString += "w";
@@ -255,8 +259,14 @@ public class SongConverter {
 
                 musicString += " ";
             }
-            musicString += "| ";
+
+            // measure bar
+//            musicString += "| ";
+            musicString += " ";
         }
+
+        // final measure bar
+        musicString += "|";
 
         return musicString;
     }

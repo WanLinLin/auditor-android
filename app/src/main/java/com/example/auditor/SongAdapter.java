@@ -56,7 +56,6 @@ public class SongAdapter extends BaseAdapter {
         TextView songTitle = (TextView)songLayout.findViewById(R.id.file_title);
         TextView songModDate = (TextView)songLayout.findViewById(R.id.file_mod_date);
         final ImageButton collapse = (ImageButton)songLayout.findViewById(R.id.collapse);
-
         final Song currSong = songs.get(position);
 
         // not showing the filename extension

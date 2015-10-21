@@ -26,7 +26,7 @@ public class SlidingTabActivity extends ActionBarActivity{
         viewPager.setAdapter(new SlidingTabAdapter(getSupportFragmentManager(), this));
         slidingTabLayout = (SlidingTabLayout)findViewById(R.id.sliding_tabs);
         slidingTabLayout.setViewPager(viewPager);
-        slidingTabLayout.setSelectedIndicatorColors(getResources().getColor(R.color.AuditorColorAccent));
+        slidingTabLayout.setDistributeEvenly(true);
         adapter = (SlidingTabAdapter)viewPager.getAdapter();
 
         viewPager.setCurrentItem(initialPosition, true);

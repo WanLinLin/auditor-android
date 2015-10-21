@@ -11,6 +11,8 @@
     <dimen name="controller_container_padding">8dp</dimen>
 
     <dimen name="sliding_tab_text_size">5dp</dimen>
+    <dimen name="image_tab_view_height">45dp</dimen>
+    <dimen name="image_tab_view_padding">8dp</dimen>
 
     <dimen name="edit_score_keyboard_height">280dp</dimen>
     <dimen name="default_edit_note_group_height">180dp</dimen>

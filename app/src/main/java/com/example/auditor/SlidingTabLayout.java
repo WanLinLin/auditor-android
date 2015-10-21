@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -123,7 +124,8 @@ public class SlidingTabLayout extends HorizontalScrollView {
         mViewPager = viewPager;
         if (viewPager != null) {
             viewPager.setOnPageChangeListener(new InternalViewPagerListener());
-            populateTabStrip();
+//            populateTabStrip();
+            populateImageTabStrip();
         }
     }
 
@@ -136,24 +138,38 @@ public class SlidingTabLayout extends HorizontalScrollView {
         textView.setGravity(Gravity.CENTER);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
         textView.setTypeface(Typeface.DEFAULT);
-//        textView.setLayoutParams(new LinearLayout.LayoutParams(
-//                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        LinearLayout.LayoutParams lp
-                = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.weight = 1;
-        textView.setLayoutParams(lp);
+        textView.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         textView.setTextColor(getResources().getColor(R.color.TabNotSelect));
 
         TypedValue outValue = new TypedValue();
         getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground,
                 outValue, true);
         textView.setBackgroundResource(outValue.resourceId);
-//        textView.setAllCaps(true);
 
         int padding = (int) (TAB_VIEW_PADDING_DIPS * getResources().getDisplayMetrics().density);
         textView.setPadding(padding, padding, padding, padding);
 
         return textView;
+    }
+
+    /**
+     * Create a default view to be used for tabs. This is called if a custom tab view is not set via
+     * {@link #setCustomTabView(int, int)}.
+     */
+    protected ImageView createImageTabView(Context context) {
+        ImageView imageView = new ImageView(context);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
+                (int) getResources().getDimension(R.dimen.image_tab_view_height));
+        lp.weight = 1;
+        imageView.setLayoutParams(lp);
+
+        TypedValue outValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground,
+                outValue, true);
+        imageView.setBackgroundResource(outValue.resourceId);
+
+        return imageView;
     }
 
     private void populateTabStrip() {
@@ -165,7 +181,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
             TextView tabTitleView = null;
 
             if (mTabViewLayoutId != 0) {
-                // If there is a custom tab view layout id set, try and inflate it
+                 // If there is a custom tab view layout id set, try and inflate it
                 tabView = LayoutInflater.from(getContext()).inflate(mTabViewLayoutId, mTabStrip,
                         false);
                 tabTitleView = (TextView) tabView.findViewById(mTabViewTextViewId);
@@ -196,7 +212,52 @@ public class SlidingTabLayout extends HorizontalScrollView {
             mTabStrip.addView(tabView);
             if (i == mViewPager.getCurrentItem()) {
                 tabView.setSelected(true);
-                ((TextView) tabView).setTextColor(getResources().getColor(R.color.TabSelected));
+            }
+        }
+    }
+
+    private void populateImageTabStrip() {
+        final PagerAdapter adapter = mViewPager.getAdapter();
+        final View.OnClickListener tabClickListener = new TabClickListener();
+
+        for (int i = 0; i < adapter.getCount(); i++) {
+            ImageView tabView = createImageTabView(getContext());
+
+            String title = adapter.getPageTitle(i).toString();
+            if (title.equals(getResources().getString(R.string.audio_record_page_title))) {
+                tabView.setImageResource(R.drawable.record_not_select);
+            }
+            else if (title.equals(getResources().getString(R.string.audio_file_list_page_title))) {
+                tabView.setImageResource(R.drawable.audio_not_select);
+            }
+            else if (title.equals(getResources().getString(R.string.score_file_list_page_title))) {
+                tabView.setImageResource(R.drawable.score_file_not_select);
+            }
+
+            tabView.setScaleType(ImageView.ScaleType.FIT_XY);
+            tabView.setAdjustViewBounds(true);
+
+            int padding = (int) getResources().getDimension(R.dimen.image_tab_view_padding);
+            tabView.setPadding(padding, padding, padding, padding);
+
+            tabView.setOnClickListener(tabClickListener);
+            String desc = mContentDescriptions.get(i, null);
+            if (desc != null) {
+                tabView.setContentDescription(desc);
+            }
+
+            mTabStrip.addView(tabView);
+            if (i == mViewPager.getCurrentItem()) {
+                tabView.setSelected(true);
+                if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
+                    tabView.setImageResource(R.drawable.record_selected);
+                }
+                else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
+                    tabView.setImageResource(R.drawable.audio_selected);
+                }
+                else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
+                    tabView.setImageResource(R.drawable.score_file_selected);
+                }
             }
         }
     }
@@ -268,19 +329,40 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
         @Override
         public void onPageSelected(int position) {
+            final PagerAdapter adapter = mViewPager.getAdapter();
+
             if (mScrollState == ViewPager.SCROLL_STATE_IDLE) {
                 mTabStrip.onViewPagerPageChanged(position, 0f);
                 scrollToTab(position, 0);
             }
             for (int i = 0; i < mTabStrip.getChildCount(); i++) {
-                TextView tab = (TextView)mTabStrip.getChildAt(i);
+//                TextView tab = (TextView)mTabStrip.getChildAt(i);
+                ImageView tab = (ImageView)mTabStrip.getChildAt(i);
                 if(position == i) {
                     tab.setSelected(true);
-                    tab.setTextColor(getResources().getColor(R.color.TabSelected));
+//                    tab.setTextColor(getResources().getColor(R.color.AuditorColorPrimary));
+                    if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
+                        tab.setImageResource(R.drawable.record_selected);
+                    }
+                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
+                        tab.setImageResource(R.drawable.audio_selected);
+                    }
+                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
+                        tab.setImageResource(R.drawable.score_file_selected);
+                    }
                 }
                 else {
                     tab.setSelected(false);
-                    tab.setTextColor(getResources().getColor(R.color.TabNotSelect));
+//                    tab.setTextColor(getResources().getColor(R.color.AuditorColorAccent));
+                    if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
+                        tab.setImageResource(R.drawable.record_not_select);
+                    }
+                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
+                        tab.setImageResource(R.drawable.audio_not_select);
+                    }
+                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
+                        tab.setImageResource(R.drawable.score_file_not_select);
+                    }
                 }
             }
             if (mViewPagerPageChangeListener != null) {

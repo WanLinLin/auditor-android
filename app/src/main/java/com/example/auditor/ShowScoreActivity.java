@@ -45,7 +45,6 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.auditor.button.AccidentalButton;
 import com.example.auditor.button.BeamButton;
@@ -257,36 +256,36 @@ public class ShowScoreActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             // click zoom in
-            case R.id.action_zoom_in:
-                if(mScaleFactor < 3) {
-                    mScaleFactor += 0.2;
-                    zoom();
-
-                    if(mScaleFactor == 3) {
-                        Toast.makeText(
-                                ShowScoreActivity.this,
-                                "最大!",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
-                return true;
+//            case R.id.action_zoom_in:
+//                if(mScaleFactor < 3) {
+//                    mScaleFactor += 0.2;
+//                    zoom();
+//
+//                    if(mScaleFactor == 3) {
+//                        Toast.makeText(
+//                                ShowScoreActivity.this,
+//                                "最大!",
+//                                Toast.LENGTH_SHORT
+//                        ).show();
+//                    }
+//                }
+//                return true;
 
             // click zoom out
-            case R.id.action_zoom_out:
-                if (mScaleFactor > 0.6) {
-                    mScaleFactor -= 0.2;
-                    zoom();
-
-                    if(mScaleFactor == 0.6) {
-                        Toast.makeText(
-                                ShowScoreActivity.this,
-                                "最小!",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
-                return true;
+//            case R.id.action_zoom_out:
+//                if (mScaleFactor > 0.6) {
+//                    mScaleFactor -= 0.2;
+//                    zoom();
+//
+//                    if(mScaleFactor == 0.6) {
+//                        Toast.makeText(
+//                                ShowScoreActivity.this,
+//                                "最小!",
+//                                Toast.LENGTH_SHORT
+//                        ).show();
+//                    }
+//                }
+//                return true;
 
             // click save
             case R.id.action_save:
@@ -372,8 +371,8 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
                     actionBar.setTitle(scoreName);
-                    menu.findItem(R.id.action_zoom_in).setVisible(true);
-                    menu.findItem(R.id.action_zoom_out).setVisible(true);
+//                    menu.findItem(R.id.action_zoom_in).setVisible(true);
+//                    menu.findItem(R.id.action_zoom_out).setVisible(true);
                 }
                 else if(musicController.isShown()) {
                     closeMusicController();
@@ -414,8 +413,8 @@ public class ShowScoreActivity extends ActionBarActivity {
             // set actionbar back to original color
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
             actionBar.setTitle(scoreName);
-            menu.findItem(R.id.action_zoom_in).setVisible(true);
-            menu.findItem(R.id.action_zoom_out).setVisible(true);
+//            menu.findItem(R.id.action_zoom_in).setVisible(true);
+//            menu.findItem(R.id.action_zoom_out).setVisible(true);
         }
         else if(musicController.isShown()) {
             closeMusicController();
@@ -763,7 +762,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                         if (event.getClipDescription().getLabel().toString().equals("NoteViewGroup")) {
                             // if the drag event is sent from NoteViewGroup
                             ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
-                            i.setImageResource(R.drawable.bin_open);
+                            i.setImageResource(R.drawable.can_open);
                             i.invalidate();
                             return true;
                         }
@@ -874,7 +873,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                     case DragEvent.ACTION_DRAG_ENDED:
                         ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
-                        i.setImageResource(R.drawable.bin_close);
+                        i.setImageResource(R.drawable.can_close);
                         i.invalidate();
                         return true;
 

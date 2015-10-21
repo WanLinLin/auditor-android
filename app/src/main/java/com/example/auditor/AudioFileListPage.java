@@ -258,7 +258,9 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(slidingTabActivity);
         alertDialogBuilder.setView(promptsView);
         userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
-        userInput.setText(song.getTitle().substring(0, song.getTitle().length() - 4));
+        String fileName = song.getTitle().substring(0, song.getTitle().length() - 4);
+        userInput.setText(fileName);
+        userInput.setSelection(fileName.length());
 
         // set dialog message
         alertDialogBuilder
@@ -301,7 +303,9 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         alertDialogBuilder.setView(promptsView);
 
         TextView dialogTitle = (TextView) promptsView.findViewById(R.id.popupWindowTitle);
-        String title = getString(R.string.delete_confirm) + " " + song.getTitle() + "?";
+
+        String fileName = song.getTitle().substring(0, song.getTitle().length() - 4);
+        String title = getString(R.string.delete_confirm) + " " + fileName + " ?";
         dialogTitle.setText(title);
 
         // set dialog message
