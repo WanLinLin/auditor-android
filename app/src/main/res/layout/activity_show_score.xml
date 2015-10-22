@@ -33,23 +33,23 @@
         android:layout_height="wrap_content"
         android:id="@id/lyric_input_text_view"
         android:layout_above="@id/lyric_recommend_group"
-        android:inputType="textShortMessage" />
+        android:inputType="textShortMessage"
+        android:background="@color/White" />
 
     <!-- recommend keyboard -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="55dp"
         android:id="@id/lyric_recommend_group"
+        android:gravity="center"
         android:layout_alignParentBottom="true">
 
         <NumberPicker
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@id/lyric_number_picker"
-            android:descendantFocusability="blocksDescendants">
-
-        </NumberPicker>
+            android:descendantFocusability="blocksDescendants" />
 
         <Spinner
             android:layout_weight="1"

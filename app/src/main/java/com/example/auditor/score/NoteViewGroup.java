@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
@@ -67,7 +68,7 @@ public class NoteViewGroup extends RelativeLayout {
         this.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if(ShowScoreActivity.scoreEditMode) {
+                if (ShowScoreActivity.scoreEditMode) {
                     MeasureViewGroup m = (MeasureViewGroup) getParent();
                     PartViewGroup p = (PartViewGroup) m.getParent();
 
@@ -97,6 +98,20 @@ public class NoteViewGroup extends RelativeLayout {
                 return false;
             }
         });
+
+        this.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                collectNoteContextToEditButton();
+            }
+        });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        ShowScoreActivity.mx = event.getRawX();
+        ShowScoreActivity.my = event.getRawY();
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -119,18 +134,6 @@ public class NoteViewGroup extends RelativeLayout {
         for(int i = 0; i < getChildCount(); i++) {
             getChildAt(i).requestLayout();
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                collectNoteContextToEditButton();
-                break;
-        }
-        ShowScoreActivity.mx = event.getRawX(); // x position relative to screen
-        ShowScoreActivity.my = event.getRawY(); // y position relative to screen
-        return super.onTouchEvent(event);
     }
 
     public void collectNoteContextToEditButton() {
@@ -186,6 +189,14 @@ public class NoteViewGroup extends RelativeLayout {
                 Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
                 ShowScoreActivity.keyboard.setAnimation(animation);
                 ShowScoreActivity.keyboard.animate();
+
+                RelativeLayout.LayoutParams vlp =
+                        new RelativeLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT);
+                vlp.addRule(ABOVE, R.id.edit_score_keyboard);
+                ShowScoreActivity.vScroll.setLayoutParams(vlp);
+                ShowScoreActivity.vScroll.requestLayout();
             }
             else {
                 ShowScoreActivity.numberButton.invalidate();

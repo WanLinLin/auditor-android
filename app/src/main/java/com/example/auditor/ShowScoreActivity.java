@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
@@ -103,8 +104,8 @@ public class ShowScoreActivity extends ActionBarActivity {
     public MusicController musicController;
 
     // using for two dimension scroll
-    private VScrollView vScroll;
-    private HScrollView hScroll;
+    public static VScrollView vScroll;
+    public static HScrollView hScroll;
     public static float mx;
     public static float my;
 
@@ -350,6 +351,57 @@ public class ShowScoreActivity extends ActionBarActivity {
                 updateSeekBarHandler.post(updateSeekBarTask);
                 return true;
 
+            case R.id.edit_score:
+                scoreEditMode = true;
+                lyricEditMode = false;
+
+                /* update score edit things */
+                actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
+
+                /* update lyric edit things */
+                setLyricRecommendGroupVisibility(false);
+                // close keyboard
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
+
+                if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+
+                /* update play midi things */
+                ShowScoreActivity.playMode = false;
+                closeMusicController();
+
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(150);
+                return true;
+
+            case R.id.edit_lyric:
+                lyricEditMode = true;
+                scoreEditMode = false;
+
+                /* update lyric edit things */
+                actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
+//                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
+//                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
+
+                ShowScoreActivity.setLyricRecommendGroupVisibility(true);
+
+                /* update score edit things */
+                if(keyboard.isShown()) {
+                    // close edit score keyboard
+                    Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
+                    ShowScoreActivity.keyboard.setAnimation(animation);
+                    ShowScoreActivity.keyboard.animate();
+                    ShowScoreActivity.keyboard.setVisibility(View.GONE);
+                }
+
+                /* update play midi things */
+                ShowScoreActivity.playMode = false;
+                closeMusicController();
+
+                v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(150);
+                return true;
+
             // click back button
             case android.R.id.home:
                 if(scoreEditMode || lyricEditMode) {
@@ -359,7 +411,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     /* hide lyric input text view and recommend button */
                     setLyricRecommendGroupVisibility(false);
                     /* close keyboard */
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
                     if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
 
@@ -369,6 +421,13 @@ public class ShowScoreActivity extends ActionBarActivity {
                         keyboard.setAnimation(animation);
                         keyboard.animate();
                         keyboard.setVisibility(View.GONE);
+
+                        RelativeLayout.LayoutParams vlp =
+                                new RelativeLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                        vScroll.setLayoutParams(vlp);
+                        vScroll.requestLayout();
                     }
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
@@ -410,6 +469,13 @@ public class ShowScoreActivity extends ActionBarActivity {
                 keyboard.setAnimation(animation);
                 keyboard.animate();
                 keyboard.setVisibility(View.GONE);
+
+                RelativeLayout.LayoutParams vlp =
+                        new RelativeLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT);
+                vScroll.setLayoutParams(vlp);
+                vScroll.requestLayout();
             }
 
             // set actionbar back to original color
@@ -620,9 +686,12 @@ public class ShowScoreActivity extends ActionBarActivity {
                     musicString += noteContext;
                 }
 
-                musicString += "| ";
+//                musicString += "| ";
+                musicString += " ";
             }
         }
+
+        musicString += "|";
 
         pattern = new Pattern(musicString);
         try { pattern.save(new File(txtDir + scoreName)); }

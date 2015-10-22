@@ -41,6 +41,6 @@
         android:scaleType="fitCenter"
         android:padding="13dp"
         android:antialias="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         />
 </RelativeLayout>

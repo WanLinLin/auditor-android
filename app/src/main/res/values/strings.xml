@@ -55,6 +55,9 @@
     <string name="failed">失敗</string>
     <string name="delete_confirm">確定要刪除 </string>
 
+    <string name="edit_score">編輯樂譜</string>
+    <string name="edit_lyric">編輯歌詞</string>
+
     <string name="loading">讀取中&#8230;</string>
     <string name="play">播放</string>
     <string name="converting">轉譜中&#8230;</string>

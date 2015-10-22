@@ -22,4 +22,11 @@
         android:title="@string/play"
         android:icon="@drawable/play"
         app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/edit_score"
+        android:title="@string/edit_score"
+        app:showAsAction="ifRoom"/>
+    <item android:id="@+id/edit_lyric"
+        android:title="@string/edit_lyric"
+        app:showAsAction="ifRoom"/>
 </menu>
