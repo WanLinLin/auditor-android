@@ -39,7 +39,7 @@ public class SongConverter {
     private static final float tooShortForHumanToSing = 0.03f; // can be ignore
     private static final int secondsPerMinute = 60; // seconds per minutes
 
-    private int beatsPerMinute = 90; // bits per minute, speed
+    private int beatsPerMinute = 80; // bits per minute, speed
     private int beatsPerMeasure = 4; // 4 beats per bar
     private int beatUnit = 4; // quarter notes per bit
     private int measureDuration = secondsPerMinute / beatsPerMinute * beatsPerMeasure;

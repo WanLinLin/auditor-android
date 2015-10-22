@@ -47,7 +47,7 @@ public class WordView extends View {
 
     private void init() {
         height = ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT;
-
+        
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize((int) (height * 0.6));

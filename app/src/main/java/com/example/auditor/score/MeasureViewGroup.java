@@ -15,7 +15,7 @@ import com.example.auditor.ShowScoreActivity;
  * A measure contains numbers of note view groups.
  */
 public class MeasureViewGroup extends RelativeLayout {
-    private static final String LOG_TAG = MeasureViewGroup.class.getName();
+    private static final String LOG_TAG = "MeasureViewGroup";
     private Context context;
 
     public static MeasureViewGroup curEditMeasure;

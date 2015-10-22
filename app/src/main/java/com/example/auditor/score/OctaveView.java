@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.view.View;
 
 import com.example.auditor.ShowScoreActivity;
@@ -20,19 +21,26 @@ public class OctaveView extends View {
     private int dotRadius;
     private int space;
     private int padding;
-    private boolean hasBeamView;
-    private boolean hasAccidentalView;
 
     private int width;
     private int height;
 
     public OctaveView(Context context) {
         super(context);
+        init();
     }
 
-    public OctaveView(Context context, boolean hasBeamView, boolean hasAccidentalView) {
-        super(context);
+    public OctaveView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
 
+    public OctaveView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
@@ -43,9 +51,6 @@ public class OctaveView extends View {
         padding = Math.round(height * 0.1f);
         dotRadius = Math.round(height * 0.083f);
         space = Math.round((height - 2 * dotRadius - padding) / 3);
-
-        this.hasBeamView = hasBeamView;
-        this.hasAccidentalView = hasAccidentalView;
     }
 
     @Override

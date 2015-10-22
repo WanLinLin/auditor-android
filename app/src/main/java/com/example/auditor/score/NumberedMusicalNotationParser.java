@@ -66,7 +66,6 @@ public class NumberedMusicalNotationParser {
         int partIndex = 0;
         int measureIndex = 0;
         int noteViewGroupIndex = 0;
-        int curParseX;
         curX = 0;
         PartViewGroup curParsePart;
         MeasureViewGroup curParseMeasure = null;
@@ -77,7 +76,6 @@ public class NumberedMusicalNotationParser {
         scoreViewGroup.printPart(partIndex);
         curParsePart = (PartViewGroup)scoreViewGroup.findViewById(partIndex + ShowScoreActivity.partStartId);
         partIndex++;
-
         // print first bar
         curParsePart.printBarView(-1); // print first bar
         curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
@@ -103,12 +101,39 @@ public class NumberedMusicalNotationParser {
                     // is the fist note of a measure, add a measure
                     if(noteViewGroupIndex == 0) {
                         curParsePart.printMeasure(measureIndex);
-                        curParseMeasure = (MeasureViewGroup)scoreViewGroup.findViewById(measureIndex + ShowScoreActivity.measureStartId);
+                        curParseMeasure = (MeasureViewGroup)curParsePart.findViewById(measureIndex + ShowScoreActivity.measureStartId);
                         measureIndex++;
                     }
 
                     // add a new note
                     parseNoteContext(token);
+
+                    // calculate whether the new note would exceed the screen width
+                    int width = ShowScoreActivity.NoteChildViewDimension.NUMBER_VIEW_WIDTH;
+                    if(!noteContext.accidental.isEmpty())
+                        width += ShowScoreActivity.NoteChildViewDimension.ACCIDENTAL_VIEW_WIDTH;
+                    if(!noteContext.dot.isEmpty())
+                        width += ShowScoreActivity.NoteChildViewDimension.DOTTED_VIEW_WIDTH;
+
+                    // if exceed screen width
+                    if(curX + width > ShowScoreActivity.screenWidth) {
+                        // end a part
+                        noteViewGroupIndex = 0;
+                        curX = 0;
+                        curParsePart.printTieView();
+                        curParsePart.clearTieInfo();
+
+                        // print a new part
+                        scoreViewGroup.printPart(partIndex);
+                        curParsePart = (PartViewGroup)scoreViewGroup.findViewById(partIndex + ShowScoreActivity.partStartId);
+                        partIndex++;
+                        curX += ShowScoreActivity.NoteChildViewDimension.BAR_VIEW_WIDTH;
+                        measureIndex = 0;
+
+                        curParsePart.printMeasure(measureIndex);
+                        curParseMeasure = (MeasureViewGroup)curParsePart.findViewById(measureIndex + ShowScoreActivity.measureStartId);
+                        measureIndex++;
+                    }
                     addNoteAndWord(curParseMeasure.getId(), curParsePart.getId(), noteViewGroupIndex);
                     noteViewGroupIndex++;
                     break;
@@ -141,8 +166,6 @@ public class NumberedMusicalNotationParser {
                 noteViewGroupIndex++;
             }
         }
-
-        curParsePart.printTieView();
     }
 
     private void parseNoteContext(String t) {
@@ -220,10 +243,11 @@ public class NumberedMusicalNotationParser {
 
     private void addNoteAndWord(int measureId, int partId, int noteViewGroupIndex) {
         PartViewGroup partViewGroup = (PartViewGroup) scoreViewGroup.findViewById(partId);
-        MeasureViewGroup measureViewGroup = (MeasureViewGroup) scoreViewGroup.findViewById(measureId);
+        MeasureViewGroup measureViewGroup = (MeasureViewGroup) partViewGroup.findViewById(measureId);
         if(noteViewGroupIndex == 0) measureViewGroup.printBarWidthView();
 
-        measureViewGroup.printNoteAndWord(noteContext, noteViewGroupIndex);
+        measureViewGroup.printNote(noteContext, noteViewGroupIndex);
+        measureViewGroup.printWord(noteContext.word, noteViewGroupIndex, !noteContext.accidental.isEmpty(), !noteContext.dot.isEmpty());
 
         // the current adding note
         NoteViewGroup note = (NoteViewGroup)measureViewGroup.findViewById(noteViewGroupIndex + ShowScoreActivity.noteStartId);
@@ -242,6 +266,4 @@ public class NumberedMusicalNotationParser {
     public ScoreViewGroup getScoreViewGroup() {
         return scoreViewGroup;
     }
-
 }
-// TODO smart phone loop station

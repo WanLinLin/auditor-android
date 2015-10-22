@@ -70,7 +70,6 @@ public class NoteViewGroup extends RelativeLayout {
                 if(ShowScoreActivity.scoreEditMode) {
                     MeasureViewGroup m = (MeasureViewGroup) getParent();
                     PartViewGroup p = (PartViewGroup) m.getParent();
-                    MeasureViewGroup.curEditMeasure = m;
 
                     Intent data = new Intent();
                     data.putExtra("note id", getId());
@@ -129,7 +128,8 @@ public class NoteViewGroup extends RelativeLayout {
                 collectNoteContextToEditButton();
                 break;
         }
-
+        ShowScoreActivity.mx = event.getRawX(); // x position relative to screen
+        ShowScoreActivity.my = event.getRawY(); // y position relative to screen
         return super.onTouchEvent(event);
     }
 
@@ -294,7 +294,7 @@ public class NoteViewGroup extends RelativeLayout {
 
     public void printOctaveView(String oct) {
         // Octave view
-        OctaveView o = new OctaveView(context, hasBeamView, hasAccidentalView);
+        OctaveView o = new OctaveView(context);
         int octave;
         o.setOctave(oct);
         o.setId(R.id.octave_view);

@@ -105,8 +105,8 @@ public class ShowScoreActivity extends ActionBarActivity {
     // using for two dimension scroll
     private VScrollView vScroll;
     private HScrollView hScroll;
-    public float mx;
-    public float my;
+    public static float mx;
+    public static float my;
 
     public ActionBar actionBar;
     public String scoreName;
@@ -124,7 +124,8 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static int noteHeight;
     public static int noteWidth;
 
-    private int screenHeight;
+    public static int screenHeight;
+    public static int screenWidth;
 
     // Edit parameter
     public static boolean playMode;
@@ -172,6 +173,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
+        screenWidth = displaymetrics.widthPixels;
         defaultNoteHeight = screenHeight / 6;
 
         // reset parameters

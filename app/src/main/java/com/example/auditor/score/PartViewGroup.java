@@ -219,13 +219,13 @@ public class PartViewGroup extends RelativeLayout {
                         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(ShowScoreActivity.lyricInputACTextView, InputMethodManager.SHOW_IMPLICIT);
 
-                        showScoreActivity.mx = e.getRawX(); // x position relative to screen
-                        showScoreActivity.my = e.getRawY(); // y position relative to screen
+                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
                         return true;
                     }
                     else if(clickWord.getWord().equals("") && (note.isTieEnd() || "R-".contains(numberView.getNote())) ) {
-                        showScoreActivity.mx = e.getRawX(); // x position relative to screen
-                        showScoreActivity.my = e.getRawY(); // y position relative to screen
+                        ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
+                        ShowScoreActivity.my = e.getRawY(); // y position relative to screen
                         return true;
                     }
 
@@ -255,8 +255,8 @@ public class PartViewGroup extends RelativeLayout {
                 PartViewGroup.curEditPart = PartViewGroup.this;
             }
 
-            showScoreActivity.mx = e.getRawX(); // x position relative to screen
-            showScoreActivity.my = e.getRawY(); // y position relative to screen
+            ShowScoreActivity.mx = e.getRawX(); // x position relative to screen
+            ShowScoreActivity.my = e.getRawY(); // y position relative to screen
             return true; // onDown must return true
         }
 
