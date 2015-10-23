@@ -41,6 +41,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -134,6 +135,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static boolean lyricEditMode;
 
     // lyric recommend views
+    public static LinearLayout lyricRecommendLayout;
     public static Button recommendButton;
     public static Button completeButton;
     public static Spinner rhymeSpinner;
@@ -175,7 +177,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         screenHeight = displaymetrics.heightPixels;
         screenWidth = displaymetrics.widthPixels;
-        defaultNoteHeight = screenHeight / 6;
+        defaultNoteHeight = screenHeight / 7;
 
         // reset parameters
         mScaleFactor = 1.f;
@@ -364,7 +366,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
 
-                if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+                if(PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
                 /* update play midi things */
                 ShowScoreActivity.playMode = false;
@@ -413,7 +415,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     /* close keyboard */
                     imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
-                    if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+                    if(PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
                     // close edit score keyboard
                     if(keyboard.isShown()) {
@@ -461,7 +463,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             setLyricRecommendGroupVisibility(false);
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
-            if(PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+            if(PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
             // close edit score keyboard
             if(keyboard.isShown()) {
@@ -702,6 +704,8 @@ public class ShowScoreActivity extends ActionBarActivity {
      * Recommend group include number picker, rhyme, recommend button, and complete button
      */
     private void setUpLyricRecommendGroup() {
+        lyricRecommendLayout = (LinearLayout)findViewById(R.id.lyric_recommend_group);
+
         /* LYRIC NUMBER PICKER */
         lyricNumberPicker = (NumberPicker)findViewById(R.id.lyric_number_picker);
         lyricNumberPicker.setMaxValue(5);
@@ -732,7 +736,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (PartViewGroup.lyricEditStartMeasure != null) PartViewGroup.saveWordsIntoWordView();
+                if (PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
                 /* hide lyric input text view and recommend button */
                 setLyricRecommendGroupVisibility(false);
@@ -763,7 +767,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (PartViewGroup.lyricEditStartMeasure != null)
+                    if (PartViewGroup.lyricEditStartWord != null)
                         PartViewGroup.saveWordsIntoWordView();
 
                     /* hide lyric input text view and recommend button */
@@ -960,19 +964,13 @@ public class ShowScoreActivity extends ActionBarActivity {
 
     public static void setLyricRecommendGroupVisibility(boolean visible) {
         if(visible) {
-            lyricNumberPicker.setVisibility(View.VISIBLE);
             lyricInputACTextView.setVisibility(View.VISIBLE);
             lyricInputACTextView.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
-            recommendButton.setVisibility(View.VISIBLE);
-            completeButton.setVisibility(View.VISIBLE);
-            rhymeSpinner.setVisibility(View.VISIBLE);
+            lyricRecommendLayout.setVisibility(View.VISIBLE);
         }
         else {
-            lyricNumberPicker.setVisibility(View.GONE);
             lyricInputACTextView.setVisibility(View.GONE);
-            recommendButton.setVisibility(View.GONE);
-            completeButton.setVisibility(View.GONE);
-            rhymeSpinner.setVisibility(View.GONE);
+            lyricRecommendLayout.setVisibility(View.GONE);
         }
     }
 

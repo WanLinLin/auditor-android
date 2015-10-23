@@ -43,6 +43,7 @@
         android:layout_height="55dp"
         android:id="@id/lyric_recommend_group"
         android:gravity="center"
+        android:background="@color/White"
         android:layout_alignParentBottom="true">
 
         <NumberPicker

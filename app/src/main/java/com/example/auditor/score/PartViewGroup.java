@@ -30,11 +30,7 @@ public class PartViewGroup extends RelativeLayout {
     private static final String LOG_TAG = PartViewGroup.class.getName();
     private static int tieStrokeWidth;
     private static GestureDetector gestureDetector;
-
     private ShowScoreActivity showScoreActivity;
-
-    private static String LYRIC_EDIT_MODE = "";
-    private static String SCORE_EDIT_MODE = "";
 
     private Paint mPaint;
     private ArrayList<Pair<Integer, String>> tieInfo;
@@ -44,8 +40,6 @@ public class PartViewGroup extends RelativeLayout {
     private static MeasureViewGroup clickMeasure;
     private static WordView clickWord;
 
-    public static PartViewGroup curEditPart;
-    public static MeasureViewGroup lyricEditStartMeasure = null;
     public static WordView lyricEditStartWord = null;
     private static boolean lyricEditing;
 
@@ -76,9 +70,6 @@ public class PartViewGroup extends RelativeLayout {
     }
 
     private void init() {
-        LYRIC_EDIT_MODE = getContext().getString(R.string.lyric_edit_mode);
-        SCORE_EDIT_MODE = getContext().getString(R.string.score_edit_mode);
-
         tieInfo = new ArrayList<>();
         gestureDetector = new GestureDetector(showScoreActivity, new mGestureDetector());
 
@@ -117,7 +108,6 @@ public class PartViewGroup extends RelativeLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(ShowScoreActivity.scoreEditMode) curEditPart = this;
         if(ShowScoreActivity.lyricEditMode) clickPart = this;
         return gestureDetector.onTouchEvent(event);
     }
@@ -213,7 +203,7 @@ public class PartViewGroup extends RelativeLayout {
             /* single touch down on lyric area */
             if (y > getHeight() - ShowScoreActivity.NoteChildViewDimension.WORD_VIEW_HEIGHT) {
                 if(ShowScoreActivity.lyricEditMode) {
-                    if(lyricEditing) return true;
+                    if(lyricEditing) return true; // is editing, do nothing
 
                     searchClickWordView(x);
                     if(clickWord == null) return true; // click on not word view area
@@ -222,8 +212,8 @@ public class PartViewGroup extends RelativeLayout {
                             clickWord.getId() - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
                     NumberView numberView = (NumberView)note.findViewById(R.id.number_view);
 
+                    // if the word is empty, note is not tie end, and the note is not Rest or duration bar
                     if(clickWord.getWord().equals("") && !note.isTieEnd() && !"R-".contains(numberView.getNote())) {
-                        lyricEditStartMeasure = clickMeasure;
                         lyricEditStartWord = clickWord;
                         addArrow();
 
@@ -271,77 +261,6 @@ public class PartViewGroup extends RelativeLayout {
         }
     }
 
-    private String collectWords() {
-        // collect word views' words into original lyrics
-        String originalLyrics = "";
-        if(lyricEditStartMeasure == null) lyricEditStartMeasure = (MeasureViewGroup)clickPart.findViewById(ShowScoreActivity.measureStartId);
-        if(lyricEditStartWord == null) lyricEditStartWord = (WordView)lyricEditStartMeasure.findViewById(ShowScoreActivity.wordStartId);
-        int measureCollectStartIndex = lyricEditStartMeasure.getId() - ShowScoreActivity.measureStartId;
-        int wordCollectStartIndex = lyricEditStartWord.getId() - ShowScoreActivity.wordStartId;
-
-        collectWords:
-        for(int i = measureCollectStartIndex; i < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; i++) {
-            MeasureViewGroup curCollectMeasure = (MeasureViewGroup)clickPart.findViewById(i + ShowScoreActivity.measureStartId);
-            if(curCollectMeasure == null) break;
-            if(curCollectMeasure != lyricEditStartMeasure) wordCollectStartIndex = 0;
-
-            for (int j = wordCollectStartIndex; j < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; j++) {
-                WordView curCollectWord = (WordView) curCollectMeasure.findViewById(j + ShowScoreActivity.wordStartId);
-                if(curCollectWord == null) break;
-
-                if(curCollectWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString())) {
-                    originalLyrics += curCollectWord.getWord();
-                    curCollectWord.setWord("");
-                    curCollectWord.invalidate();
-                    break collectWords;
-                }
-                originalLyrics += curCollectWord.getWord();
-                curCollectWord.setWord("");
-                curCollectWord.invalidate();
-            }
-        }
-        return originalLyrics;
-    }
-
-    private void findLyricEditStartPosition() {
-        int wordSearchStartId = clickWord.getId();
-        MeasureViewGroup preMeasure = null;
-        WordView preWord = null;
-
-        findLyricEditStartPosition:
-        for(int m = clickMeasure.getId(); m >= ShowScoreActivity.measureStartId; m--) {
-            MeasureViewGroup curSearchMeasure = (MeasureViewGroup)clickPart.findViewById(m);
-            if(curSearchMeasure != clickMeasure) wordSearchStartId = (curSearchMeasure.getChildCount() / 2 - 1) + ShowScoreActivity.wordStartId;
-
-            for(int w = wordSearchStartId; w >= ShowScoreActivity.wordStartId; w--) {
-                WordView curSearchWord = (WordView)curSearchMeasure.findViewById(w);
-                if(curSearchWord == clickWord) {
-                    preMeasure = curSearchMeasure;
-                    preWord = curSearchWord;
-                    continue;
-                }
-
-                NoteViewGroup curSearchNote = (NoteViewGroup)curSearchMeasure.findViewById(w - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
-                NumberView curSearchNumberView = (NumberView)curSearchNote.findViewById(R.id.number_view);
-
-                if(curSearchNumberView.getNote().equals("R") || curSearchNote.isTieEnd()) continue;
-
-                if(curSearchWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString()) || curSearchWord.getWord().equals("")) {
-                    if(preMeasure == null) lyricEditStartMeasure = curSearchMeasure;
-                    else lyricEditStartMeasure = preMeasure;
-
-                    if(preWord == null) lyricEditStartWord = curSearchWord;
-                    else lyricEditStartWord = preWord;
-
-                    break findLyricEditStartPosition;
-                }
-
-                preMeasure = curSearchMeasure;
-                preWord = curSearchWord;
-            }
-        }
-    }
-
     private void searchClickWordView(float touchX) {
         /* search click word view */
         searchClickWordView:
@@ -366,84 +285,212 @@ public class PartViewGroup extends RelativeLayout {
         }
     }
 
+    private void findLyricEditStartPosition() {
+        int measureSearchStartId = clickMeasure.getId();
+        int wordSearchStartId = clickWord.getId();
+        WordView preSearchWord = clickWord;
+
+        findLyricEditStartPosition:
+        for(int p = clickPart.getId(); p >= ShowScoreActivity.partStartId; p--) {
+            PartViewGroup curSearchPart = (PartViewGroup) ShowScoreActivity.score.findViewById(p);
+            // if the part is not the click part, set the measure search id to the last measure
+            // of the pre part
+            if (curSearchPart != clickPart) {
+                if(curSearchPart.getId() == ShowScoreActivity.partStartId) {
+                    measureSearchStartId = (curSearchPart.getChildCount() - 3) + ShowScoreActivity.measureStartId;
+                }
+                else {
+                    // child count -1 for TieViewGroup
+                    measureSearchStartId = (curSearchPart.getChildCount() - 2) + ShowScoreActivity.measureStartId;
+                }
+            }
+
+            for (int m = measureSearchStartId; m >= ShowScoreActivity.measureStartId; m--) {
+                MeasureViewGroup curSearchMeasure = (MeasureViewGroup) curSearchPart.findViewById(m);
+
+                // if the measure is not the click measure, set the word search id to the last word
+                // of the pre measure
+                if (curSearchMeasure != clickMeasure) {
+                    // child count - 1 for BarWidthView
+                    wordSearchStartId = ((curSearchMeasure.getChildCount() - 1) / 2 - 1) + ShowScoreActivity.wordStartId;
+                }
+
+                for (int w = wordSearchStartId; w >= ShowScoreActivity.wordStartId; w--) {
+                    WordView curSearchWord = (WordView) curSearchMeasure.findViewById(w);
+                    if(curSearchWord == clickWord) continue;
+
+                    NoteViewGroup curSearchNote = (NoteViewGroup) curSearchMeasure.findViewById(w - ShowScoreActivity.wordStartId + ShowScoreActivity.noteStartId);
+                    NumberView curSearchNumberView = (NumberView) curSearchNote.findViewById(R.id.number_view);
+
+                    // skip the note that can't input lyric
+                    if (curSearchNumberView.getNote().equals("R") || curSearchNote.isTieEnd())
+                        continue;
+
+                    // if current search word is empty or including the sentence end tag "~", we got
+                    // the edit start word!
+                    if (curSearchWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString()) || curSearchWord.getWord().equals("")) {
+                        lyricEditStartWord = preSearchWord;
+                        break findLyricEditStartPosition;
+                    }
+
+                    preSearchWord = curSearchWord;
+                }
+            }
+        }
+
+        // search to the beginning part and measure
+        if(lyricEditStartWord == null) {
+            lyricEditStartWord = preSearchWord;
+        }
+    }
+
+    private String collectWords() {
+        // collect word views' words into original lyrics
+        String originalLyrics = "";
+        MeasureViewGroup startMeasure = (MeasureViewGroup)lyricEditStartWord.getParent();
+        PartViewGroup startPart= (PartViewGroup)startMeasure.getParent();
+
+        int partCollectStartIndex = startPart.getId() - ShowScoreActivity.partStartId;
+        int measureCollectStartIndex = startMeasure.getId() - ShowScoreActivity.measureStartId;
+        int wordCollectStartIndex = lyricEditStartWord.getId() - ShowScoreActivity.wordStartId;
+
+        collectWords:
+        for(int p = partCollectStartIndex; p < ShowScoreActivity.partMaxNumber; p++) {
+            PartViewGroup curCollectPart = (PartViewGroup) ShowScoreActivity.score.findViewById(p + ShowScoreActivity.partStartId);
+            if(curCollectPart == null) break;
+
+            for (int m = measureCollectStartIndex; m < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; m++) {
+                MeasureViewGroup curCollectMeasure = (MeasureViewGroup) curCollectPart.findViewById(m + ShowScoreActivity.measureStartId);
+
+                // collect to the end of the part, reset measure index, step to the next part and
+                // continue collect words
+                if (curCollectMeasure == null) {
+                    measureCollectStartIndex = 0;
+                    continue;
+                }
+                if (curCollectMeasure != startMeasure) wordCollectStartIndex = 0;
+
+                for (int w = wordCollectStartIndex; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
+                    WordView curCollectWord = (WordView) curCollectMeasure.findViewById(w + ShowScoreActivity.wordStartId);
+                    if (curCollectWord == null) break;
+
+                    if (curCollectWord.getWord().contains(NumberedMusicalNotationParser.sentenceEndTag.toString())) {
+                        originalLyrics += curCollectWord.getWord();
+                        curCollectWord.setWord("");
+                        curCollectWord.invalidate();
+                        break collectWords;
+                    }
+                    originalLyrics += curCollectWord.getWord();
+                    curCollectWord.setWord("");
+                    curCollectWord.invalidate();
+                }
+            }
+        }
+
+        return originalLyrics;
+    }
+
     private void addArrow(){
+        MeasureViewGroup startMeasure = (MeasureViewGroup)lyricEditStartWord.getParent();
+        PartViewGroup startPart = (PartViewGroup)startMeasure.getParent();
+
         RelativeLayout.LayoutParams lp =
                 new RelativeLayout.LayoutParams(
                         lyricEditStartWord.getWidth(),
                         lyricEditStartWord.getHeight());
-        lp.leftMargin = lyricEditStartWord.getLeft() + lyricEditStartMeasure.getLeft();
+        lp.leftMargin = lyricEditStartWord.getLeft() + startMeasure.getLeft();
         lp.topMargin = lyricEditStartWord.getTop() + lyricEditStartWord.getHeight();
         arrow.setLayoutParams(lp);
 
         Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.floating);
         arrow.startAnimation(animation);
 
-        clickPart.addView(arrow);
+        startPart.addView(arrow);
     }
 
-    public static boolean saveWordsIntoWordView() {
-        if(lyricEditStartMeasure == null || lyricEditStartWord == null) return false;
+    public static void saveWordsIntoWordView() {
+        if(lyricEditStartWord == null) return;
 
-        PartViewGroup part = (PartViewGroup)lyricEditStartMeasure.getParent();
+        MeasureViewGroup startMeasure = (MeasureViewGroup)lyricEditStartWord.getParent();
+        PartViewGroup startPart = (PartViewGroup)startMeasure.getParent();
         String lyric = ShowScoreActivity.lyricInputACTextView.getText().toString();
+
+        /* if user input lyric is empty */
         if(lyric.length() == 0) {
+            // set the current edit word to empty string
             lyricEditStartWord.setWord("");
             lyricEditStartWord.invalidate();
-            arrow.setAnimation(null);
-            part.removeView(arrow);
 
-            if(ShowScoreActivity.lyricInputACTextView.getText().length() > 0)
-                TextKeyListener.clear(ShowScoreActivity.lyricInputACTextView.getText());
+            // remove arrow animation
+            arrow.setAnimation(null);
+            startPart.removeView(arrow);
+
             ShowScoreActivity.lyricInputACTextView.setFocusable(false);
-            lyricEditStartMeasure = null;
             lyricEditStartWord = null;
             lyricEditing = false;
-            return true;
+            return;
         }
 
+        /* user input lyric is not empty */
         int i = 0;
+        int partStartIndex = startPart.getId() - ShowScoreActivity.partStartId;
+        int measureStartIndex = startMeasure.getId() - ShowScoreActivity.measureStartId;
         int wordStartIndex = lyricEditStartWord.getId() - ShowScoreActivity.wordStartId;
-        int measureStartIndex = lyricEditStartMeasure.getId() - ShowScoreActivity.measureStartId;
 
         saveWords:
-        for (int m = measureStartIndex; m < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; m++) {
-            MeasureViewGroup curSearchMeasure = (MeasureViewGroup)part.findViewById(m + ShowScoreActivity.measureStartId);
-            if(curSearchMeasure == null) break;
-            if(curSearchMeasure != lyricEditStartMeasure) wordStartIndex = 0;
+        for (int p = partStartIndex; p < ShowScoreActivity.partMaxNumber; p++) {
+            PartViewGroup curSearchPart = (PartViewGroup) ShowScoreActivity.score.findViewById(p + ShowScoreActivity.partStartId);
+            if (curSearchPart == null) break;
 
-            /* find word */
-            for (int w = wordStartIndex; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
-                WordView curSearchWord = (WordView)curSearchMeasure.findViewById(w + ShowScoreActivity.wordStartId);
-                if(curSearchWord == null) break;
+            for (int m = measureStartIndex; m < ShowScoreActivity.partStartId - ShowScoreActivity.measureStartId; m++) {
+                MeasureViewGroup curSearchMeasure = (MeasureViewGroup) curSearchPart.findViewById(m + ShowScoreActivity.measureStartId);
 
-                NoteViewGroup noteViewGroup = (NoteViewGroup)curSearchMeasure.findViewById(w + ShowScoreActivity.noteStartId);
-                if(noteViewGroup == null) break;
-                if(noteViewGroup.isTieEnd()) continue; // skip tie end
-                NumberView numberView = (NumberView)noteViewGroup.findViewById(R.id.number_view);
-                if("R-".contains(numberView.getNote())) continue; // skip rest note
-
-
-                if(i == lyric.length() - 1) {
-                    curSearchWord.setWord(lyric.substring(i, i + 1) + NumberedMusicalNotationParser.sentenceEndTag);
-                    break saveWords;
+                // save to the end of the part, reset measure index, step to the next part and
+                // continue saving words
+                if (curSearchMeasure == null) {
+                    measureStartIndex = 0;
+                    continue;
                 }
-                else curSearchWord.setWord(lyric.substring(i, i + 1));
-                curSearchWord.invalidate();
-                i++;
+
+                if (curSearchMeasure != startMeasure) wordStartIndex = 0;
+
+                /* start to save words */
+                for (int w = wordStartIndex; w < ShowScoreActivity.wordStartId - ShowScoreActivity.noteStartId; w++) {
+                    WordView curSearchWord = (WordView) curSearchMeasure.findViewById(w + ShowScoreActivity.wordStartId);
+                    if (curSearchWord == null) break;
+
+                    NoteViewGroup note = (NoteViewGroup) curSearchMeasure.findViewById(w + ShowScoreActivity.noteStartId);
+                    if (note == null) break;
+                    if (note.isTieEnd()) continue; // skip tie end
+                    NumberView numberView = (NumberView) note.findViewById(R.id.number_view);
+                    if ("R-".contains(numberView.getNote())) continue; // skip rest note
+
+
+                    if (i == lyric.length() - 1) { // save the last word
+                        curSearchWord.setWord(lyric.substring(i, i + 1) + NumberedMusicalNotationParser.sentenceEndTag);
+                        curSearchWord.invalidate();
+                        break saveWords;
+                    }
+                    else { // save a word
+                        curSearchWord.setWord(lyric.substring(i, i + 1));
+                        curSearchWord.invalidate();
+                        i++;
+                    }
+                }
             }
         }
 
+        // remove arrow animation
         arrow.setAnimation(null);
-        part.removeView(arrow);
+        startPart.removeView(arrow);
 
+
+        // prevent warning
         if(ShowScoreActivity.lyricInputACTextView.getText().length() > 0)
             TextKeyListener.clear(ShowScoreActivity.lyricInputACTextView.getText());
         ShowScoreActivity.lyricInputACTextView.setFocusable(false);
-        lyricEditStartMeasure = null;
         lyricEditStartWord = null;
         lyricEditing = false;
-
-        return true;
     }
 
     class BarView extends View {
