@@ -47,6 +47,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.auditor.button.AccidentalButton;
 import com.example.auditor.button.BeamButton;
@@ -647,6 +648,8 @@ public class ShowScoreActivity extends ActionBarActivity {
         String musicString = keySignature + tempo;
         String noteContext;
 
+        String lyric = "";
+
         ScoreViewGroup score = (ScoreViewGroup)scoreContainer.findViewById(R.id.score_view_group);
         for(int i = 0; i < partMaxNumber; i++) {
             PartViewGroup part = (PartViewGroup)score.findViewById(i + partStartId);
@@ -682,7 +685,11 @@ public class ShowScoreActivity extends ActionBarActivity {
                     if(note.isTieStart()) noteContext += "-";
 
                     WordView wordView = (WordView)measure.findViewById(k + wordStartId);
-                    if(wordView != null) noteContext += wordView.getWord();
+                    if(wordView != null) {
+                        String word = wordView.getWord();
+                        noteContext += word;
+                        lyric += word;
+                    }
 
                     noteContext += " ";
                     musicString += noteContext;
@@ -698,6 +705,8 @@ public class ShowScoreActivity extends ActionBarActivity {
         pattern = new Pattern(musicString);
         try { pattern.save(new File(txtDir + scoreName)); }
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
+
+        new UploadLyricTask().execute(lyric);
     }
 
     /**
@@ -1058,6 +1067,84 @@ public class ShowScoreActivity extends ActionBarActivity {
             suggestWords.addAll(a);
             wordAdapter.notifyDataSetChanged();
             lyricInputACTextView.showDropDown();
+        }
+    }
+
+    class UploadLyricTask extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... lyrics) {
+            String lyric = lyrics[0];
+
+            String url = "http://140.117.71.221/auditor/stest/upload_lyric.php";
+            String webRequestResult = "failed"; // web request result
+
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+            if(MainActivity.androidId == null)
+                nameValuePairs.add(new BasicNameValuePair("id", "anonymous"));
+            else
+                nameValuePairs.add(new BasicNameValuePair("id", MainActivity.androidId));
+            nameValuePairs.add(new BasicNameValuePair("score_name", scoreName.substring(0, scoreName.length() - 4)));
+            nameValuePairs.add(new BasicNameValuePair("lyric", lyric));
+            InputStream is = null;
+
+            //http post
+            try{
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(url);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
+                HttpResponse response = httpclient.execute(httppost);
+                HttpEntity entity = response.getEntity();
+                is = entity.getContent();
+            }
+            catch(Exception e){
+                Log.e(LOG_TAG, "Error in http connection " + e.toString());
+            }
+
+            //convert response to string
+            try{
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                is.close();
+                webRequestResult = sb.toString();
+
+                Log.e(LOG_TAG, "web: " + webRequestResult);
+            }
+            catch(Exception e) {
+                Log.e(LOG_TAG, "Error converting result " + e.toString());
+            }
+
+            // parse json data
+            try{
+                JSONArray jArray = new JSONArray(webRequestResult);
+                if(jArray.length() == 0) return false;
+
+                JSONObject jsonId = jArray.getJSONObject(0);
+                Log.i(LOG_TAG, "id: " + jsonId.getString("id"));
+
+                JSONObject jsonScoreName = jArray.getJSONObject(1);
+                Log.i(LOG_TAG, "name: " + jsonScoreName.getString("score_name"));
+
+                JSONObject jsonLyric = jArray.getJSONObject(2);
+                Log.i(LOG_TAG, "lyric: " + jsonLyric.getString("lyric"));
+            }
+            catch(JSONException e){
+                Log.e(LOG_TAG, "Error parsing data " + e.toString());
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean isSuccessful) {
+            super.onPostExecute(isSuccessful);
+            String msg;
+            if(isSuccessful) msg = "上傳成功!";
+            else msg = "上傳失敗";
+            Toast.makeText(ShowScoreActivity.this, msg, Toast.LENGTH_SHORT).show();
         }
     }
 

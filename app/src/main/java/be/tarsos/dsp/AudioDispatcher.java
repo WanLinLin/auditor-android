@@ -140,12 +140,11 @@ public class AudioDispatcher implements Runnable {
 	 *            AudioBufferSize is common (512, 1024) for an FFT.
 	 */
 	public AudioDispatcher(final TarsosDSPAudioInputStream stream, final int audioBufferSize, final int bufferOverlap){
-		
-		audioProcessors = new ArrayList<AudioProcessor>();
+		audioProcessors = new ArrayList<>();
 		audioInputStream = stream;
 
 		format = audioInputStream.getFormat();
-		audioEvent = new AudioEvent(format,audioInputStream.getFrameLength());
+		audioEvent = new AudioEvent(format, audioInputStream.getFrameLength());
 			
 		setStepSizeAndOverlap(audioBufferSize, bufferOverlap);
 		converter = TarsosDSPAudioFloatConverter.getConverter(format);
@@ -192,8 +191,7 @@ public class AudioDispatcher implements Runnable {
 	 */
 	public long durationInFrames(){
 		return audioInputStream.getFrameLength() ;
-	}	
-	
+	}
 	
 	/**
 	 * Skip a number of seconds before processing the stream.
@@ -275,15 +273,15 @@ public class AudioDispatcher implements Runnable {
 		try {
 			int bytesRead = 0;
 			
-			if(bytesToSkip!=0){
+			if(bytesToSkip != 0) {
 				audioInputStream.skip(bytesToSkip);
 				bytesProcessed += bytesToSkip;
 			}
 
             // process first buffer
-			if(zeroPad){
+			if(zeroPad) {
 				bytesRead = slideBuffer();
-			}else {
+			} else {
 				bytesRead = processFirstBuffer();
 			}
 
@@ -293,14 +291,13 @@ public class AudioDispatcher implements Runnable {
 			// bytes.
 		audioLoop:
 			while (bytesRead != -1 && !stopped) {
-                float convertTime;
-
-                //Makes sure the right buffers are processed, they can be changed by audio processors.
+                // Makes sure the right buffers are processed, they can be changed by audio processors.
 				audioEvent.setOverlap(floatOverlap);
 				audioEvent.setFloatBuffer(audioFloatBuffer);
 				audioEvent.setBytesProcessed(bytesProcessed);
 
                 /* added by Wan Lin */
+				float convertTime;
                 convertTime = (float)bytesRead / (float)format.getFrameSize() / format.getFrameRate();
                 audioEvent.setConvertTime(convertTime);
                 /* added by Wan Lin */
@@ -312,7 +309,7 @@ public class AudioDispatcher implements Runnable {
 					}
 				}
 
-				//Update the number of bytes processed;
+				// Update the number of bytes processed;
 				bytesProcessed += bytesRead;
 					
 				// Read, convert and process consecutive overlapping buffers.

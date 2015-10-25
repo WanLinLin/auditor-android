@@ -5,39 +5,85 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
+import com.example.auditor.AudioRecordPage;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.io.TarsosDSPAudioFloatConverter;
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
+import be.tarsos.dsp.io.UniversalAudioInputStream;
+
 public class ExtAudioRecorder {
+    private static final String LOG_TAG = "ExtAudioRecorder";
     private final static int[] sampleRates = {44100, 22050, 11025, 8000};
 
-    public static ExtAudioRecorder getInstanse(Boolean recordingCompressed)
-    {
-        ExtAudioRecorder result = null;
+    /* Wan Lin add */
+    private TarsosDSPAudioFormat format;
+    /**
+     * This buffer is reused again and again to store audio data using the float
+     * data type.
+     */
+    private float[] audioFloatBuffer;
 
-        if(recordingCompressed)
-        {
-//            Log.e("ExAudioRecorder", "Recording compressed!");
-            result = new ExtAudioRecorder(	false,
+    /**
+     * This buffer is reused again and again to store audio data using the byte
+     * data type.
+     */
+    private byte[] audioByteBuffer;
+
+    /**
+     * The floatOverlap: the number of elements that are copied in the buffer
+     * from the previous buffer. Overlap should be smaller (strict) than the
+     * buffer size and can be zero. Defined in number of samples.
+     */
+    private int floatOverlap, floatStepSize;
+
+    /**
+     * The overlap and stepsize defined not in samples but in bytes. So it
+     * depends on the bit depth. Since the int datatype is used only 8,16,24,...
+     * bits or 1,2,3,... bytes are supported.
+     */
+    private int byteOverlap, byteStepSize;
+
+    /**
+     * If true the dispatcher stops dispatching audio.
+     */
+    private boolean stopped = false;
+
+    private UniversalAudioInputStream universalAudioInputStream;
+
+    /**
+     * Converter converts an array of floats to an array of bytes (and vice
+     * versa).
+     */
+    private TarsosDSPAudioFloatConverter converter;
+    /* Wan Lin add */
+
+    public static ExtAudioRecorder getInstanse(Boolean recordingCompressed) {
+        ExtAudioRecorder result;
+
+        // recording compressed
+        if(recordingCompressed) {
+            result = new ExtAudioRecorder(false,
                     MediaRecorder.AudioSource.MIC,
                     sampleRates[3],
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT);
         }
-        else
-        {
-//            Log.e("ExAudioRecorder", "Recording uncompressed!");
-            int i=0;
-            do
-            {
-                result = new ExtAudioRecorder(	true,
+        else { // recording uncompressed, Auditor use this
+            int i = 0;
+            do {
+                result = new ExtAudioRecorder(true,
                         MediaRecorder.AudioSource.MIC,
                         sampleRates[i],
                         AudioFormat.CHANNEL_IN_MONO,
                         AudioFormat.ENCODING_PCM_16BIT);
 
-            } while((++i<sampleRates.length) & !(result.getState() == ExtAudioRecorder.State.INITIALIZING));
+            } while((++i < sampleRates.length) & !(result.getState() == ExtAudioRecorder.State.INITIALIZING));
         }
         return result;
     }
@@ -49,7 +95,7 @@ public class ExtAudioRecorder {
      * ERROR : reconstruction needed
      * STOPPED: reset needed
      */
-    public enum State {INITIALIZING, READY, RECORDING, ERROR, STOPPED};
+    public enum State {INITIALIZING, READY, RECORDING, ERROR, STOPPED}
 
     public static final boolean RECORDING_UNCOMPRESSED = false;
     public static final boolean RECORDING_COMPRESSED = true;
@@ -109,54 +155,56 @@ public class ExtAudioRecorder {
         return state;
     }
 
-    /*
-    *
-    * Method used for recording.
-    *
-    */
-    private AudioRecord.OnRecordPositionUpdateListener updateListener = new AudioRecord.OnRecordPositionUpdateListener()
-    {
-        public void onPeriodicNotification(AudioRecord recorder)
-        {
+    /**
+     * Method used for recording.
+     */
+    private AudioRecord.OnRecordPositionUpdateListener updateListener = new AudioRecord.OnRecordPositionUpdateListener() {
+        public void onPeriodicNotification(AudioRecord recorder) {
             audioRecorder.read(buffer, 0, buffer.length); // Fill buffer
-            try
-            {
+            try {
+                /* Wan Lin add: Audio pressure detect */
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(buffer);
+                universalAudioInputStream = new UniversalAudioInputStream(inputStream, format);
+                AudioDispatcher dispatcher = new AudioDispatcher(universalAudioInputStream, bufferSize, 0);
+
+                slideBuffer();
+                AudioRecordPage.updatePressure(soundPressureLevel(audioFloatBuffer));
+
+                /* Wan Lin add */
+
                 randomAccessWriter.write(buffer); // Write buffer to file
                 payloadSize += buffer.length;
-                if (bSamples == 16)
-                {
-                    for (int i=0; i<buffer.length/2; i++)
-                    { // 16bit sample size
+                if (bSamples == 16) {
+                    for (int i=0; i<buffer.length/2; i++) { // 16bit sample size
                         short curSample = getShort(buffer[i*2], buffer[i*2+1]);
-                        if (curSample > cAmplitude)
-                        { // Check amplitude
+                        if (curSample > cAmplitude) { // Check amplitude
                             cAmplitude = curSample;
                         }
                     }
                 }
-                else
-                { // 8bit sample size
-                    for (int i=0; i<buffer.length; i++)
-                    {
-                        if (buffer[i] > cAmplitude)
-                        { // Check amplitude
+                else { // 8bit sample size
+                    for (int i=0; i<buffer.length; i++) {
+                        if (buffer[i] > cAmplitude) { // Check amplitude
                             cAmplitude = buffer[i];
                         }
                     }
                 }
+
+                /* Wan Lin add */
+                dispatcher.stop();
+                /* Wan Lin add */
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 Log.e(ExtAudioRecorder.class.getName(), "Error occured in updateListener, recording is aborted");
                 //stop();
             }
         }
 
-        public void onMarkerReached(AudioRecord recorder)
-        {
+        public void onMarkerReached(AudioRecord recorder) {
             // NOT USED
         }
     };
+
     /**
      *
      *
@@ -166,35 +214,27 @@ public class ExtAudioRecorder {
      * In case of errors, no exception is thrown, but the state is set to ERROR
      *
      */
-    public ExtAudioRecorder(boolean uncompressed, int audioSource, int sampleRate, int channelConfig, int audioFormat)
-    {
-        try
-        {
+    public ExtAudioRecorder(boolean uncompressed, int audioSource, int sampleRate, int channelConfig, int audioFormat) {
+        try {
             rUncompressed = uncompressed;
-            if (rUncompressed)
-            { // RECORDING_UNCOMPRESSED
-                if (audioFormat == AudioFormat.ENCODING_PCM_16BIT)
-                {
+            if (rUncompressed) { // RECORDING_UNCOMPRESSED, Auditor use this
+                if (audioFormat == AudioFormat.ENCODING_PCM_16BIT) {
                     bSamples = 16;
                 }
-                else
-                {
+                else {
                     bSamples = 8;
                 }
 
-                if (channelConfig == AudioFormat.CHANNEL_IN_MONO)
-                {
+                if (channelConfig == AudioFormat.CHANNEL_IN_MONO) {
                     nChannels = 1;
                 }
-                else
-                {
+                else {
                     nChannels = 2;
                 }
 
                 aSource = audioSource;
                 sRate   = sampleRate;
                 aFormat = audioFormat;
-
 //                framePeriod = sampleRate * TIMER_INTERVAL / 1000;
 //                bufferSize = framePeriod * 2 * bSamples * nChannels / 8;
 //                if (bufferSize < AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat))
@@ -214,24 +254,33 @@ public class ExtAudioRecorder {
                     throw new Exception("AudioRecord initialization failed");
                 audioRecorder.setRecordPositionUpdateListener(updateListener);
                 audioRecorder.setPositionNotificationPeriod(framePeriod);
-            } else
-            { // RECORDING_COMPRESSED
+
+                /* Wan Lin add */
+                format = new TarsosDSPAudioFormat(sRate, 16, 1, true, false);
+                converter = TarsosDSPAudioFloatConverter.getConverter(format);
+                audioFloatBuffer = new float[bufferSize];
+                floatOverlap = 0;
+                floatStepSize = audioFloatBuffer.length - floatOverlap;
+                audioByteBuffer = new byte[audioFloatBuffer.length * format.getFrameSize()];
+                byteOverlap = floatOverlap * format.getFrameSize();
+                byteStepSize = floatStepSize * format.getFrameSize();
+                /* Wan Lin add */
+            }
+            else { // RECORDING_COMPRESSED
                 mediaRecorder = new MediaRecorder();
                 mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                 mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
                 mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             }
+
             cAmplitude = 0;
             filePath = null;
             state = State.INITIALIZING;
-        } catch (Exception e)
-        {
-            if (e.getMessage() != null)
-            {
+        } catch (Exception e) {
+            if (e.getMessage() != null) {
                 Log.e(ExtAudioRecorder.class.getName(), e.getMessage());
             }
-            else
-            {
+            else {
                 Log.e(ExtAudioRecorder.class.getName(), "Unknown error occured while initializing recording");
             }
             state = State.ERROR;
@@ -278,34 +327,26 @@ public class ExtAudioRecorder {
      * @return returns the largest amplitude since the last call, or 0 when not in recording state.
      *
      */
-    public int getMaxAmplitude()
-    {
-        if (state == State.RECORDING)
-        {
-            if (rUncompressed)
-            {
+    public int getMaxAmplitude() {
+        if (state == State.RECORDING) {
+            if (rUncompressed) {
                 int result = cAmplitude;
                 cAmplitude = 0;
                 return result;
             }
-            else
-            {
-                try
-                {
+            else {
+                try {
                     return mediaRecorder.getMaxAmplitude();
                 }
-                catch (IllegalStateException e)
-                {
+                catch (IllegalStateException e) {
                     return 0;
                 }
             }
         }
-        else
-        {
+        else {
             return 0;
         }
     }
-
 
     /**
      *
@@ -315,16 +356,11 @@ public class ExtAudioRecorder {
      * In case of an exception, the state is changed to ERROR
      *
      */
-    public void prepare() throws IllegalStateException, IOException
-    {
-        try
-        {
-            if (state == State.INITIALIZING)
-            {
-                if (rUncompressed)
-                {
-                    if ((audioRecorder.getState() == AudioRecord.STATE_INITIALIZED) & (filePath != null))
-                    {
+    public void prepare() throws IllegalStateException, IOException {
+        try {
+            if (state == State.INITIALIZING) {
+                if (rUncompressed) {
+                    if ((audioRecorder.getState() == AudioRecord.STATE_INITIALIZED) & (filePath != null)) {
                         // write file header
 
                         randomAccessWriter = new RandomAccessFile(filePath, "rw");
@@ -347,27 +383,23 @@ public class ExtAudioRecorder {
                         buffer = new byte[framePeriod*bSamples/8*nChannels];
                         state = State.READY;
                     }
-                    else
-                    {
+                    else {
                         Log.e(ExtAudioRecorder.class.getName(), "prepare() method called on uninitialized recorder");
                         state = State.ERROR;
                     }
                 }
-                else
-                {
+                else {
                     mediaRecorder.prepare();
                     state = State.READY;
                 }
             }
-            else
-            {
+            else {
                 Log.e(ExtAudioRecorder.class.getName(), "prepare() method called on illegal state");
                 release();
                 state = State.ERROR;
             }
         }
-        catch(Exception e)
-        {
+        catch(Exception e) {
             if (e.getMessage() != null)
             {
                 Log.e(ExtAudioRecorder.class.getName(), e.getMessage());
@@ -386,14 +418,11 @@ public class ExtAudioRecorder {
      *  Releases the resources associated with this class, and removes the unnecessary files, when necessary
      *
      */
-    public void release()
-    {
-        if (state == State.RECORDING)
-        {
+    public void release() {
+        if (state == State.RECORDING) {
             stop();
         }
-        else
-        {
+        else {
             if ((state == State.READY) & (rUncompressed))
             {
                 try
@@ -408,17 +437,13 @@ public class ExtAudioRecorder {
             }
         }
 
-        if (rUncompressed)
-        {
-            if (audioRecorder != null)
-            {
+        if (rUncompressed) {
+            if (audioRecorder != null) {
                 audioRecorder.release();
             }
         }
-        else
-        {
-            if (mediaRecorder != null)
-            {
+        else {
+            if (mediaRecorder != null) {
                 mediaRecorder.release();
             }
         }
@@ -432,21 +457,16 @@ public class ExtAudioRecorder {
      * In case of exceptions the class is set to the ERROR state.
      *
      */
-    public void reset()
-    {
-        try
-        {
-            if (state != State.ERROR)
-            {
+    public void reset() {
+        try {
+            if (state != State.ERROR) {
                 release();
                 filePath = null; // Reset file path
                 cAmplitude = 0; // Reset amplitude
-                if (rUncompressed)
-                {
+                if (rUncompressed) {
                     audioRecorder = new AudioRecord(aSource, sRate, nChannels+1, aFormat, bufferSize);
                 }
-                else
-                {
+                else {
                     mediaRecorder = new MediaRecorder();
                     mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                     mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -455,8 +475,7 @@ public class ExtAudioRecorder {
                 state = State.INITIALIZING;
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Log.e(ExtAudioRecorder.class.getName(), e.getMessage());
             state = State.ERROR;
         }
@@ -469,24 +488,19 @@ public class ExtAudioRecorder {
      * Call after prepare().
      *
      */
-    public void start()
-    {
-        if (state == State.READY)
-        {
-            if (rUncompressed)
-            {
+    public void start() {
+        if (state == State.READY) {
+            if (rUncompressed) {
                 payloadSize = 0;
                 audioRecorder.startRecording();
                 audioRecorder.read(buffer, 0, buffer.length);
             }
-            else
-            {
+            else {
                 mediaRecorder.start();
             }
             state = State.RECORDING;
         }
-        else
-        {
+        else {
             Log.e(ExtAudioRecorder.class.getName(), "start() called on illegal state");
             state = State.ERROR;
         }
@@ -500,38 +514,31 @@ public class ExtAudioRecorder {
      * Also finalizes the wave file in case of uncompressed recording.
      *
      */
-    public void stop()
-    {
-        if (state == State.RECORDING)
-        {
-            if (rUncompressed)
-            {
+    public void stop() {
+        if (state == State.RECORDING) {
+            if (rUncompressed) {
                 audioRecorder.stop();
 
-                try
-                {
+                try {
                     randomAccessWriter.seek(4); // Write size to RIFF header
-                    randomAccessWriter.writeInt(Integer.reverseBytes(36+payloadSize));
+                    randomAccessWriter.writeInt(Integer.reverseBytes(36 + payloadSize));
 
                     randomAccessWriter.seek(40); // Write size to Subchunk2Size field
                     randomAccessWriter.writeInt(Integer.reverseBytes(payloadSize));
 
                     randomAccessWriter.close();
                 }
-                catch(IOException e)
-                {
+                catch(IOException e) {
                     Log.e(ExtAudioRecorder.class.getName(), "I/O exception occured while closing output file");
                     state = State.ERROR;
                 }
             }
-            else
-            {
+            else {
                 mediaRecorder.stop();
             }
             state = State.STOPPED;
         }
-        else
-        {
+        else {
             Log.e(ExtAudioRecorder.class.getName(), "stop() called on illegal state");
             state = State.ERROR;
         }
@@ -541,11 +548,74 @@ public class ExtAudioRecorder {
     public int getBitSamples(){ return bSamples; }
     public int getChannels(){ return nChannels; }
     public int getFramePeriod() { return framePeriod; }
+    public int getBufferSize() {
+        return bufferSize;
+    }
+    public AudioRecord getAudioRecorder() {
+        return audioRecorder;
+    }
+    private double soundPressureLevel(final float[] buffer) {
+        double power = 0.0D;
+        for (float element : buffer) {
+            power += element * element;
+        }
+        double value = Math.pow(power, 0.5) / buffer.length;
 
-    /*
+        return 20.0 * Math.log10(value);
+    }
+    /**
+     * Slides a buffer with an floatOverlap and reads new data from the stream.
+     * to the correct place in the buffer. E.g. with a buffer size of 9 and
+     * floatOverlap of 3.
      *
+     * <pre>
+     *      | 0 | 1 | 3 | 3 | 4  | 5  | 6  | 7  | 8  |
+     *                        |
+     *                Slide (9 - 3 = 6)
+     *                        |
+     *                        v
+     *      | 6 | 7 | 8 | _ | _  | _  | _  | _  | _  |
+     *                        |
+     *        Fill from 3 to (3+6) exclusive
+     *                        |
+     *                        v
+     *      | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 |
+     * </pre>
+     *
+     * @return The number of bytes read.
+     * @throws IOException
+     *             When something goes wrong while reading the stream. In
+     *             particular, an IOException is thrown if the input stream has
+     *             been closed.
+     */
+    private int slideBuffer() throws IOException {
+        assert floatOverlap < audioFloatBuffer.length;
+
+        // Is array copy faster to shift an array? Probably..
+        System.arraycopy(audioFloatBuffer, floatStepSize, audioFloatBuffer, 0 ,floatOverlap);
+
+        int bytesRead = 0;
+
+        // Check here if the dispatcher is stopped to prevent reading from a closed audio stream.
+        if(stopped){
+            bytesRead = -1;
+        }
+        else{
+            int currentBytesRead = 0;
+            //Always read a full byte buffer!
+            while(bytesRead != -1 && currentBytesRead < byteStepSize){
+                bytesRead = universalAudioInputStream.read(audioByteBuffer, byteOverlap + currentBytesRead , byteStepSize - currentBytesRead);
+                currentBytesRead += bytesRead;
+            }
+            bytesRead = currentBytesRead;
+            converter.toFloatArray(audioByteBuffer, byteOverlap, audioFloatBuffer, floatOverlap, floatStepSize);
+        }
+
+        return bytesRead;
+    }
+
+    /**
      * Converts a byte[2] to a short, in LITTLE_ENDIAN format
-     *
      */
     private short getShort(byte argB1, byte argB2)
     {

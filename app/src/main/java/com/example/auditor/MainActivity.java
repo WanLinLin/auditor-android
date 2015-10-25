@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
 
     // TODO upload lyric using phone id
     // android phone id
-    private String androidId;
+    public static String androidId;
 
     private boolean isPlaying = false;
 

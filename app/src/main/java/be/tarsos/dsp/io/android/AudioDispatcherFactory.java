@@ -25,6 +25,7 @@ package be.tarsos.dsp.io.android;
 
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.io.TarsosDSPAudioFormat;
 import be.tarsos.dsp.io.TarsosDSPAudioInputStream;
@@ -56,9 +57,9 @@ public class AudioDispatcherFactory {
 		int minAudioBufferSize = AudioRecord.getMinBufferSize(sampleRate,
 				android.media.AudioFormat.CHANNEL_IN_MONO,
 				android.media.AudioFormat.ENCODING_PCM_16BIT);
-		int minAudioBufferSizeInSamples =  minAudioBufferSize/2;
+		int minAudioBufferSizeInSamples =  minAudioBufferSize / 2;
 		if(minAudioBufferSizeInSamples <= audioBufferSize ){
-		AudioRecord audioInputStream = new AudioRecord(
+			AudioRecord audioInputStream = new AudioRecord(
 				MediaRecorder.AudioSource.MIC, sampleRate,
 				android.media.AudioFormat.CHANNEL_IN_MONO,
 				android.media.AudioFormat.ENCODING_PCM_16BIT,
@@ -70,11 +71,10 @@ public class AudioDispatcherFactory {
 		//start recording ! Opens the stream.
 		audioInputStream.startRecording();
 		return new AudioDispatcher(audioStream,audioBufferSize,bufferOverlap);
-		}else{
+		}
+		else{
 			new IllegalArgumentException("Buffer size too small should be at least " + (minAudioBufferSize *2));
 			return null;
 		}
-		
-		
 	}
 }

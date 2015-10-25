@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.auditor.convert.SongConverter;
@@ -36,7 +37,8 @@ public class AudioRecordPage extends Fragment{
     private SlidingTabActivity slidingTabActivity;
     public static final int bufferSize = 1024;
     private EditText userInput;
-    private boolean setFileName;
+    private RelativeLayout rootView;
+    private static TextView pressure;
 
     public AudioRecordPage() {
         super();
@@ -51,7 +53,7 @@ public class AudioRecordPage extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        RelativeLayout rootView = (RelativeLayout)inflater.inflate(R.layout.audio_record_page, container, false);
+        rootView = (RelativeLayout)inflater.inflate(R.layout.audio_record_page, container, false);
         Bundle args = getArguments();
 
         RecordButton recordButton = new RecordButton(slidingTabActivity);
@@ -66,6 +68,8 @@ public class AudioRecordPage extends Fragment{
         // add recordButton into the audioRecordRL
         rootView.addView(recordButton, btLayoutParams);
         /* ----LAYOUT SETTING---- */
+
+        pressure = (TextView)rootView.findViewById(R.id.pitch);
 
         return rootView;
     }
@@ -108,12 +112,15 @@ public class AudioRecordPage extends Fragment{
     }
 
     private void startRecording() {
-        // false means not compressed
         extAudioRecorder = ExtAudioRecorder.getInstanse(ExtAudioRecorder.RECORDING_UNCOMPRESSED);
-        extAudioRecorder.setOutputFile(tmpFileName);
 
-        try { extAudioRecorder.prepare(); }
-        catch (IOException e) { Log.e(LOG_TAG, ".prepare() failed"); }
+        extAudioRecorder.setOutputFile(tmpFileName);
+        try {
+            extAudioRecorder.prepare();
+        }
+        catch (IOException e) {
+            Log.e(LOG_TAG, ".prepare() failed");
+        }
         extAudioRecorder.start();
     }
 
@@ -157,7 +164,6 @@ public class AudioRecordPage extends Fragment{
                                             getResources().getString(R.string.save_failed),
                                             Toast.LENGTH_SHORT).show();
                                 }
-                                setFileName = true;
                             }
                         })
                 .setNegativeButton(R.string.cancel, // click no
@@ -166,12 +172,16 @@ public class AudioRecordPage extends Fragment{
                                 dialog.cancel();
                                 File tmpFile = new File(tmpFileName);
                                 tmpFile.delete();
-                                setFileName = false;
                             }
                         });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    public static void updatePressure(double level) {
+        String text = "pressure: " + Double.toString(level);
+        pressure.setText(text);
     }
 
     private class ConvertSongTask extends AsyncTask<String, Void, Boolean> {
