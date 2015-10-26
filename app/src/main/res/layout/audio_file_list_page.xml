@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/record_page_bg"
     android:id="@+id/audio_file_list_page">
 
     <RelativeLayout
@@ -16,6 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/controller_container"
-        android:id="@+id/audio_file_list_view" />
+        android:id="@+id/audio_file_list_view"
+        android:divider="@color/SlideTabsBorder"
+        android:dividerHeight="1dp" />
 
 </RelativeLayout>

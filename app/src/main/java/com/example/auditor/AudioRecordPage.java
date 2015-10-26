@@ -3,24 +3,25 @@ package com.example.auditor;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.auditor.convert.SongConverter;
 import com.example.auditor.song.ExtAudioRecorder;
+import com.example.auditor.view.RecordButton;
+import com.example.auditor.view.WaveView;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,10 +36,18 @@ public class AudioRecordPage extends Fragment{
     private static String tmpFileName = null;
     private ExtAudioRecorder extAudioRecorder = null;
     private SlidingTabActivity slidingTabActivity;
+
     public static final int bufferSize = 1024;
+    public static final double minLevel = -90;
+    public static final double maxLevel = -30;
+
     private EditText userInput;
     private RelativeLayout rootView;
-    private static TextView pressure;
+    boolean mStartRecording = true;
+    private static WaveView waveView;
+    private Chronometer chronometer;
+
+    long escapeTime = 0;
 
     public AudioRecordPage() {
         super();
@@ -54,22 +63,17 @@ public class AudioRecordPage extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = (RelativeLayout)inflater.inflate(R.layout.audio_record_page, container, false);
-        Bundle args = getArguments();
+        waveView = (WaveView)rootView.findViewById(R.id.wave_view);
+        chronometer = (Chronometer) rootView.findViewById(R.id.chronometer);
 
-        RecordButton recordButton = new RecordButton(slidingTabActivity);
-        // setting basic recordButton parameters
-        RelativeLayout.LayoutParams btLayoutParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-        );
-        // set recordButton to be the center of the screen
-        btLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
-        btLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        // add recordButton into the audioRecordRL
-        rootView.addView(recordButton, btLayoutParams);
-        /* ----LAYOUT SETTING---- */
-
-        pressure = (TextView)rootView.findViewById(R.id.pitch);
+        RecordButton recordButton = (RecordButton)rootView.findViewById(R.id.record_button);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRecord(mStartRecording);
+                mStartRecording = !mStartRecording;
+            }
+        });
 
         return rootView;
     }
@@ -78,29 +82,6 @@ public class AudioRecordPage extends Fragment{
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         slidingTabActivity = (SlidingTabActivity)activity;
-    }
-
-    class RecordButton extends Button {
-        boolean mStartRecording = true;
-
-        OnClickListener clicker = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRecord(mStartRecording);
-                if (mStartRecording)
-                    setText(R.string.stop);
-                else
-                    setText(R.string.record);
-
-                mStartRecording = !mStartRecording;
-            }
-        };
-
-        public RecordButton(Context ctx) {
-            super(ctx);
-            setText(R.string.record);
-            setOnClickListener(clicker);
-        }
     }
 
     /* record */
@@ -122,12 +103,20 @@ public class AudioRecordPage extends Fragment{
             Log.e(LOG_TAG, ".prepare() failed");
         }
         extAudioRecorder.start();
+
+        chronometer.setBase(SystemClock.elapsedRealtime() + escapeTime);
+        chronometer.start();
     }
 
     private void stopRecording() {
         extAudioRecorder.stop();
         extAudioRecorder.release();
         extAudioRecorder = null;
+        waveView.setPressure(minLevel);
+        waveView.invalidate();
+
+        escapeTime = chronometer.getBase() - SystemClock.elapsedRealtime();
+        chronometer.stop();
 
         setFileName();
     }
@@ -177,11 +166,25 @@ public class AudioRecordPage extends Fragment{
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                // reset the chronometer
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                chronometer.stop();
+                escapeTime = 0;
+
+                // reset wave view
+                waveView.setPressure(minLevel);
+                waveView.invalidate();
+            }
+        });
     }
 
     public static void updatePressure(double level) {
-        String text = "pressure: " + Double.toString(level);
-        pressure.setText(text);
+        waveView.setPressure(level);
+        waveView.invalidate();
     }
 
     private class ConvertSongTask extends AsyncTask<String, Void, Boolean> {

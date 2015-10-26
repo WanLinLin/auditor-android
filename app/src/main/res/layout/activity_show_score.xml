@@ -141,7 +141,7 @@
             android:id="@+id/edit_score_group"
             android:layout_centerInParent="true">
 
-            <com.example.auditor.button.BlankView
+            <com.example.auditor.view.BlankView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_blank_view"
@@ -150,7 +150,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_margin="@dimen/edit_score_button_margin" />
 
-            <com.example.auditor.button.AccidentalButton
+            <com.example.auditor.view.AccidentalButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_accident_button"
@@ -160,7 +160,7 @@
                 android:layout_below="@id/edit_blank_view"
                 android:layout_margin="@dimen/edit_score_button_margin"/>
 
-            <com.example.auditor.button.NumberButton
+            <com.example.auditor.view.NumberButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_number_button"
@@ -169,7 +169,7 @@
                 android:layout_below="@id/edit_blank_view"
                 android:layout_margin="@dimen/edit_score_button_margin"/>
 
-            <com.example.auditor.button.BeamButton
+            <com.example.auditor.view.BeamButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_beam_button"
@@ -178,7 +178,7 @@
                 android:layout_toRightOf="@id/edit_blank_view"
                 android:layout_margin="@dimen/edit_score_button_margin" />
 
-            <com.example.auditor.button.DottedButton
+            <com.example.auditor.view.DottedButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_dot_button"
@@ -187,7 +187,7 @@
                 android:layout_below="@id/edit_blank_view"
                 android:layout_margin="@dimen/edit_score_button_margin"/>
 
-            <com.example.auditor.button.OctaveButton
+            <com.example.auditor.view.OctaveButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_top_octave_button"
@@ -196,7 +196,7 @@
                 android:layout_toRightOf="@id/edit_blank_view"
                 android:layout_margin="@dimen/edit_score_button_margin"/>
 
-            <com.example.auditor.button.OctaveButton
+            <com.example.auditor.view.OctaveButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@id/edit_bottom_octave_button"

@@ -28,8 +28,9 @@ import java.util.Date;
  * Created by wanlin on 2015/10/8.
  */
 public class ScoreFileListPage extends Fragment{
-    private static String LOG_TAG = ScoreFileListPage.class.getName();
+    private static String LOG_TAG = "ScoreFileListPage";
     private static final String txtDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/txt/";
+    private static final String midiDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/midi/";
     private File txtDirFiles = new File(txtDir);
     private ScoreAdapter scoreAdapter;
     private ArrayList<Score> scoreList;
@@ -45,14 +46,19 @@ public class ScoreFileListPage extends Fragment{
         this.slidingTabActivity = slidingTabActivity;
         scoreList = new ArrayList<>();
         getScoreList();
+        scoreAdapter = new ScoreAdapter(slidingTabActivity, scoreList, this);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        scoreListView = new ListView(getActivity());
-        scoreAdapter = new ScoreAdapter(slidingTabActivity, scoreList, this);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        RelativeLayout rootView = (RelativeLayout)inflater.inflate(R.layout.score_file_list_page, container, false);
+
+        scoreListView = (ListView) rootView.findViewById(R.id.score_file_list_view);
         scoreListView.setAdapter(scoreAdapter);
         scoreListView.setTextFilterEnabled(true);
         scoreListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -63,12 +69,6 @@ public class ScoreFileListPage extends Fragment{
                 startActivity(intent);
             }
         });
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        RelativeLayout rootView = (RelativeLayout)inflater.inflate(R.layout.score_file_list_page, container, false);
-        rootView.addView(scoreListView);
 
         return rootView;
     }
@@ -132,6 +132,16 @@ public class ScoreFileListPage extends Fragment{
                                             Toast.LENGTH_SHORT).show();
                                 }
                                 refreshList();
+
+                                File midiFrom =
+                                        new File(midiDir + score.getTitle().substring(0, score.getTitle().length() - 4) + ".mid");
+                                File midiTo = new File(
+                                        midiDir + userInput.getText() + ".mid");
+                                if (!midiFrom.renameTo(midiTo)) {
+                                    Toast.makeText(slidingTabActivity,
+                                            getString(R.string.failed),
+                                            Toast.LENGTH_SHORT).show();
+                                }
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -167,8 +177,9 @@ public class ScoreFileListPage extends Fragment{
                 .setPositiveButton(R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                File fileToDelete = new File(txtDir + score.getTitle());
-                                if (!fileToDelete.delete()) {
+                                File scoreFile = new File(txtDir + score.getTitle());
+                                File midiFile = new File(midiDir + score.getTitle().substring(0, score.getTitle().length()-4) + ".mid");
+                                if (!scoreFile.delete() || !midiFile.delete()) {
                                     Toast.makeText(
                                             slidingTabActivity,
                                             getString(R.string.delete_failed),

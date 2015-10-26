@@ -27,8 +27,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.auditor.button.PlayButton;
-import com.example.auditor.button.SkipButton;
+import com.example.auditor.view.PlayButton;
+import com.example.auditor.view.SkipButton;
 import com.example.auditor.convert.SongConverter;
 import com.example.auditor.song.MusicService;
 
@@ -52,7 +52,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     private SlidingTabActivity slidingTabActivity;
     private EditText userInput;
     private ListView songListView;
-    private ArrayList<Song> songList = new ArrayList<>();
+    private ArrayList<Song> songList;
 
     private boolean playbackPaused = false;
     private boolean musicBound = false;
@@ -78,9 +78,10 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     public AudioFileListPage(SlidingTabActivity slidingTabActivity) {
         super();
         this.slidingTabActivity = slidingTabActivity;
+
+        songList = new ArrayList<>();
         getSongList();
-        playButton = new PlayButton(slidingTabActivity);
-        seekBar = new SeekBar(slidingTabActivity);
+        songAdt = new SongAdapter(slidingTabActivity, songList, this);
 
         musicConnection = new ServiceConnection() {
             @Override
@@ -145,7 +146,8 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        songAdt = new SongAdapter(slidingTabActivity, songList, this);
+        playButton = new PlayButton(slidingTabActivity);
+        seekBar = new SeekBar(slidingTabActivity);
     }
 
     @Override
@@ -415,6 +417,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
 
     private void setController() {
         controllerContainer = (RelativeLayout) rootView.findViewById(R.id.controller_container);
+        if(songList.isEmpty()) controllerContainer.setVisibility(View.GONE);
 
         seekBar.setId(R.id.seek_bar);
         RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -508,6 +511,7 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
         // update song list view and reset songList of musicService
         songList.clear();
         getSongList();
+        if(!controllerContainer.isShown()) controllerContainer.setVisibility(View.VISIBLE);
         if(musicService != null) musicService.setList(songList);
         if(songAdt != null) songAdt.notifyDataSetChanged();
     }

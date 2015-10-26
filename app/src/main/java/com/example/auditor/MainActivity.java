@@ -4,28 +4,39 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
 import java.io.File;
 
 
 public class MainActivity extends Activity {
-    private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
     private static final String LOG_TAG = "MainActivity";
-
-    // TODO upload lyric using phone id
-    // android phone id
-    public static String androidId;
-
-    private boolean isPlaying = false;
+    private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
+    public static String androidId; // android phone id
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final ImageView auditorIcon = (ImageView)findViewById(R.id.auditor_icon);
+        Animation iconAnimation = AnimationUtils.loadAnimation(this, R.anim.zoom);
+        iconAnimation.setDuration(1000);
+        iconAnimation.setFillAfter(true);
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                auditorIcon.clearAnimation();
+
+                Intent i = new Intent(MainActivity.this, SlidingTabActivity.class);
+                MainActivity.this.startActivity(i);
+            }
+        }, iconAnimation.getDuration());
+        auditorIcon.startAnimation(iconAnimation);
 
         androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.e(LOG_TAG, "android id: " + androidId);
@@ -46,35 +57,16 @@ public class MainActivity extends Activity {
         txt.mkdir();
     }
 
-    public void goToAudioRecord(View view){
-        Intent intent = new Intent(this, AudioRecordActivity.class);
-        startActivity(intent);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ImageView auditorIcon = (ImageView)findViewById(R.id.auditor_icon);
+        Animation iconAnimation = AnimationUtils.loadAnimation(this, R.anim.zoom);
+        auditorIcon.startAnimation(iconAnimation);
     }
 
     public void goToSlidingTabActivity(View view){
         Intent intent = new Intent(this, SlidingTabActivity.class);
         startActivity(intent);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

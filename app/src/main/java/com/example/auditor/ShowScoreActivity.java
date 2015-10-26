@@ -49,23 +49,23 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.auditor.button.AccidentalButton;
-import com.example.auditor.button.BeamButton;
-import com.example.auditor.button.DottedButton;
-import com.example.auditor.button.NumberButton;
-import com.example.auditor.button.OctaveButton;
-import com.example.auditor.button.PlayButton;
-import com.example.auditor.score.AccidentalView;
-import com.example.auditor.score.BeamView;
-import com.example.auditor.score.DottedView;
-import com.example.auditor.score.MeasureViewGroup;
-import com.example.auditor.score.NoteViewGroup;
-import com.example.auditor.score.NumberView;
-import com.example.auditor.score.NumberedMusicalNotationParser;
-import com.example.auditor.score.OctaveView;
-import com.example.auditor.score.PartViewGroup;
-import com.example.auditor.score.ScoreViewGroup;
-import com.example.auditor.score.WordView;
+import com.example.auditor.view.AccidentalButton;
+import com.example.auditor.view.BeamButton;
+import com.example.auditor.view.DottedButton;
+import com.example.auditor.view.NumberButton;
+import com.example.auditor.view.OctaveButton;
+import com.example.auditor.view.PlayButton;
+import com.example.auditor.view.AccidentalView;
+import com.example.auditor.view.BeamView;
+import com.example.auditor.view.DottedView;
+import com.example.auditor.view.MeasureViewGroup;
+import com.example.auditor.view.NoteViewGroup;
+import com.example.auditor.view.NumberView;
+import com.example.auditor.convert.NumberedMusicalNotationParser;
+import com.example.auditor.view.OctaveView;
+import com.example.auditor.view.PartViewGroup;
+import com.example.auditor.view.ScoreViewGroup;
+import com.example.auditor.view.WordView;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -76,6 +76,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.jfugue.midi.MidiFileManager;
 import org.jfugue.pattern.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -705,6 +706,12 @@ public class ShowScoreActivity extends ActionBarActivity {
         pattern = new Pattern(musicString);
         try { pattern.save(new File(txtDir + scoreName)); }
         catch (IOException e) { Log.e(LOG_TAG, "IOE"); }
+
+        try { MidiFileManager.savePatternToMidi(pattern, new File(midiDir + scoreName.substring(0, scoreName.length() - 4) + ".mid")); }
+        catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage());
+            Toast.makeText(this, "儲存 MIDI 失敗", Toast.LENGTH_SHORT).show();
+        }
 
         new UploadLyricTask().execute(lyric);
     }

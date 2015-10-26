@@ -2,12 +2,31 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/record_page_bg"
     android:id="@+id/audio_record_page">
 
-    <TextView
+    <com.example.auditor.view.RecordButton
+        android:layout_width="@dimen/record_button_size"
+        android:layout_height="@dimen/record_button_size"
+        android:layout_centerInParent="true"
+        android:id="@+id/record_button" />
+
+    <com.example.auditor.view.WaveView
+        android:layout_width="@dimen/wave_view_size"
+        android:layout_height="@dimen/wave_view_size"
+        android:layout_centerInParent="true"
+        android:id="@+id/wave_view" />
+
+    <Chronometer
+        android:id="@+id/chronometer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="pressure: "
-        android:id="@+id/pitch"/>
+        android:fontFamily="sans-serif-light"
+        android:textStyle="normal"
+        android:textSize="@dimen/chronometer_text_size"
+        android:textColor="@color/White"
+        android:layout_marginBottom="10dp"
+        android:layout_above="@id/record_button"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -6,7 +6,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
-import com.example.auditor.AudioRecordActivity;
+import com.example.auditor.AudioRecordPage;
 import com.example.auditor.song.ExtAudioRecorder;
 
 import org.jfugue.midi.MidiFileManager;
@@ -98,8 +98,8 @@ public class SongConverter {
         // set audio dispatcher
         dispatcher = new AudioDispatcher(
                 universalAudioInputStream,
-                AudioRecordActivity.bufferSize,
-                AudioRecordActivity.bufferSize / 2);
+                AudioRecordPage.bufferSize,
+                AudioRecordPage.bufferSize / 2);
 
         // set pitch detection handler, concat consecutive same note and time
         PitchDetectionHandler pdh = new PitchDetectionHandler() {
@@ -139,7 +139,7 @@ public class SongConverter {
         AudioProcessor ap = new PitchProcessor(
                 PitchProcessor.PitchEstimationAlgorithm.FFT_YIN,
                 universalAudioInputStream.getFormat().getSampleRate(),
-                AudioRecordActivity.bufferSize, pdh);
+                AudioRecordPage.bufferSize, pdh);
 
         // add audio processor into audio dispatcher
         dispatcher.addAudioProcessor(ap);
@@ -154,9 +154,6 @@ public class SongConverter {
         // convert byte file into float pitches, and store note names and time duration into
         dispatcher.run();
 
-//        for(Pair<String, Float> p : noteAndTimeList)
-//                Log.i(LOG_TAG, "notation: " + p.first + ", duration: " + p.second);
-
         // concat notes, handle vibration and overtone
         processNoteAndTimeList();
 
@@ -167,8 +164,12 @@ public class SongConverter {
                 noteResults.add(noteResult);
         }
 
-//        for(Pair<String, Float> p : noteAndTimeResultList)
-//            Log.e(getClass().getName(), "notation: " + p.first + ", duration: " + p.second);
+//        for(Pair<String, Float> p: noteAndTimeList) {
+//            NoteResult noteResult = timeToNotes(p.first, p.second);
+//            if(noteResult != null)
+//                noteResults.add(noteResult);
+//        }
+
 
         deleteBeginAndEndRests();
         musicString = convertToMusicString();

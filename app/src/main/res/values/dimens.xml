@@ -20,4 +20,8 @@
     <dimen name="new_note_button_size">80dp</dimen>
     <dimen name="edit_score_button_margin">2dp</dimen>
 
+    <dimen name="record_button_size">200dp</dimen>
+    <dimen name="record_button_border_stroke_width">2dp</dimen>
+    <dimen name="wave_view_size">250dp</dimen>
+    <dimen name="chronometer_text_size">50dp</dimen>
 </resources>

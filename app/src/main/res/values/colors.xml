@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <color name="AuditorColorPrimary">#37474F</color>
-    <color name="AuditorColorPrimaryDark">#263238</color>
+    <color name="AuditorColorPrimary">#1a2328</color>
+    <color name="AuditorColorPrimaryDark">#11181c</color>
     <color name="AuditorColorAccent">#00BCD4</color>
-    <color name="SlideTabsBorder">#546E7A</color>
 
     <color name="White">#FFFFFF</color>
 
+    <color name="SlideTabsBorder">#546E7A</color>
     <color name="TabNotSelect">#90A4AE</color>
-    <color name="TabSelected">#546E7A</color>
+    <color name="TabSelected">#FFFFFF</color>
+
+    <color name="file_item_bg">#263238</color>
 
     <color name="edit_score_keyboard_bgColor">#E0E0E0</color>
     <color name="edit_note_button_color">#F5F5F5</color>
+
+    <color name="record_button_dark">#263238</color>
+    <color name="record_button_middle">#2A393F</color>
+    <color name="record_button_light">#304249</color>
 </resources>

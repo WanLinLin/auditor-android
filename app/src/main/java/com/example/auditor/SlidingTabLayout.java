@@ -225,13 +225,13 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
             String title = adapter.getPageTitle(i).toString();
             if (title.equals(getResources().getString(R.string.audio_record_page_title))) {
-                tabView.setImageResource(R.drawable.record_not_select);
+                tabView.setImageResource(R.drawable.audio_record_tab);
             }
             else if (title.equals(getResources().getString(R.string.audio_file_list_page_title))) {
-                tabView.setImageResource(R.drawable.audio_not_select);
+                tabView.setImageResource(R.drawable.audio_file_tab);
             }
             else if (title.equals(getResources().getString(R.string.score_file_list_page_title))) {
-                tabView.setImageResource(R.drawable.score_file_not_select);
+                tabView.setImageResource(R.drawable.score_file_tab);
             }
 
             tabView.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -249,15 +249,8 @@ public class SlidingTabLayout extends HorizontalScrollView {
             mTabStrip.addView(tabView);
             if (i == mViewPager.getCurrentItem()) {
                 tabView.setSelected(true);
-                if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
-                    tabView.setImageResource(R.drawable.record_selected);
-                }
-                else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
-                    tabView.setImageResource(R.drawable.audio_selected);
-                }
-                else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
-                    tabView.setImageResource(R.drawable.score_file_selected);
-                }
+                tabView.setAlpha(1f);
+//                tabView.setColorFilter(getResources().getColor(R.color.TabSelected));
             }
         }
     }
@@ -341,35 +334,20 @@ public class SlidingTabLayout extends HorizontalScrollView {
                 if(position == i) {
                     tab.setSelected(true);
 //                    tab.setTextColor(getResources().getColor(R.color.AuditorColorPrimary));
-                    if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
-                        tab.setImageResource(R.drawable.record_selected);
-                    }
-                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
-                        tab.setImageResource(R.drawable.audio_selected);
-                    }
-                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
-                        tab.setImageResource(R.drawable.score_file_selected);
-                    }
+//                    tab.setColorFilter(getResources().getColor(R.color.TabSelected));
+                    tab.setAlpha(1f);
                 }
                 else {
                     tab.setSelected(false);
 //                    tab.setTextColor(getResources().getColor(R.color.AuditorColorAccent));
-                    if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_record_page_title))) {
-                        tab.setImageResource(R.drawable.record_not_select);
-                    }
-                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.audio_file_list_page_title))) {
-                        tab.setImageResource(R.drawable.audio_not_select);
-                    }
-                    else if(adapter.getPageTitle(i).equals(getResources().getString(R.string.score_file_list_page_title))) {
-                        tab.setImageResource(R.drawable.score_file_not_select);
-                    }
+//                    tab.setColorFilter(getResources().getColor(R.color.TabNotSelect));
+                    tab.setAlpha(0.5f);
                 }
             }
             if (mViewPagerPageChangeListener != null) {
                 mViewPagerPageChangeListener.onPageSelected(position);
             }
         }
-        // TODO change text color when tab change
     }
 
     private class TabClickListener implements View.OnClickListener {
