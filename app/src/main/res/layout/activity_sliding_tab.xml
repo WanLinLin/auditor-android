@@ -9,6 +9,13 @@
     tools:context="SlidingTabActivity"
     android:id="@+id/activity_sliding_tab">
 
+    <include
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        layout="@layout/toolbar" />
+
     <com.example.auditor.SlidingTabLayout
         android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"

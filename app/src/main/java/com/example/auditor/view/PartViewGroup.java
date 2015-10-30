@@ -218,7 +218,7 @@ public class PartViewGroup extends RelativeLayout {
                         lyricEditStartWord = clickWord;
                         addArrow();
 
-                        /* show keyboard */
+                        /* show editNoteKeyboard */
                         lyricEditing = true;
                         ShowScoreActivity.lyricInputACTextView.setFocusableInTouchMode(true);
                         ShowScoreActivity.lyricInputACTextView.requestFocus();
@@ -247,7 +247,7 @@ public class PartViewGroup extends RelativeLayout {
                     ShowScoreActivity.lyricInputACTextView.setSelection(originalLyrics.length());
                     ShowScoreActivity.lyricInputACTextView.requestFocus();
 
-                    // show keyboard
+                    // show editNoteKeyboard
                     addArrow();
                     lyricEditing = true;
                     ShowScoreActivity.setLyricRecommendGroupVisibility(true);

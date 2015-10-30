@@ -183,11 +183,11 @@ public class NoteViewGroup extends RelativeLayout {
             ShowScoreActivity.topOctaveButton.invalidate();
             ShowScoreActivity.bottomOctaveButton.invalidate();
 
-            if(!ShowScoreActivity.keyboard.isShown()) {
-                ShowScoreActivity.keyboard.setVisibility(VISIBLE);
+            if(!ShowScoreActivity.editNoteKeyboard.isShown()) {
+                ShowScoreActivity.editNoteKeyboard.setVisibility(VISIBLE);
                 Animation animation = AnimationUtils.loadAnimation(context, R.anim.keyboard_swipe_in);
-                ShowScoreActivity.keyboard.setAnimation(animation);
-                ShowScoreActivity.keyboard.animate();
+                ShowScoreActivity.editNoteKeyboard.setAnimation(animation);
+                ShowScoreActivity.editNoteKeyboard.animate();
 
                 RelativeLayout.LayoutParams vlp =
                         new RelativeLayout.LayoutParams(

@@ -57,7 +57,7 @@ public class NumberedMusicalNotationParser {
                                 Animation animation = AnimationUtils.loadAnimation(NumberedMusicalNotationParser.this.showScoreActivity, R.anim.loading_image_fade_out);
                                 loadingViewLayout.setAnimation(animation);
                                 loadingViewLayout.animate();
-                                ShowScoreActivity.rootView.removeView(loadingViewLayout);
+                                ((RelativeLayout)ShowScoreActivity.rootView.findViewById(R.id.container)).removeView(loadingViewLayout);
                             }
                             ShowScoreActivity.rootView.setBackgroundColor(Color.WHITE);
                         }

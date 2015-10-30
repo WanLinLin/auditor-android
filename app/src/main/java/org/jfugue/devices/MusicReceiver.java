@@ -31,7 +31,7 @@ import jp.kshoji.javax.sound.midi.ShortMessage;
 
 /**
  * Represents a device that can receive music that is sent to it. For example, you
- * can connect your external MIDI keyboard, then use this class to send music from
+ * can connect your external MIDI editNoteKeyboard, then use this class to send music from
  * your JFugue program to the device.
  */
 public class MusicReceiver 
@@ -47,7 +47,7 @@ public class MusicReceiver
     
     /**
      * Send the given sequence to the MIDI device - use this to send MIDI files
-     * to your keyboard!
+     * to your editNoteKeyboard!
      *  
      * @param sequence The sequence to send to the MIDI device
      */

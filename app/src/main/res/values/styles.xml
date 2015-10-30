@@ -1,10 +1,8 @@
 <resources>
     <style name="AuditorTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="actionBarStyle">@style/AuditorActionBar</item>
         <item name="actionBarTabTextStyle">@style/AuditorActionBarTabText</item>
         <item name="actionMenuTextColor">@color/White</item>
 
-        <item name="android:actionBarStyle">@style/AuditorActionBar</item>
         <item name="android:actionBarTabTextStyle">@style/AuditorActionBarTabText</item>
         <item name="android:actionMenuTextColor">@color/White</item>
 
@@ -15,12 +13,12 @@
         <!-- colorAccent is used as the default value for colorControlActivated,
         which is used to tint widgets -->
         <item name="colorAccent">@color/AuditorColorAccent</item>
+
+        <item name="android:windowNoTitle">true</item>
+        <!-- no more ActionBar , use Toolbar instead -->
+        <item name="windowActionBar">false</item>
     </style>
 
-    <!-- ActionBar styles -->
-    <style name="AuditorActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="background">@color/AuditorColorPrimary</item>
-    </style>
 
     <!-- ActionBar tab text -->
     <style name="AuditorActionBarTabText" parent="Theme.AppCompat.Light.DarkActionBar">

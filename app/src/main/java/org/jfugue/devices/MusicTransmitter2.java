@@ -33,7 +33,7 @@ import jp.kshoji.javax.sound.midi.Transmitter;
 
 /**
  * Represents a device that will send music. For example, you can attach this
- * to your external MIDI keyboard and play music on the keyboard, which is then recorded here.
+ * to your external MIDI editNoteKeyboard and play music on the editNoteKeyboard, which is then recorded here.
  */
 public class MusicTransmitter2 
 {
@@ -70,7 +70,7 @@ public class MusicTransmitter2
     
     /**
      * Reads a pattern from the external device - use this to record the
-     * keys you're pressing on the keyboard!  
+     * keys you're pressing on the editNoteKeyboard!
      * 
      * This method will return a JFugue Pattern, which you can then 
      * manipulate to your heart's content.

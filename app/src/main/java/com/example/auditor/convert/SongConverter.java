@@ -273,6 +273,8 @@ public class SongConverter {
             // the same note, concat directly
             if(dominatePair.first.equals(last.first)) {
                 concatToPrevNote(timeDurationSum);
+                noteAndTimeBuffer.clear();
+                return;
             }
 
             // different note, long enough to sing

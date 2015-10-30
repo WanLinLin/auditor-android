@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 
 public class SlidingTabActivity extends ActionBarActivity{
@@ -29,10 +30,11 @@ public class SlidingTabActivity extends ActionBarActivity{
         slidingTabLayout.setDistributeEvenly(true);
         adapter = (SlidingTabAdapter)viewPager.getAdapter();
 
-        viewPager.setCurrentItem(initialPosition, true);
+        initToolbar();
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setTitle("Auditor");
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(false);
+        viewPager.setCurrentItem(initialPosition, true);
     }
 
     @Override
@@ -55,6 +57,11 @@ public class SlidingTabActivity extends ActionBarActivity{
         super.onDestroy();
         AudioFileListPage page = (AudioFileListPage)adapter.getPage(SlidingTabAdapter.AUDIO_FILE_LIST);
         page.destroyMusicService();
+    }
+
+    private void initToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     public void onBackPressed() {

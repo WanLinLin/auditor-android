@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -119,9 +120,10 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static float mx;
     public static float my;
 
-    public ActionBar actionBar;
     public String scoreName;
     public Menu menu;
+
+    private ActionBar actionBar;
 
     // View id index
     public static final int partMaxNumber = 5000;
@@ -151,7 +153,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static NumberPicker lyricNumberPicker;
     public static RelativeLayout rootView;
     public static AutoCompleteTextView lyricInputACTextView;
-    public static RelativeLayout keyboard;
+    public static RelativeLayout editNoteKeyboard;
 
     // score edit buttons
     public static AccidentalButton accidentalButton;
@@ -198,10 +200,13 @@ public class ShowScoreActivity extends ActionBarActivity {
         scoreContainer.setVisibility(View.GONE); // prepare for loading animation
         rootView = (RelativeLayout)findViewById(R.id.activity_show_score);
         scoreName = getIntent().getStringExtra("score name");
+        Log.e(LOG_TAG, scoreName);
 
         // set action bar title
+        initToolbar();
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle(scoreName.substring(0, scoreName.length() - 4));
 
         setUpLyricRecommendGroup();
         setUpEditScoreKeyboard();
@@ -253,7 +258,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 score = numberedMusicalNotationParser.getScoreViewGroup();
                 scoreContainer.addView(score);
             } catch (IOException e) {
-                Log.e(getClass().getName(), e.getMessage());
+                Log.e(LOG_TAG, e.getMessage());
             }
         }
     }
@@ -371,7 +376,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 /* update lyric edit things */
                 setLyricRecommendGroupVisibility(false);
-                // close keyboard
+                // close editNoteKeyboard
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
 
@@ -391,15 +396,16 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 /* update lyric edit things */
                 actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
+                ((RelativeLayout.LayoutParams)vScroll.getLayoutParams()).addRule(RelativeLayout.BELOW, R.id.toolbar);
                 ShowScoreActivity.setLyricRecommendGroupVisibility(true);
 
                 /* update score edit things */
-                if(keyboard.isShown()) {
-                    // close edit score keyboard
+                if(editNoteKeyboard.isShown()) {
+                    // close edit score editNoteKeyboard
                     Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
-                    ShowScoreActivity.keyboard.setAnimation(animation);
-                    ShowScoreActivity.keyboard.animate();
-                    ShowScoreActivity.keyboard.setVisibility(View.GONE);
+                    ShowScoreActivity.editNoteKeyboard.setAnimation(animation);
+                    ShowScoreActivity.editNoteKeyboard.animate();
+                    ShowScoreActivity.editNoteKeyboard.setVisibility(View.GONE);
                 }
 
                 /* update play midi things */
@@ -418,17 +424,17 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                     /* hide lyric input text view and recommend button */
                     setLyricRecommendGroupVisibility(false);
-                    /* close keyboard */
+                    /* close editNoteKeyboard */
                     imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
                     if(PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
-                    // close edit score keyboard
-                    if(keyboard.isShown()) {
+                    // close edit score editNoteKeyboard
+                    if(editNoteKeyboard.isShown()) {
                         Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
-                        keyboard.setAnimation(animation);
-                        keyboard.animate();
-                        keyboard.setVisibility(View.GONE);
+                        editNoteKeyboard.setAnimation(animation);
+                        editNoteKeyboard.animate();
+                        editNoteKeyboard.setVisibility(View.GONE);
 
                         RelativeLayout.LayoutParams vlp =
                                 new RelativeLayout.LayoutParams(
@@ -439,7 +445,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     }
 
                     actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
-                    actionBar.setTitle(scoreName);
+                    actionBar.setTitle(scoreName.substring(0, scoreName.length() - 4));
 //                    menu.findItem(R.id.action_zoom_in).setVisible(true);
 //                    menu.findItem(R.id.action_zoom_out).setVisible(true);
                 }
@@ -471,12 +477,12 @@ public class ShowScoreActivity extends ActionBarActivity {
             imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
             if(PartViewGroup.lyricEditStartWord != null) PartViewGroup.saveWordsIntoWordView();
 
-            // close edit score keyboard
-            if(keyboard.isShown()) {
+            // close edit score editNoteKeyboard
+            if(editNoteKeyboard.isShown()) {
                 Animation animation = AnimationUtils.loadAnimation(this, R.anim.keyboard_swipe_out);
-                keyboard.setAnimation(animation);
-                keyboard.animate();
-                keyboard.setVisibility(View.GONE);
+                editNoteKeyboard.setAnimation(animation);
+                editNoteKeyboard.animate();
+                editNoteKeyboard.setVisibility(View.GONE);
 
                 RelativeLayout.LayoutParams vlp =
                         new RelativeLayout.LayoutParams(
@@ -488,7 +494,7 @@ public class ShowScoreActivity extends ActionBarActivity {
 
             // set actionbar back to original color
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorPrimary)));
-            actionBar.setTitle(scoreName);
+            actionBar.setTitle(scoreName.substring(0, scoreName.length() - 4));
 //            menu.findItem(R.id.action_zoom_in).setVisible(true);
 //            menu.findItem(R.id.action_zoom_out).setVisible(true);
         }
@@ -523,6 +529,11 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
 
         return true;
+    }
+
+    private void initToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     private void setDimensions() {
@@ -761,7 +772,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                 /* hide lyric input text view and recommend button */
                 setLyricRecommendGroupVisibility(false);
 
-                /* close keyboard */
+                /* close editNoteKeyboard */
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
 
@@ -793,7 +804,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     /* hide lyric input text view and recommend button */
                     setLyricRecommendGroupVisibility(false);
 
-                    /* close keyboard */
+                    /* close editNoteKeyboard */
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(ShowScoreActivity.lyricInputACTextView.getWindowToken(), 0);
                     return true;
@@ -806,10 +817,10 @@ public class ShowScoreActivity extends ActionBarActivity {
     }
 
     /**
-     * Score keyboard include a note group view, new a note, and delete a note
+     * Score editNoteKeyboard include a note group view, new a note, and delete a note
      */
     private void setUpEditScoreKeyboard() {
-        keyboard = (RelativeLayout)findViewById(R.id.edit_score_keyboard);
+        editNoteKeyboard = (RelativeLayout)findViewById(R.id.edit_score_keyboard);
 
         accidentalButton = (AccidentalButton)findViewById(R.id.edit_accident_button);
         numberButton = (NumberButton)findViewById(R.id.edit_number_button);
@@ -856,7 +867,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                     case DragEvent.ACTION_DRAG_STARTED:
                         if (event.getClipDescription().getLabel().toString().equals("NoteViewGroup")) {
                             // if the drag event is sent from NoteViewGroup
-                            ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
+                            ImageButton i = (ImageButton) editNoteKeyboard.findViewById(R.id.delete_note_button);
                             i.setImageResource(R.drawable.can_open);
                             i.invalidate();
                             return true;
@@ -967,7 +978,7 @@ public class ShowScoreActivity extends ActionBarActivity {
                         return true;
 
                     case DragEvent.ACTION_DRAG_ENDED:
-                        ImageButton i = (ImageButton)keyboard.findViewById(R.id.delete_note_button);
+                        ImageButton i = (ImageButton) editNoteKeyboard.findViewById(R.id.delete_note_button);
                         i.setImageResource(R.drawable.can_close);
                         i.invalidate();
                         return true;
@@ -979,7 +990,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             }
         });
 
-        keyboard.setVisibility(View.GONE);
+        editNoteKeyboard.setVisibility(View.GONE);
     }
 
     public static void setLyricRecommendGroupVisibility(boolean visible) {
