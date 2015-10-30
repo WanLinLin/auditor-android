@@ -154,6 +154,12 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = (RelativeLayout) inflater.inflate(R.layout.audio_file_list_page, container, false);
 
+        if(songList == null) {
+            songList = new ArrayList<>();
+            getSongList();
+            songAdt = new SongAdapter(slidingTabActivity, songList, this);
+        }
+
         songListView = (ListView) rootView.findViewById(R.id.audio_file_list_view);
         songListView.setAdapter(songAdt);
         songListView.setTextFilterEnabled(true);
@@ -174,6 +180,15 @@ public class AudioFileListPage extends Fragment implements MediaController.Media
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         slidingTabActivity = (SlidingTabActivity) activity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(songList == null) {
+            songList = new ArrayList<>();
+            getSongList();
+        }
     }
 
     @Override

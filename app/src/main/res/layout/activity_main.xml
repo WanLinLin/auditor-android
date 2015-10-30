@@ -16,6 +16,5 @@
         android:id="@+id/auditor_icon"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_launcher"
-        android:onClick="goToSlidingTabActivity" />
+        android:src="@drawable/ic_launcher" />
 </RelativeLayout>

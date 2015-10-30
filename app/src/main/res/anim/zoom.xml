@@ -11,7 +11,7 @@
         android:pivotY="50%"
         android:fillAfter="false"
         android:startOffset="300"
-        android:duration="300" />
+        android:duration="250" />
 
     <!-- small -->
     <scale
@@ -22,25 +22,6 @@
         android:pivotX="50%"
         android:pivotY="50%"
         android:fillAfter="false"
-        android:startOffset="600"
-        android:duration="300" />
-
-    <!--&lt;!&ndash; super big &ndash;&gt;-->
-    <!--<scale-->
-        <!--android:fromXScale="0.8"-->
-        <!--android:toXScale="3.0"-->
-        <!--android:fromYScale="0.8"-->
-        <!--android:toYScale="3.0"-->
-        <!--android:pivotX="50%"-->
-        <!--android:pivotY="50%"-->
-        <!--android:fillAfter="false"-->
-        <!--android:startOffset="1000"-->
-        <!--android:duration="500" />-->
-
-    <!--&lt;!&ndash; fade out &ndash;&gt;-->
-    <!--<alpha-->
-        <!--android:fromAlpha="1"-->
-        <!--android:toAlpha="0"-->
-        <!--android:startOffset="1000"-->
-        <!--android:duration="500"/>-->
+        android:startOffset="550"
+        android:duration="250" />
 </set>

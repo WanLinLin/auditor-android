@@ -39,7 +39,7 @@ public class AudioRecordPage extends Fragment{
 
     public static final int bufferSize = 1024;
     public static final double minLevel = -90;
-    public static final double maxLevel = -30;
+    public static final double maxLevel = -40;
 
     private EditText userInput;
     private RelativeLayout rootView;

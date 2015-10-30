@@ -299,7 +299,7 @@ public class AudioDispatcher implements Runnable {
                 /* added by Wan Lin */
 				float convertTime;
                 convertTime = (float)bytesRead / (float)format.getFrameSize() / format.getFrameRate();
-                audioEvent.setConvertTime(convertTime);
+                audioEvent.setTimeDuration(convertTime);
                 /* added by Wan Lin */
 
                 // process the audio event
@@ -364,7 +364,7 @@ public class AudioDispatcher implements Runnable {
 
             /* added by Wan Lin */
             float convertTime = (float)bytesRead / (float)format.getFrameSize() / format.getFrameRate();
-            audioEvent.setConvertTime(convertTime);
+            audioEvent.setTimeDuration(convertTime);
             /* added by Wan Lin */
 
             // process the audio event

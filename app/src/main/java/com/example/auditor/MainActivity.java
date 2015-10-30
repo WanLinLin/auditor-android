@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -26,7 +25,7 @@ public class MainActivity extends Activity {
 
         final ImageView auditorIcon = (ImageView)findViewById(R.id.auditor_icon);
         Animation iconAnimation = AnimationUtils.loadAnimation(this, R.anim.zoom);
-        iconAnimation.setDuration(1000);
+        iconAnimation.setDuration(800);
         iconAnimation.setFillAfter(true);
         new Handler().postDelayed(new Runnable() {
             public void run() {
@@ -63,10 +62,5 @@ public class MainActivity extends Activity {
         ImageView auditorIcon = (ImageView)findViewById(R.id.auditor_icon);
         Animation iconAnimation = AnimationUtils.loadAnimation(this, R.anim.zoom);
         auditorIcon.startAnimation(iconAnimation);
-    }
-
-    public void goToSlidingTabActivity(View view){
-        Intent intent = new Intent(this, SlidingTabActivity.class);
-        startActivity(intent);
     }
 }

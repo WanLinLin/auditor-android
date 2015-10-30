@@ -58,6 +58,12 @@ public class ScoreFileListPage extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         RelativeLayout rootView = (RelativeLayout)inflater.inflate(R.layout.score_file_list_page, container, false);
 
+        if(scoreList == null) {
+            scoreList = new ArrayList<>();
+            getScoreList();
+            scoreAdapter = new ScoreAdapter(slidingTabActivity, scoreList, this);
+        }
+
         scoreListView = (ListView) rootView.findViewById(R.id.score_file_list_view);
         scoreListView.setAdapter(scoreAdapter);
         scoreListView.setTextFilterEnabled(true);
@@ -71,6 +77,15 @@ public class ScoreFileListPage extends Fragment{
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(scoreList == null) {
+            scoreList = new ArrayList<>();
+            getScoreList();
+        }
     }
 
     @Override

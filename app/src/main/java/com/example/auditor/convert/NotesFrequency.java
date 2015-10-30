@@ -1,5 +1,7 @@
 package com.example.auditor.convert;
 
+import android.util.Pair;
+
 /**
  * Created by wanlin on 15/7/21.
  * Stores the frequencies for equal-tempered scale, A4 = 440 Hz.
@@ -126,29 +128,31 @@ public enum NotesFrequency {
 
     private String note;
     private float frequency; // int Hertz
-    private static NotesFrequency[] notesFrequencies = values(); // notes and frequencies array
+    private final static NotesFrequency[] notesFrequencies = values(); // notes and frequencies array
 
     NotesFrequency(String note, float frequency) {
         this.note = note;
         this.frequency = frequency;
     }
 
-    public static String getNote(float frequency) {
+    public static String getNote(float pitch) {
         // is pause
-        if (frequency == NotesFrequency.Pause.frequency)
+        if (pitch == NotesFrequency.Pause.frequency)
             return NotesFrequency.Pause.note;
 
-        // is a note
-        for (NotesFrequency cur : notesFrequencies) {
-            if (frequency == cur.frequency) {
+
+        for (int i = 0; i < notesFrequencies.length; i++ ) {
+            NotesFrequency cur = notesFrequencies[i];
+
+            if (pitch == cur.frequency) {
                 return cur.note;
             }
 
-            else if (cur.frequency > frequency) {
-                NotesFrequency pre = cur.previous();
+            else if (cur.frequency > pitch) {
+                NotesFrequency pre = notesFrequencies[i - 1];
                 float middleFrequency = (pre.frequency + cur.frequency) / 2;
 
-                if(frequency < middleFrequency) {
+                if(pitch < middleFrequency) {
                     return pre.note;
                 }
                 else {
@@ -184,5 +188,36 @@ public enum NotesFrequency {
 
     private NotesFrequency previous() {
         return notesFrequencies[(this.ordinal() - 1) % notesFrequencies.length];
+    }
+
+    public static String getPrevNote(String note) {
+        for(int i = 0; i < notesFrequencies.length; i++) {
+            String curSearchNote = notesFrequencies[i].getNote();
+            if(note.equals(curSearchNote)) return notesFrequencies[i-1].getNote();
+        }
+
+        return  notesFrequencies[0].getNote(); // only the C0sAndD0f note can reach this statement
+    }
+
+    public static String getNextNote(String note) {
+        for(int i = 0; i < notesFrequencies.length - 1; i++) {
+            String curSearchNote = notesFrequencies[i].getNote();
+            if(note.equals(curSearchNote)) return notesFrequencies[i+1].getNote();
+        }
+
+        return  notesFrequencies[notesFrequencies.length].getNote(); // only the A8sAndB8f note can reach this statement
+    }
+
+    public static Pair<String, String> getNeighborNotes(String note) {
+        for(int i = 1; i < notesFrequencies.length - 1; i++) {
+            String curSearchNote = notesFrequencies[i].getNote();
+            if(note.equals(curSearchNote))
+                return new Pair<>(notesFrequencies[i-1].getNote(), notesFrequencies[i+1].getNote());
+        }
+
+        if(note.equals(C0.getNote()))
+            return new Pair<>("", C0sAndD0f.getNote());
+        else
+            return new Pair<>(A8sAndB8f.getNote(), "");
     }
 }

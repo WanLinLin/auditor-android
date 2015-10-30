@@ -1,6 +1,8 @@
 package com.example.auditor;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -11,10 +13,13 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.example.auditor.convert.SongConverter;
 
 public class SlidingTabLayout extends HorizontalScrollView {
     /**
@@ -229,6 +234,42 @@ public class SlidingTabLayout extends HorizontalScrollView {
             }
             else if (title.equals(getResources().getString(R.string.audio_file_list_page_title))) {
                 tabView.setImageResource(R.drawable.audio_file_tab);
+
+                // setting for change song convert precision
+                tabView.setOnLongClickListener(new OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        LayoutInflater li = LayoutInflater.from(getContext());
+                        View promptsView = li.inflate(R.layout.audio_record_popup_rename, null);
+
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+                        ((TextView)promptsView.findViewById(R.id.popupWindowTitle)).setText("Too short to sing:");
+                        final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
+                        userInput.setText(Float.toString(SongConverter.tooShortToSing));
+                        userInput.setSelection(Float.toString(SongConverter.tooShortToSing).length());
+                        alertDialogBuilder.setView(promptsView);
+
+                        // set dialog message
+                        alertDialogBuilder
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.yes,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                SongConverter.tooShortToSing = Float.parseFloat(userInput.getText().toString());
+                                            }
+                                        })
+                                .setNegativeButton(R.string.cancel,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+
+                        AlertDialog alertDialog = alertDialogBuilder.create();
+                        alertDialog.show();
+                        return false;
+                    }
+                });
             }
             else if (title.equals(getResources().getString(R.string.score_file_list_page_title))) {
                 tabView.setImageResource(R.drawable.score_file_tab);

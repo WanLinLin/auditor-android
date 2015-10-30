@@ -49,21 +49,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.auditor.convert.NumberedMusicalNotationParser;
 import com.example.auditor.view.AccidentalButton;
-import com.example.auditor.view.BeamButton;
-import com.example.auditor.view.DottedButton;
-import com.example.auditor.view.NumberButton;
-import com.example.auditor.view.OctaveButton;
-import com.example.auditor.view.PlayButton;
 import com.example.auditor.view.AccidentalView;
+import com.example.auditor.view.BeamButton;
 import com.example.auditor.view.BeamView;
+import com.example.auditor.view.DottedButton;
 import com.example.auditor.view.DottedView;
 import com.example.auditor.view.MeasureViewGroup;
 import com.example.auditor.view.NoteViewGroup;
+import com.example.auditor.view.NumberButton;
 import com.example.auditor.view.NumberView;
-import com.example.auditor.convert.NumberedMusicalNotationParser;
+import com.example.auditor.view.OctaveButton;
 import com.example.auditor.view.OctaveView;
 import com.example.auditor.view.PartViewGroup;
+import com.example.auditor.view.PlayButton;
 import com.example.auditor.view.ScoreViewGroup;
 import com.example.auditor.view.WordView;
 
@@ -83,10 +83,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
@@ -384,9 +391,6 @@ public class ShowScoreActivity extends ActionBarActivity {
 
                 /* update lyric edit things */
                 actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.AuditorColorAccent)));
-//                showScoreActivity.menu.findItem(R.id.action_zoom_in).setVisible(false);
-//                showScoreActivity.menu.findItem(R.id.action_zoom_out).setVisible(false);
-
                 ShowScoreActivity.setLyricRecommendGroupVisibility(true);
 
                 /* update score edit things */
@@ -1081,65 +1085,36 @@ public class ShowScoreActivity extends ActionBarActivity {
         @Override
         protected Boolean doInBackground(String... lyrics) {
             String lyric = lyrics[0];
+            InetAddress serverAddr = null;
+            SocketAddress socketAddress = null;
+            Socket socket = null;
+            String receiveMsg = null;
 
-            String url = "http://140.117.71.221/auditor/stest/upload_lyric.php";
-            String webRequestResult = "failed"; // web request result
+            try {
+                serverAddr = InetAddress.getByName("140.117.71.221");  // server address
+                socketAddress = new InetSocketAddress(serverAddr, 1222); // port 1222
 
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
-            if(MainActivity.androidId == null)
-                nameValuePairs.add(new BasicNameValuePair("id", "anonymous"));
-            else
-                nameValuePairs.add(new BasicNameValuePair("id", MainActivity.androidId));
-            nameValuePairs.add(new BasicNameValuePair("score_name", scoreName.substring(0, scoreName.length() - 4)));
-            nameValuePairs.add(new BasicNameValuePair("lyric", lyric));
-            InputStream is = null;
+                socket = new Socket();
+                socket.connect(socketAddress, 2000); // timeout 2 sec
 
-            //http post
-            try{
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(url);
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                is = entity.getContent();
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                out.writeUTF(lyric);
+
+
+                out.flush();
+                socket.close();
             }
-            catch(Exception e){
-                Log.e(LOG_TAG, "Error in http connection " + e.toString());
+            catch (UnknownHostException e) {
+                Log.e(LOG_TAG, e.getMessage());
+                return false;
             }
-
-            //convert response to string
-            try{
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                is.close();
-                webRequestResult = sb.toString();
-
-                Log.e(LOG_TAG, "web: " + webRequestResult);
+            catch (SocketException e) {
+                Log.e(LOG_TAG, e.getMessage());
+                return false;
             }
-            catch(Exception e) {
-                Log.e(LOG_TAG, "Error converting result " + e.toString());
-            }
-
-            // parse json data
-            try{
-                JSONArray jArray = new JSONArray(webRequestResult);
-                if(jArray.length() == 0) return false;
-
-                JSONObject jsonId = jArray.getJSONObject(0);
-                Log.i(LOG_TAG, "id: " + jsonId.getString("id"));
-
-                JSONObject jsonScoreName = jArray.getJSONObject(1);
-                Log.i(LOG_TAG, "name: " + jsonScoreName.getString("score_name"));
-
-                JSONObject jsonLyric = jArray.getJSONObject(2);
-                Log.i(LOG_TAG, "lyric: " + jsonLyric.getString("lyric"));
-            }
-            catch(JSONException e){
-                Log.e(LOG_TAG, "Error parsing data " + e.toString());
+            catch (IOException e) {
+                Log.e(LOG_TAG, e.getMessage());
+                return false;
             }
 
             return true;
@@ -1284,7 +1259,6 @@ public class ShowScoreActivity extends ActionBarActivity {
         try{
             musicPlayer.setDataSource(songPath);
             musicPlayer.prepareAsync();
-            musicPlayer.start();
         } catch(Exception e){
             Log.e("MediaPlayer", "Error setting data source", e);
         }
@@ -1315,6 +1289,8 @@ public class ShowScoreActivity extends ActionBarActivity {
                 musicController.playButton.setPlay(false);
                 musicController.playButton.invalidate();
                 playbackPaused = false;
+
+                musicPlayer.start();
             }
         });
 
@@ -1348,6 +1324,13 @@ public class ShowScoreActivity extends ActionBarActivity {
         if(musicPlayer.isPlaying())
             musicPlayer.pause();
         playMode = false;
+
+        RelativeLayout.LayoutParams vlp =
+                new RelativeLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+        vScroll.setLayoutParams(vlp);
+        vScroll.requestLayout();
     }
 
     // TODO show what note is playing

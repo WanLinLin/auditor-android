@@ -66,7 +66,7 @@ public class AudioEvent {
 	 */
 	private long bytesProcessed;
 
-	private float convertTime;
+	private float timeDuration;
 	
 	
 	public AudioEvent(TarsosDSPAudioFormat format,long frameLength){
@@ -165,7 +165,7 @@ public class AudioEvent {
 		for (int i = 0; i < floatBuffer.length; i++) {
 			rms += floatBuffer[i] * floatBuffer[i];
 		}
-		rms = rms / Double.valueOf(floatBuffer.length);
+		rms = rms / floatBuffer.length;
 		rms = Math.sqrt(rms);
 		return rms;
 	}
@@ -174,7 +174,7 @@ public class AudioEvent {
 		Arrays.fill(floatBuffer, 0);
 	}
 
-		/**
+	/**
 	 * Returns the dBSPL for a buffer.
 	 * 
 	 * @param buffer
@@ -217,13 +217,12 @@ public class AudioEvent {
 		return soundPressureLevel(floatBuffer) < silenceThreshold;
 	}
 
-
     // added by Wan Lin
-    public void setConvertTime(float time) {
-        convertTime = time;
+    public void setTimeDuration(float time) {
+        timeDuration = time;
     }
 	// added by Wan Lin
-    public float getConvertTime() {
-        return convertTime;
+    public float getTimeDuration() {
+        return timeDuration;
     }
 }

@@ -2,9 +2,8 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:padding="10dp"
-    android:descendantFocusability="blocksDescendants"
     android:background="@color/file_item_bg"
-    android:alpha="0.5"
+    android:descendantFocusability="blocksDescendants"
     android:id="@+id/file_item_view" >
 
     <LinearLayout
