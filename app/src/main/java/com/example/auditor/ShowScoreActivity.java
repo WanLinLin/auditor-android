@@ -164,7 +164,7 @@ public class ShowScoreActivity extends ActionBarActivity {
     public static OctaveButton bottomOctaveButton;
 
     private ProgressDialog dialog;
-    private ArrayList<String> suggestWords = new ArrayList<>();
+    private ArrayList<Pair<String, Integer>> suggestWords = new ArrayList<>();
     private WordAdapter wordAdapter;
     private String inputSentence = "";
 
@@ -788,7 +788,7 @@ public class ShowScoreActivity extends ActionBarActivity {
         lyricInputACTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String text = inputSentence + wordAdapter.getItem(position);
+                String text = inputSentence + wordAdapter.getItem(position).first;
                 lyricInputACTextView.setText(text);
                 lyricInputACTextView.setSelection(lyricInputACTextView.getText().length());
             }
@@ -1005,21 +1005,18 @@ public class ShowScoreActivity extends ActionBarActivity {
         }
     }
 
-    public String getScoreName() {
-        return scoreName;
-    }
-
-    class RecommendTask extends AsyncTask<String, Void, ArrayList<String>> {
+    class RecommendTask extends AsyncTask<String, Void, ArrayList<Pair<String, Integer>>> {
         @Override
-        protected ArrayList<String> doInBackground(String... arg) {
+        protected ArrayList<Pair<String, Integer>> doInBackground(String... arg) {
             inputSentence = arg[0];
             String inputNumber = arg[1];
             String inputRhyme = arg[2];
+            Log.i(LOG_TAG, "number: " + inputNumber + ", rhyme: " + inputRhyme + ", sentence: " + inputSentence);
 
             long startTime = System.currentTimeMillis();
             String url = "http://140.117.71.221/auditor/stest/client.php";
             String webRequestResult = ""; // web request result
-            ArrayList<String> returnTagsList = new ArrayList<>();
+            ArrayList<Pair<String, Integer>> returnTagsList = new ArrayList<>();
 
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("sentence", inputSentence));
@@ -1057,17 +1054,15 @@ public class ShowScoreActivity extends ActionBarActivity {
                 Log.e(LOG_TAG, "Error converting result " + e.toString());
             }
 
-            double dbQueryTime = -1;
             //parse json data
             try{
                 JSONArray jArray = new JSONArray(webRequestResult);
 
-                for(int i = 0; i < jArray.length() - 1; i++) {
+                for(int i = 0; i < jArray.length(); i++) {
                     JSONObject json_data = jArray.getJSONObject(i);
-                    Log.i(LOG_TAG, "id: " + json_data.getInt("id") + ", tag: " + json_data.getString("tag"));
-                    returnTagsList.add(json_data.getString("tag"));
+                    Log.i(LOG_TAG, "id: " + json_data.getInt("id") + ", tag: " + json_data.getString("tag") + ", author count: " + json_data.getInt("count_author"));
+                    returnTagsList.add(new Pair<>(json_data.getString("tag"), json_data.getInt("count_author")));
                 }
-                dbQueryTime = jArray.getJSONObject(jArray.length()).getDouble("db_query_time");
             }
             catch(JSONException e){
                 Log.e(LOG_TAG, "Error parsing data " + e.toString());
@@ -1075,15 +1070,13 @@ public class ShowScoreActivity extends ActionBarActivity {
 
             long finishTime = System.currentTimeMillis();
             double duration = (finishTime - startTime) / 1000d;
-            Log.i(LOG_TAG, "number: " + inputNumber + ", rhyme: " + inputRhyme);
-            Log.i(LOG_TAG, "database query time: " + dbQueryTime);
             Log.e(LOG_TAG, "total recommend time: " + duration + " seconds.");
 
             return returnTagsList;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<String> a) {
+        protected void onPostExecute(ArrayList<Pair<String, Integer>> a) {
             super.onPostExecute(a);
             suggestWords.clear();
             suggestWords.addAll(a);

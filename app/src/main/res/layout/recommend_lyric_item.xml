@@ -2,10 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
-    android:background="@color/file_item_bg"
+    android:padding="15dp"
     android:descendantFocusability="blocksDescendants"
-    android:id="@+id/file_item_view" >
+    android:id="@+id/recommend_lyric_item" >
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -15,31 +14,31 @@
         android:layout_alignParentTop="true" >
 
         <TextView
-            android:id="@+id/file_title"
+            android:id="@+id/title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/White"
+            android:textColor="@color/AuditorColorPrimaryDark"
             android:gravity="start"
             android:layout_marginBottom="5dp"
             android:textSize="20sp" />
 
         <TextView
-            android:id="@+id/file_mod_date"
+            android:id="@+id/author_count"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/White"
+            android:textColor="@color/AuditorColorPrimaryDark"
             android:alpha="0.6"
             android:textSize="12sp" />
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/collapse"
+        android:id="@+id/info"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginRight="5dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/collapse"
+        android:src="@drawable/info"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
         android:padding="13dp"

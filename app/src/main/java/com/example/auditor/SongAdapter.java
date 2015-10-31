@@ -112,16 +112,20 @@ public class SongAdapter extends BaseAdapter {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            progress.dismiss();
 
-            SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
-            ScoreFileListPage page = (ScoreFileListPage)adapter.getPage(SlidingTabAdapter.SCORE_FILE_LIST);
-            page.refreshList();
+            if (aBoolean) {
+                SlidingTabAdapter adapter = slidingTabActivity.getAdapter();
+                ScoreFileListPage scoreFileListPage = (ScoreFileListPage)adapter.getPage(SlidingTabAdapter.SCORE_FILE_LIST);
+                scoreFileListPage.refreshList();
+                slidingTabActivity.getViewPager().setCurrentItem(SlidingTabAdapter.SCORE_FILE_LIST, true);
 
-            if (aBoolean)
                 Toast.makeText(slidingTabActivity, slidingTabActivity.getString(R.string.success), Toast.LENGTH_SHORT).show();
-            else
+            }
+            else {
                 Toast.makeText(slidingTabActivity, slidingTabActivity.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+            }
+
+            progress.dismiss();
         }
     }
 }

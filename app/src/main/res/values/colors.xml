@@ -19,4 +19,6 @@
     <color name="record_button_dark">#263238</color>
     <color name="record_button_middle">#2A393F</color>
     <color name="record_button_light">#304249</color>
+
+    <color name="lyric_highlight">#008cba</color>
 </resources>
