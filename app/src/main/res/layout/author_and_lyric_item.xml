@@ -1,48 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:id="@+id/author_and_lyric_item" >
+    android:orientation="horizontal"
+    android:layout_alignParentTop="true"
+    android:id="@+id/author_and_lyric_item"
+    android:padding="15dp" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="horizontal"
-        android:layout_alignParentTop="true"
-        android:id="@+id/container"
-        android:padding="15dp" >
-
-        <TextView
-            android:id="@+id/author"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/AuditorColorPrimaryDark"
-            android:layout_weight="0.25"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/lyric"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/AuditorColorPrimaryDark"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="0.75"
-            android:alpha="0.6"
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/author"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/container"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp" >
+        android:textColor="@color/AuditorColorPrimaryDark"
+        android:layout_weight="0.25"
+        android:textSize="20sp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="@color/TabNotSelect" />
-
-    </RelativeLayout>
-
-</RelativeLayout>
+    <TextView
+        android:id="@+id/lyric"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/AuditorColorPrimaryDark"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="0.75"
+        android:alpha="0.6"
+        android:textSize="12sp" />
+</LinearLayout>
