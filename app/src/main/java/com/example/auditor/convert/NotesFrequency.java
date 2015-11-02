@@ -161,7 +161,7 @@ public enum NotesFrequency {
             }
         }
 
-        return null;
+        return Pause.note;
     }
 
     /* getter and setter */

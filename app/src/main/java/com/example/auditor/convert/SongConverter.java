@@ -36,6 +36,7 @@ public class SongConverter {
     private static final String LOG_TAG = "SongConverter";
     private static final String auditorDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Auditor/";
 
+    public static boolean PORTAMENTO = false;
     public static float tooShortToSing = 0.1f; // can be ignore
     private static final float tooShortPauseTime = 0.04f;
     private static final int secondsPerMinute = 60; // seconds per minutes
@@ -131,7 +132,7 @@ public class SongConverter {
     /**
      * all conversion starts here
      */
-    public void convert()  {
+    public void convert() {
         String musicString;
         Pattern pattern;
 
@@ -151,7 +152,10 @@ public class SongConverter {
         // concat notes, handle vibration and overtone
 //        processNoteAndTimeList();
         Log.e(LOG_TAG, "========== CALCULATE EACH DOMINATE NOTE ==========");
-        process();
+        if(PORTAMENTO)
+            processPortamento();
+        else
+            process();
 
         Log.i(LOG_TAG, "========== FINAL NOTE AND TIME RESULT ==========");
         for(Pair<String, Float> p : noteAndTimeResultList) {
@@ -185,7 +189,7 @@ public class SongConverter {
         Log.i(getClass().getName(), "Pitch detect successfully!");
     }
 
-    private void process() {
+    private void processPortamento() {
         ArrayList<Pair<String, Float>> noteAndTimeBuffer = new ArrayList<>();
 
         process:
@@ -208,7 +212,7 @@ public class SongConverter {
                 // long enough to sing
                 if(curNoteAndTime.second > tooShortToSing) {
                     if(!noteAndTimeBuffer.isEmpty())  // if the buffer has note
-                        addTheDominateNote(noteAndTimeBuffer);
+                        addTheDominateNote_Portamento(noteAndTimeBuffer);
 
                     // get last note
                     int lastIndex = noteAndTimeResultList.size() > 0 ? noteAndTimeResultList.size() - 1 : 0;
@@ -237,19 +241,19 @@ public class SongConverter {
             }
             // is pause
             else {
-                addTheDominateNote(noteAndTimeBuffer);
+                addTheDominateNote_Portamento(noteAndTimeBuffer);
                 noteAndTimeResultList.add(curNoteAndTime); // add the pause
             }
         }
 
         // if the last note in noteAndTimeList is a note
         if (!noteAndTimeList.get(noteAndTimeList.size() -1).first.equals(NotesFrequency.Pause.getNote())) {
-            addTheDominateNote(noteAndTimeBuffer);
+            addTheDominateNote_Portamento(noteAndTimeBuffer);
         }
         curNoteAndTimeListPtr = 0;
     }
 
-    private void addTheDominateNote(ArrayList<Pair<String, Float>> noteAndTimeBuffer) {
+    private void addTheDominateNote_Portamento(ArrayList<Pair<String, Float>> noteAndTimeBuffer) {
         float timeDurationSum = 0f;
         Pair<String, Float> dominatePair = null;
 
@@ -308,6 +312,73 @@ public class SongConverter {
 
         noteAndTimeList.set(nextIndex, new Pair<>(next.first, next.second + noteTimeDuration));
         Log.e(LOG_TAG, String.format("reset next --------> total time: %9f, note: %s", next.second + noteTimeDuration, next.first));
+    }
+
+    private void process() {
+        ArrayList<Pair<String, Float>> noteAndTimeBuffer = new ArrayList<>();
+
+        process:
+        for(int i = 0; i < noteAndTimeList.size(); i++) {
+            Pair<String, Float> curNoteAndTime = noteAndTimeList.get(i);
+
+            // handle the first notation and time
+            if(noteAndTimeResultList.isEmpty()) {
+                // first note is pause
+                if(curNoteAndTime.first.equals(NotesFrequency.Pause.getNote())) {
+                    noteAndTimeResultList.add(curNoteAndTime);
+                    continue;
+                }
+            }
+
+            // is note
+            if(!curNoteAndTime.first.equals(NotesFrequency.Pause.getNote())) {
+
+                // search noteAndTimeBuffer
+                for(int n = 0; n < noteAndTimeBuffer.size(); n ++) {
+                    Pair<String, Float> curNATB = noteAndTimeBuffer.get(n);
+
+                    if(curNATB.first.equals(curNoteAndTime.first)) {
+                        noteAndTimeBuffer.set(n, new Pair<>(curNATB.first, curNATB.second + curNoteAndTime.second));
+                        continue process;
+                    }
+                }
+                noteAndTimeBuffer.add(curNoteAndTime);
+            }
+            // is pause
+            else {
+                addTheDominateNote(noteAndTimeBuffer);
+                noteAndTimeResultList.add(curNoteAndTime); // add the pause
+            }
+        }
+
+        // if the last note in noteAndTimeList is a note
+        if (!noteAndTimeList.get(noteAndTimeList.size() -1).first.equals(NotesFrequency.Pause.getNote())) {
+            addTheDominateNote(noteAndTimeBuffer);
+        }
+    }
+
+    private void addTheDominateNote(ArrayList<Pair<String, Float>> noteAndTimeBuffer) {
+        float timeDurationSum = 0f;
+        Pair<String, Float> dominatePair = null;
+
+        for(int j = 0; j < noteAndTimeBuffer.size(); j++) {
+            Pair<String, Float> cur = noteAndTimeBuffer.get(j);
+            timeDurationSum += cur.second;
+
+            Log.e(LOG_TAG, String.format("time: %9f, note: %s", cur.second, cur.first));
+            if(dominatePair == null) { // process first noteAndTime
+                dominatePair = cur;
+                continue;
+            }
+
+            if(cur.second > dominatePair.second) dominatePair = cur;
+        }
+
+        if(dominatePair != null) { // has buffer
+            noteAndTimeResultList.add(new Pair<>(dominatePair.first, timeDurationSum));
+            Log.e(LOG_TAG, String.format("add -------> total time: %9f, note: %s", timeDurationSum, dominatePair.first));
+            noteAndTimeBuffer.clear();
+        }
     }
 
     /**

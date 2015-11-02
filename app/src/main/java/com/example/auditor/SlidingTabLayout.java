@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.os.Vibrator;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -231,6 +232,26 @@ public class SlidingTabLayout extends HorizontalScrollView {
             String title = adapter.getPageTitle(i).toString();
             if (title.equals(getResources().getString(R.string.audio_record_page_title))) {
                 tabView.setImageResource(R.drawable.audio_record_tab);
+
+                tabView.setOnLongClickListener(new OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        SongConverter.PORTAMENTO = !SongConverter.PORTAMENTO;
+
+                        // vibrate the phone
+                        Vibrator vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+                        vibrator.vibrate(150);
+
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+                        alertDialogBuilder.setTitle("轉譜模式");
+                        if(SongConverter.PORTAMENTO)
+                            alertDialogBuilder.setMessage("轉音");
+                        else
+                            alertDialogBuilder.setMessage("單音");
+                        alertDialogBuilder.show();
+                        return true;
+                    }
+                });
             }
             else if (title.equals(getResources().getString(R.string.audio_file_list_page_title))) {
                 tabView.setImageResource(R.drawable.audio_file_tab);
@@ -267,7 +288,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
                         AlertDialog alertDialog = alertDialogBuilder.create();
                         alertDialog.show();
-                        return false;
+                        return true;
                     }
                 });
             }
