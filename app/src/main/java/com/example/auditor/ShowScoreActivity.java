@@ -84,17 +84,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ShowScoreActivity extends ActionBarActivity {
@@ -1089,37 +1082,80 @@ public class ShowScoreActivity extends ActionBarActivity {
         @Override
         protected Boolean doInBackground(String... lyrics) {
             String lyric = lyrics[0];
-            InetAddress serverAddr = null;
-            SocketAddress socketAddress = null;
-            Socket socket = null;
-            String receiveMsg = null;
+            String score_name = scoreName.substring(0, scoreName.length() - 4);
+            String id = MainActivity.androidId;
 
-            try {
-                serverAddr = InetAddress.getByName("140.117.71.221");  // server address
-                socketAddress = new InetSocketAddress(serverAddr, 1222); // port 1222
+            String url = "http://140.117.71.221/auditor/upload.php";
+            String webRequestResult = ""; // web request result
 
-                socket = new Socket();
-                socket.connect(socketAddress, 2000); // timeout 2 sec
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+            nameValuePairs.add(new BasicNameValuePair("lyric", lyric));
+            nameValuePairs.add(new BasicNameValuePair("score_name", score_name));
+            nameValuePairs.add(new BasicNameValuePair("id", id));
+            InputStream is = null;
 
-                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                out.writeUTF(lyric);
-
-
-                out.flush();
-                socket.close();
+            //http post
+            try{
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(url);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
+                HttpResponse response = httpclient.execute(httppost);
+                HttpEntity entity = response.getEntity();
+                is = entity.getContent();
             }
-            catch (UnknownHostException e) {
-                Log.e(LOG_TAG, e.getMessage());
-                return false;
+            catch(Exception e){
+                Log.e(LOG_TAG, "Error in http connection " + e.toString());
             }
-            catch (SocketException e) {
-                Log.e(LOG_TAG, e.getMessage());
-                return false;
+
+            //convert response to string
+            try{
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
+                StringBuilder sb = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                is.close();
+
+                webRequestResult = sb.toString();
+                Log.e(LOG_TAG, webRequestResult);
             }
-            catch (IOException e) {
-                Log.e(LOG_TAG, e.getMessage());
-                return false;
+            catch(Exception e){
+                Log.e(LOG_TAG, "Error converting result " + e.toString());
             }
+
+//            String lyric = lyrics[0];
+//            InetAddress serverAddr = null;
+//            SocketAddress socketAddress = null;
+//            Socket socket = null;
+//            String receiveMsg = null;
+
+//            try {
+//                serverAddr = InetAddress.getByName("140.117.71.221");  // server address
+//                socketAddress = new InetSocketAddress(serverAddr, 1222); // port 1222
+//
+//                socket = new Socket();
+//                socket.connect(socketAddress, 2000); // timeout 2 sec
+//
+//                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+//                out.writeUTF(lyric);
+//
+//
+//                out.flush();
+//                socket.close();
+//            }
+//            catch (UnknownHostException e) {
+//                Log.e(LOG_TAG, e.getMessage());
+//                return false;
+//            }
+//            catch (SocketException e) {
+//                Log.e(LOG_TAG, e.getMessage());
+//                return false;
+//            }
+//            catch (IOException e) {
+//                Log.e(LOG_TAG, e.getMessage());
+//                return false;
+//            }
 
             return true;
         }
