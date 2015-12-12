@@ -1007,7 +1007,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             Log.i(LOG_TAG, "number: " + inputNumber + ", rhyme: " + inputRhyme + ", sentence: " + inputSentence);
 
             long startTime = System.currentTimeMillis();
-            String url = "http://140.117.71.221/auditor/stest/client.php";
+            String url = "*****";
             String webRequestResult = ""; // web request result
             ArrayList<Pair<String, Integer>> returnTagsList = new ArrayList<>();
 
@@ -1085,7 +1085,7 @@ public class ShowScoreActivity extends ActionBarActivity {
             String score_name = scoreName.substring(0, scoreName.length() - 4);
             String id = MainActivity.androidId;
 
-            String url = "http://140.117.71.221/auditor/upload.php";
+            String url = "*****";
             String webRequestResult = ""; // web request result
 
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
@@ -1123,39 +1123,6 @@ public class ShowScoreActivity extends ActionBarActivity {
             catch(Exception e){
                 Log.e(LOG_TAG, "Error converting result " + e.toString());
             }
-
-//            String lyric = lyrics[0];
-//            InetAddress serverAddr = null;
-//            SocketAddress socketAddress = null;
-//            Socket socket = null;
-//            String receiveMsg = null;
-
-//            try {
-//                serverAddr = InetAddress.getByName("140.117.71.221");  // server address
-//                socketAddress = new InetSocketAddress(serverAddr, 1222); // port 1222
-//
-//                socket = new Socket();
-//                socket.connect(socketAddress, 2000); // timeout 2 sec
-//
-//                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-//                out.writeUTF(lyric);
-//
-//
-//                out.flush();
-//                socket.close();
-//            }
-//            catch (UnknownHostException e) {
-//                Log.e(LOG_TAG, e.getMessage());
-//                return false;
-//            }
-//            catch (SocketException e) {
-//                Log.e(LOG_TAG, e.getMessage());
-//                return false;
-//            }
-//            catch (IOException e) {
-//                Log.e(LOG_TAG, e.getMessage());
-//                return false;
-//            }
 
             return true;
         }
