@@ -1,12 +1,14 @@
-# README #
+# 數位音樂詞曲創作之android app - Auditor #
+這是一款協助創作初學者進行音樂創作的行動應用程式，主要功能包含音訊轉譜及歌詞推薦。
 
-* We are just starting our project life.
+### 音訊轉譜 ###
+使用者對著手機隨意以"嘟"的方式唱出旋律，系統除了替使用者保留原始音訊，也會即將其轉成簡譜，另外也會轉換出MIDI檔案供使用者確認轉譜結果。
 
-### What is this repository for? ###
+### 歌詞推薦 ###
+使用者隨意輸入語句，可自行選擇推薦出的歌詞字數及推薦出的歌詞要押什麼韻，按下推薦後即會列出系統推薦的歌詞，另外也可觀看這些歌詞曾被哪些歌手使用過。
 
-* NSYSU graduation project.
-* version 0.0
+使用者如果將歌詞儲存，歌詞會上傳至資料庫，經過演算法處理之後會將歌手輸入的歌詞加入詞庫，優化本系統之推薦詞庫。
 
-### Who should I do? ###
-
-* Clone this project to your pc first!
+### 參考資源 ###
+*TarsosDSP：使用於音訊分析
+*Jfugue：使用於音符處理
